@@ -13,15 +13,15 @@ namespace Capstone
 		return s_consoleHandle != NULL;
 	}
 
-	void DebugConsole::Log(const char * const str)
-	{
-		DWORD cCharsWritten;
-		WriteConsole(s_consoleHandle, str, strlen(str), &cCharsWritten, NULL);
-	}
-
 	bool DebugConsole::Shutdown()
 	{
 		s_consoleHandle = NULL;
 		return true;
+	}
+
+	void DebugConsole::WriteLog(const char * const str)
+	{
+		DWORD cCharsWritten;
+		WriteConsole(s_consoleHandle, str, strlen(str), &cCharsWritten, NULL);
 	}
 }

@@ -115,7 +115,7 @@ namespace Capstone
 		float nc[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 		++ct %= loop;
-		DebugConsole::Log("Frame\n");
+		DebugConsole::Log("Frame [%d]\n", ct);
 
 		float t = ct <= halfLoop ? ct / halfLoopF : (loopF - ct) / halfLoopF;
 
