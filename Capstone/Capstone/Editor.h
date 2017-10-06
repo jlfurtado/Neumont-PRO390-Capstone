@@ -1,11 +1,19 @@
 #pragma once
-class Editor
+
+#include "DXBase.h"
+
+namespace Capstone
 {
-public:
-	static bool Run();
+	class Editor : public DXBase
+	{
+		public:
+			Editor();
+			virtual ~Editor();
 
-private:
-	static bool Initialize();
-	static bool Shutdown();
-};
+			bool LoadContent();
+			void UnloadContent();
 
+			void Update(float dt);
+			void Render();
+	};
+}
