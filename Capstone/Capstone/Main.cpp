@@ -1,6 +1,5 @@
 // include the basic windows header file
 #include <windows.h>
-#include <stdio.h>
 #include "EditorWindow.h"
 
 // include the Direct3D Library file

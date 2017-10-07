@@ -34,10 +34,10 @@ namespace Capstone
 	const float loopF = (float)loop;
 	const int halfLoop = loop / 2;
 	const float halfLoopF = loopF / 2.0f;
-	ID3D11VertexShader *pVS;    // the vertex shader
-	ID3D11PixelShader *pPS;     // the pixel shader
-	ID3D11Buffer *pVBuffer;    // vertex buffer
-	ID3D11InputLayout *pLayout;    // global
+	ID3D11VertexShader *pVS = 0;    // the vertex shader
+	ID3D11PixelShader *pPS = 0;     // the pixel shader
+	ID3D11Buffer *pVBuffer = 0;    // vertex buffer
+	ID3D11InputLayout *pLayout = 0;    // global
 	const char *const VERTEX_SHADER_STR = "vs_5_0";
 	const char *const PIXEL_SHADER_STR = "ps_5_0";
 
@@ -102,12 +102,20 @@ namespace Capstone
 
 	void Editor::UnloadContent()
 	{
-		pVS->Release();
-		pPS->Release();
+		if (pVS) pVS->Release();
+		if (pPS) pPS->Release();
+		if (pVBuffer) pVBuffer->Release();
+		if (pLayout) pLayout->Release();
+
+		pVS = 0;
+		pPS = 0;
+		pVBuffer = 0;
+		pLayout = 0;
 	}
 
 	void Editor::Update(float dt)
 	{
+		DebugConsole::Log("Frame [%d]\n", ct);
 	}
 
 	void Editor::Render()
@@ -115,7 +123,6 @@ namespace Capstone
 		float nc[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 		++ct %= loop;
-		DebugConsole::Log("Frame [%d]\n", ct);
 
 		float t = ct <= halfLoop ? ct / halfLoopF : (loopF - ct) / halfLoopF;
 
