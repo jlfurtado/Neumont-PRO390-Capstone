@@ -2,6 +2,7 @@
 #include "Utils.h"
 #include "DebugConsole.h"
 #include <DirectXMath.h>
+#include "EditorWindow.h"
 
 namespace Capstone
 {
@@ -116,7 +117,10 @@ namespace Capstone
 
 	void Editor::Update(float dt)
 	{
+		//int w, h;
+		//m_pMyWindow->GetWindowSize(w, h);
 		DebugConsole::Log("Frame [%d]\n", ct);
+		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
 	}
 
 	void Editor::Render()
@@ -157,7 +161,9 @@ namespace Capstone
 															  DirectX::XMLoadFloat3(&up));
 		viewMat = DirectX::XMMatrixTranspose(viewMat);
 
-		DirectX::XMMATRIX projMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, 800.0f / 600.0f, 0.01f, 100.0f);
+		int w, h;
+		m_pMyWindow->GetWindowSize(w, h);
+		DirectX::XMMATRIX projMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, (float)w / (float)h, 0.01f, 100.0f);
 		projMatrix = DirectX::XMMatrixTranspose(projMatrix);
 
 		// SEND MATRICES

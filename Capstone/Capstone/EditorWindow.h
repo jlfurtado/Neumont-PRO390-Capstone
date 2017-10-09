@@ -14,6 +14,7 @@ namespace Capstone
 
 		bool MakeWindow(HINSTANCE instanceHandle, int nCmdShow, const char *const windowName, int screenWidth, int screenHeights);
 		int Run();
+		void GetWindowSize(int& outWidth, int &outHeight);
 
 	private:
 		HWND m_windowHandle;

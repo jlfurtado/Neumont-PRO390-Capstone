@@ -52,7 +52,7 @@ namespace Capstone
 
 	int EditorWindow::Run()
 	{
-		m_editor.Initialize(m_instanceHandle, m_windowHandle);
+		m_editor.Initialize(m_instanceHandle, m_windowHandle, this);
 
 		// this struct holds Windows event messages
 		MSG msg = { 0 };
@@ -80,6 +80,14 @@ namespace Capstone
 
 		// return this part of the WM_QUIT message to Windows
 		return static_cast<int>(msg.wParam);
+	}
+
+	void EditorWindow::GetWindowSize(int & outWidth, int & outHeight)
+	{
+		RECT rect;
+		GetClientRect(m_windowHandle, &rect);
+		outWidth = rect.right - rect.left;
+		outHeight = rect.bottom - rect.top;
 	}
 
 	LRESULT CALLBACK EditorWindow::WindowProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)

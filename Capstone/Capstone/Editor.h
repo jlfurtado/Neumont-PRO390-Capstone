@@ -88,6 +88,5 @@ namespace Capstone
 		ID3D11Buffer *m_pModelToWorldBuffer = 0;
 		ID3D11Buffer *m_pWorldToViewBuffer = 0;
 		ID3D11Buffer *m_pProjectionBuffer = 0;
-
 	};
 }
