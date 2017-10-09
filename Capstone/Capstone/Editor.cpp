@@ -1,46 +1,10 @@
 #include "Editor.h"
 #include "Utils.h"
 #include "DebugConsole.h"
+#include <DirectXMath.h>
 
 namespace Capstone
 {
-	struct VERTEX
-	{
-		FLOAT X, Y, Z;      // position
-		FLOAT r, g, b, a;   // color
-	};
-
-	VERTEX OurVertices[] =
-	{
-		/*   X      Y      Z     R     G     B     A */
-		{ +0.0f, +0.5f, +0.0f, 1.0f, 0.0f, 0.0f, 1.0f },
-		{ +0.5f, -0.5f, +0.0f, 0.0f, 1.0f, 0.0f, 1.0f },
-		{ -0.5f, -0.5f, +0.0f, 0.0f, 0.0f, 1.0f, 1.0f },
-		{ +0.5f, +1.0f, +0.0f, 1.0f, 0.0f, 0.0f, 1.0f },
-		{ +1.0f, +0.0f, +0.0f, 0.0f, 1.0f, 0.0f, 1.0f },
-		{ +0.0f, +0.0f, +0.0f, 0.0f, 0.0f, 1.0f, 1.0f },
-		{ -0.5f, +0.0f, +0.0f, 1.0f, 0.0f, 0.0f, 1.0f },
-		{ +0.0f, -1.0f, +0.0f, 0.0f, 1.0f, 0.0f, 1.0f },
-		{ -1.0f, -1.0f, +0.0f, 0.0f, 0.0f, 1.0f, 1.0f }
-	};
-
-	const int NUM_VERTICES = sizeof(OurVertices) / sizeof(VERTEX);
-
-	float bgColorRGBA[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	float otherColorRGBA[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	int ct = 0;
-
-	const int loop = 10000;
-	const float loopF = (float)loop;
-	const int halfLoop = loop / 2;
-	const float halfLoopF = loopF / 2.0f;
-	ID3D11VertexShader *pVS = 0;    // the vertex shader
-	ID3D11PixelShader *pPS = 0;     // the pixel shader
-	ID3D11Buffer *pVBuffer = 0;    // vertex buffer
-	ID3D11InputLayout *pLayout = 0;    // global
-	const char *const VERTEX_SHADER_STR = "vs_5_0";
-	const char *const PIXEL_SHADER_STR = "ps_5_0";
-
 	Editor::Editor()
 	{
 	}
@@ -62,10 +26,10 @@ namespace Capstone
 
 		m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
 
-													   // copy the vertices into the buffer
+		// copy the vertices into the buffer
 		D3D11_MAPPED_SUBRESOURCE ms;
 		m_context->Map(pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
-		memcpy(ms.pData, OurVertices, sizeof(OurVertices));                 // copy the data
+		memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                 // copy the data
 		m_context->Unmap(pVBuffer, NULL);    // unmap the buffer
 
 		// load and compile the two shaders
@@ -73,10 +37,12 @@ namespace Capstone
 		ID3DBlob* PS = nullptr;
 		if (!CompileD3DShader(L"..//data//shaders//shaders.shader", "VertexShaderFunction", VERTEX_SHADER_STR, &VS))
 		{
+			DebugConsole::Log("ERROR: FAILED TO COMPILE VERTEX SHADER!!!\n");
 			return false;
 		}
 		if (!CompileD3DShader(L"..//data//shaders//shaders.shader", "PixelShaderFunction", PIXEL_SHADER_STR, &PS))
 		{
+			DebugConsole::Log("ERROR: FAILED TO COMPILE PIXEL SHADER!!!\n");
 			return false;
 		}
 
@@ -97,6 +63,35 @@ namespace Capstone
 
 		m_device->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
 		m_context->IASetInputLayout(pLayout);
+
+		// make something to describe a matrix buffer, we'll use this three times coming up
+		D3D11_BUFFER_DESC constDesc;
+		ZeroMemory(&constDesc, sizeof(constDesc));
+		constDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		constDesc.ByteWidth = sizeof(DirectX::XMFLOAT4X4);
+		constDesc.Usage = D3D11_USAGE_DEFAULT;
+
+		// try to create buffer for sending the model to world matrices
+		if (FAILED(m_device->CreateBuffer(&constDesc, 0, &m_pModelToWorldBuffer)))
+		{
+			DebugConsole::Log("ERROR: FAILED TO CREATE MTW BUFFER!!!\n");
+			return false;
+		}
+
+		// try to create buffer for sending world to view matrices
+		if (FAILED(m_device->CreateBuffer(&constDesc, 0, &m_pWorldToViewBuffer)))
+		{
+			DebugConsole::Log("ERROR: FAILED TO CREATE WTV BUFFER!!!\n");
+			return false;
+		}
+
+		 // try to create buffer for sending projection matrices
+		if (FAILED(m_device->CreateBuffer(&constDesc, 0, &m_pProjectionBuffer)))
+		{
+			DebugConsole::Log("ERROR: FAILED TO CREATE PROJ BUFFER!!!\n");
+			return false;
+		}
+
 		return true;
 	}
 
@@ -106,7 +101,13 @@ namespace Capstone
 		if (pPS) pPS->Release();
 		if (pVBuffer) pVBuffer->Release();
 		if (pLayout) pLayout->Release();
+		if (m_pModelToWorldBuffer) m_pModelToWorldBuffer->Release();
+		if (m_pWorldToViewBuffer) m_pWorldToViewBuffer->Release();
+		if (m_pProjectionBuffer) m_pProjectionBuffer->Release();
 
+		m_pModelToWorldBuffer = 0;
+		m_pWorldToViewBuffer = 0;
+		m_pProjectionBuffer = 0;
 		pVS = 0;
 		pPS = 0;
 		pVBuffer = 0;
@@ -142,6 +143,30 @@ namespace Capstone
 
 		// select which primtive type we are using
 		m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// make the mtw matrix
+		DirectX::XMMATRIX worldMat = DirectX::XMMatrixIdentity();
+		worldMat = DirectX::XMMatrixTranspose(worldMat);
+
+		// make the wtv matrix
+		DirectX::XMFLOAT3 eye(2.0f - 10.0f * t, 5.0f - 10.0f * t, 10.0f * (t - 0.5f));
+		DirectX::XMFLOAT3 target(0.0f, 0.0f, 0.0f);
+		DirectX::XMFLOAT3 up(0.0f, 1.0f, 0.0f);
+		DirectX::XMMATRIX viewMat = DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&eye),
+															  DirectX::XMLoadFloat3(&target),
+															  DirectX::XMLoadFloat3(&up));
+		viewMat = DirectX::XMMatrixTranspose(viewMat);
+
+		DirectX::XMMATRIX projMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, 800.0f / 600.0f, 0.01f, 100.0f);
+		projMatrix = DirectX::XMMatrixTranspose(projMatrix);
+
+		// SEND MATRICES
+		m_context->UpdateSubresource(m_pModelToWorldBuffer, 0, 0, &worldMat, 0, 0);
+		m_context->UpdateSubresource(m_pWorldToViewBuffer, 0, 0, &viewMat, 0, 0);
+		m_context->UpdateSubresource(m_pProjectionBuffer, 0, 0, &projMatrix, 0, 0);
+		m_context->VSSetConstantBuffers(0, 1, &m_pModelToWorldBuffer);
+		m_context->VSSetConstantBuffers(1, 1, &m_pWorldToViewBuffer);
+		m_context->VSSetConstantBuffers(2, 1, &m_pProjectionBuffer);
 
 		// draw the vertex buffer to the back buffer
 		m_context->Draw(NUM_VERTICES, 0);
