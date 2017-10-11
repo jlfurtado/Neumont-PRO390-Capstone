@@ -1,10 +1,15 @@
 #include "EditorWindow.h"
 #include "Utils.h"
+#include "ElapsedTime.h"
+#include "Keyboard.h"
 
 namespace Capstone
 {
+	EditorWindow *EditorWindow::s_pFirst = nullptr;
+
 	bool EditorWindow::MakeWindow(HINSTANCE instanceHandle, int nCmdShow, const char *const windowName, int screenWidth, int screenHeight)
 	{
+		if (s_pFirst == nullptr) { s_pFirst = this; }
 		if (!m_console.Initialize()) { return false; }
 
 		// this struct holds information for the window class
@@ -52,7 +57,9 @@ namespace Capstone
 
 	int EditorWindow::Run()
 	{
+		ElapsedTime::Initialize();
 		m_editor.Initialize(m_instanceHandle, m_windowHandle, this);
+		Keyboard::Initialize();
 
 		// this struct holds Windows event messages
 		MSG msg = { 0 };
@@ -70,7 +77,8 @@ namespace Capstone
 			}
 
 			// update 'n draw
-			m_editor.Update(0.0f);
+			Keyboard::Update();
+			m_editor.Update(ElapsedTime::GetLastFrameTime());
 			m_editor.Render();
 		}
 
@@ -110,6 +118,24 @@ namespace Capstone
 				// close the application entirely
 				PostQuitMessage(0);
 				return 0;
+			} break;
+
+			case WM_SIZE:
+			{
+				if (s_pFirst)
+				{
+					s_pFirst->m_editor.OnWindowResize();
+				}
+			} break;
+
+			case WM_KEYDOWN:
+			{
+				Keyboard::KeyHit(wParam);
+			} break;
+
+			case WM_KEYUP:
+			{
+				Keyboard::KeyRelease(wParam);
 			} break;
 
 			default:

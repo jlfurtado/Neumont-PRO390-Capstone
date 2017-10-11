@@ -23,7 +23,7 @@ namespace Capstone
 		DebugConsole m_console;
 
 		const char *const WINDOW_CLASS_NAME = "WindowClass1";
-	
+		static EditorWindow *s_pFirst;
 		static LRESULT CALLBACK WindowProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam);
 	};
 }

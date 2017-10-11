@@ -1,8 +1,8 @@
 #include "Editor.h"
 #include "Utils.h"
 #include "DebugConsole.h"
-#include <DirectXMath.h>
 #include "EditorWindow.h"
+#include "Keyboard.h"
 
 namespace Capstone
 {
@@ -93,6 +93,8 @@ namespace Capstone
 			return false;
 		}
 
+		CalculatePerspectiveMatrix();
+
 		return true;
 	}
 
@@ -119,7 +121,15 @@ namespace Capstone
 	{
 		//int w, h;
 		//m_pMyWindow->GetWindowSize(w, h);
-		DebugConsole::Log("Frame [%d]\n", ct);
+		//DebugConsole::Log("Frame [%d]\n", ct);
+		LogFPS(dt, 1.0f);
+		m_timer += dt; if (m_timer > m_loopTime) { m_timer -= m_loopTime; }
+
+		if (Keyboard::IsKeyDown(VK_UP)) { DebugConsole::Log("UP Down\n"); }
+		if (Keyboard::IsKeyUp(VK_UP)) { DebugConsole::Log("UP Up\n"); }
+		
+
+		m_t = m_timer <= m_halfLoopTime ? m_timer / m_halfLoopTime : (m_loopTime - m_timer) / m_halfLoopTime;
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
 	}
 
@@ -127,13 +137,9 @@ namespace Capstone
 	{
 		float nc[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-		++ct %= loop;
-
-		float t = ct <= halfLoop ? ct / halfLoopF : (loopF - ct) / halfLoopF;
-
 		for (int i = 0; i < 4; ++i)
 		{
-			nc[i] = bgColorRGBA[i] * t + (1.0f - t) * otherColorRGBA[i];
+			nc[i] = bgColorRGBA[i] * m_t + (1.0f - m_t) * otherColorRGBA[i];
 		}
 
 		// clear the back buffer to a deep blue
@@ -153,7 +159,7 @@ namespace Capstone
 		worldMat = DirectX::XMMatrixTranspose(worldMat);
 
 		// make the wtv matrix
-		DirectX::XMFLOAT3 eye(2.0f - 10.0f * t, 5.0f - 10.0f * t, 10.0f * (t - 0.5f));
+		DirectX::XMFLOAT3 eye(2.0f - 10.0f * m_t, 5.0f - 10.0f * m_t, 10.0f * (m_t - 0.5f));
 		DirectX::XMFLOAT3 target(0.0f, 0.0f, 0.0f);
 		DirectX::XMFLOAT3 up(0.0f, 1.0f, 0.0f);
 		DirectX::XMMATRIX viewMat = DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&eye),
@@ -161,15 +167,10 @@ namespace Capstone
 															  DirectX::XMLoadFloat3(&up));
 		viewMat = DirectX::XMMatrixTranspose(viewMat);
 
-		int w, h;
-		m_pMyWindow->GetWindowSize(w, h);
-		DirectX::XMMATRIX projMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, (float)w / (float)h, 0.01f, 100.0f);
-		projMatrix = DirectX::XMMatrixTranspose(projMatrix);
-
 		// SEND MATRICES
 		m_context->UpdateSubresource(m_pModelToWorldBuffer, 0, 0, &worldMat, 0, 0);
 		m_context->UpdateSubresource(m_pWorldToViewBuffer, 0, 0, &viewMat, 0, 0);
-		m_context->UpdateSubresource(m_pProjectionBuffer, 0, 0, &projMatrix, 0, 0);
+		m_context->UpdateSubresource(m_pProjectionBuffer, 0, 0, &m_projectionMatrix, 0, 0);
 		m_context->VSSetConstantBuffers(0, 1, &m_pModelToWorldBuffer);
 		m_context->VSSetConstantBuffers(1, 1, &m_pWorldToViewBuffer);
 		m_context->VSSetConstantBuffers(2, 1, &m_pProjectionBuffer);
@@ -179,5 +180,40 @@ namespace Capstone
 
 		// switch the back buffer and the front buffer
 		m_swapChain->Present(0, 0);
+	}
+
+	void Editor::OnWindowResize()
+	{
+		CalculatePerspectiveMatrix();
+	}
+
+	void Editor::CalculatePerspectiveMatrix()
+	{
+		if (m_pMyWindow)
+		{
+			int w, h;
+			m_pMyWindow->GetWindowSize(w, h);
+			m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, (float)w / (float)h, 0.01f, 100.0f);
+			m_projectionMatrix = DirectX::XMMatrixTranspose(m_projectionMatrix);
+		}
+	}
+
+	void Editor::LogFPS(float dt, float fpsInterval)
+	{
+		static unsigned int numFrames = 0;
+		static float    timeAccumulator = 0.0f;
+
+		++numFrames;
+		timeAccumulator += dt;
+
+		if (timeAccumulator >= fpsInterval)
+		{
+			//Engine::GameLogger::Log(Engine::MessageType::ConsoleOnly, "FPS: %6.1f over %3.1f seconds.\n", numFrames / timeAccumulator, m_fpsInterval);
+			//char fpsText[50];
+			DebugConsole::Log("FPS: %6.1f over %3.1f seconds.\n", numFrames / timeAccumulator, fpsInterval);
+			//m_fpsTextObject.SetupText(-0.9f, 0.9f, 0.0f, 1.0f, 0.0f, 1.0f, 0.5f, 1.0f, fpsText);
+			timeAccumulator = 0;
+			numFrames = 0;
+		}
 	}
 }

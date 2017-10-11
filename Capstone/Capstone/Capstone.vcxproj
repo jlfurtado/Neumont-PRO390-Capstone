@@ -122,6 +122,8 @@
     <ClCompile Include="DXBase.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="EditorWindow.cpp" />
+    <ClCompile Include="ElapsedTime.cpp" />
+    <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +131,8 @@
     <ClInclude Include="DXBase.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorWindow.h" />
+    <ClInclude Include="ElapsedTime.h" />
+    <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

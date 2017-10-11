@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DXBase.h"
+#include <DirectXMath.h>
 
 namespace Capstone
 {
@@ -15,6 +16,8 @@ namespace Capstone
 
 			void Update(float dt);
 			void Render();
+
+			void OnWindowResize();
 
 	private:
 		struct VERTEX
@@ -69,16 +72,14 @@ namespace Capstone
 			{ +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f }
 		};
 
+		void CalculatePerspectiveMatrix();
+		void LogFPS(float dt, float interval);
+
 		const int NUM_VERTICES = sizeof(cubeVertices) / sizeof(VERTEX);
 
 		float bgColorRGBA[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		float otherColorRGBA[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		int ct = 0;
 
-		const int loop = 10000;
-		const float loopF = (float)loop;
-		const int halfLoop = loop / 2;
-		const float halfLoopF = loopF / 2.0f;
 		ID3D11VertexShader *pVS = 0;    // the vertex shader
 		ID3D11PixelShader *pPS = 0;     // the pixel shader
 		ID3D11Buffer *pVBuffer = 0;    // vertex buffer
@@ -88,5 +89,11 @@ namespace Capstone
 		ID3D11Buffer *m_pModelToWorldBuffer = 0;
 		ID3D11Buffer *m_pWorldToViewBuffer = 0;
 		ID3D11Buffer *m_pProjectionBuffer = 0;
+		float m_t = 0.0f;
+		float m_timer = 0.0f;
+		const float m_loopTime = 10.0f;
+		const float m_halfLoopTime = m_loopTime / 2.0f;
+
+		DirectX::XMMATRIX m_projectionMatrix;
 	};
 }
