@@ -12,6 +12,9 @@ namespace Capstone
 	{
 		if (s_pFirst == nullptr) { s_pFirst = this; }
 		if (!m_console.Initialize()) { return false; }
+		
+		m_width = screenWidth;
+		m_height = screenHeight;
 
 		// this struct holds information for the window class
 		WNDCLASSEX wc;
@@ -27,7 +30,7 @@ namespace Capstone
 		wc.lpszClassName = WINDOW_CLASS_NAME;
 
 		// register the window class
-		if (!RegisterClassEx(&wc)) { printf("Failed to register window class\n"); return false; };
+		if (!RegisterClassEx(&wc)) { DebugConsole::Log("code %d\n", GetLastError()); DebugConsole::Log("Failed to register window class\n"); return false; };
 
 		RECT windowRect = { 0, 0, screenWidth, screenHeight }; // set size and not position
 		AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE); // adjust the size
@@ -46,13 +49,13 @@ namespace Capstone
 			instanceHandle,    // application handle
 			NULL);    // used with multiple windows, NULL
 
-		if (!m_windowHandle) { printf("Failed to create window!\n"); return false; }
+		if (!m_windowHandle) { DebugConsole::Log("Failed to create window!\n"); return false; }
 
 		// display the window on the screen
 		ShowWindow(m_windowHandle, nCmdShow);
 
 		m_instanceHandle = instanceHandle;
-		printf("Made window!!!\n");
+		DebugConsole::Log("Made window!!!\n");
 		return true;
 	}
 
@@ -80,7 +83,10 @@ namespace Capstone
 
 			// update 'n draw
 			Keyboard::Update();
-			Mouse::Update();
+			POINT cursorPos;
+			GetCursorPos(&cursorPos);
+			ScreenToClient(m_windowHandle, &cursorPos);
+			Mouse::Update(cursorPos.x, cursorPos.y);
 			m_editor.Update(ElapsedTime::GetLastFrameTime());
 			m_editor.Render();
 		}
@@ -93,12 +99,14 @@ namespace Capstone
 		return static_cast<int>(msg.wParam);
 	}
 
-	void EditorWindow::GetWindowSize(int & outWidth, int & outHeight)
+	int EditorWindow::GetWidth()
 	{
-		RECT rect;
-		GetClientRect(m_windowHandle, &rect);
-		outWidth = rect.right - rect.left;
-		outHeight = rect.bottom - rect.top;
+		return m_width;
+	}
+
+	int EditorWindow::GetHeight()
+	{
+		return m_height;
 	}
 
 	LRESULT CALLBACK EditorWindow::WindowProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)
@@ -133,6 +141,10 @@ namespace Capstone
 			{
 				if (s_pFirst)
 				{
+					RECT rect;
+					GetClientRect(windowHandle, &rect);
+					s_pFirst->m_width = rect.right - rect.left;
+					s_pFirst->m_height = rect.bottom - rect.top;
 					s_pFirst->m_editor.OnWindowResize();
 				}
 			} break;

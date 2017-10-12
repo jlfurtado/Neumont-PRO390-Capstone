@@ -188,8 +188,7 @@ namespace Capstone
 	{
 		if (m_pMyWindow)
 		{
-			int w, h;
-			m_pMyWindow->GetWindowSize(w, h);
+			int w = m_pMyWindow->GetWidth(), h = m_pMyWindow->GetHeight();
 			m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, (float)w / (float)h, 0.01f, 100.0f);
 			m_projectionMatrix = DirectX::XMMatrixTranspose(m_projectionMatrix);
 		}

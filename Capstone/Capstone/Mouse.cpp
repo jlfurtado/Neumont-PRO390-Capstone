@@ -6,6 +6,8 @@ namespace Capstone
 	Mouse::MouseState Mouse::s_last;
 	Mouse::MouseState Mouse::s_current;
 	Mouse::MouseState Mouse::s_next;
+	int Mouse::s_xPos = 0;
+	int Mouse::s_yPos = 0;
 
 	void Mouse::Clicked(int btn)
 	{
@@ -27,10 +29,12 @@ namespace Capstone
 		return true;
 	}
 
-	void Mouse::Update()
+	void Mouse::Update(int x, int y)
 	{
 		s_last = s_current;
 		s_current = s_next;
+		s_xPos = x;
+		s_yPos = y;
 	}
 
 	bool Mouse::LeftMouseClicked()
@@ -91,5 +95,15 @@ namespace Capstone
 	bool Mouse::MiddleMouseUp()
 	{
 		return s_current.NotSet(MIDDLE_MOUSE_INDEX);
+	}
+	
+	int Mouse::GetMouseX()
+	{
+		return s_xPos;
+	}
+
+	int Mouse::GetMouseY()
+	{
+		return s_yPos;
 	}
 }

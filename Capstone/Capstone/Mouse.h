@@ -36,7 +36,7 @@ namespace Capstone
 
 	public:
 		static bool Initialize();
-		static void Update();
+		static void Update(int x, int y);
 		static bool LeftMouseClicked();
 		static bool LeftMouseReleased();
 		static bool LeftMouseDown();
@@ -49,6 +49,8 @@ namespace Capstone
 		static bool MiddleMouseReleased();
 		static bool MiddleMouseDown();
 		static bool MiddleMouseUp();
+		static int GetMouseX();
+		static int GetMouseY();
 
 	private:
 		friend class EditorWindow;
@@ -62,5 +64,6 @@ namespace Capstone
 		static MouseState s_last;
 		static MouseState s_current;
 		static MouseState s_next;
+		static int s_xPos, s_yPos;
 	};
 }
