@@ -125,6 +125,7 @@
     <ClCompile Include="ElapsedTime.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Mouse.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DebugConsole.h" />
@@ -133,6 +134,7 @@
     <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="ElapsedTime.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Mouse.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

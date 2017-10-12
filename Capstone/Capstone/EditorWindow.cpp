@@ -2,6 +2,7 @@
 #include "Utils.h"
 #include "ElapsedTime.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 
 namespace Capstone
 {
@@ -60,6 +61,7 @@ namespace Capstone
 		ElapsedTime::Initialize();
 		m_editor.Initialize(m_instanceHandle, m_windowHandle, this);
 		Keyboard::Initialize();
+		Mouse::Initialize();
 
 		// this struct holds Windows event messages
 		MSG msg = { 0 };
@@ -78,6 +80,7 @@ namespace Capstone
 
 			// update 'n draw
 			Keyboard::Update();
+			Mouse::Update();
 			m_editor.Update(ElapsedTime::GetLastFrameTime());
 			m_editor.Render();
 		}
@@ -106,20 +109,26 @@ namespace Capstone
 		// sort through and find what code to run for the message given
 		switch (message)
 		{
+			// draw the application
 			case WM_PAINT:
 			{
 				hdc = BeginPaint(windowHandle, &paintStruct);
 				EndPaint(windowHandle, &paintStruct);
 			} break;
 
-			// this message is read when the window is closed
-			case WM_DESTROY:
-			{
-				// close the application entirely
-				PostQuitMessage(0);
-				return 0;
-			} break;
+			// keyboard events
+			case WM_KEYDOWN: { Keyboard::KeyHit(wParam); } break;
+			case WM_KEYUP:   { Keyboard::KeyRelease(wParam); } break;
 
+			// mouse click events
+			case WM_LBUTTONDOWN: { Mouse::Clicked(Mouse::LEFT_MOUSE_INDEX);	} break;
+			case WM_LBUTTONUP: { Mouse::Released(Mouse::LEFT_MOUSE_INDEX); } break;
+			case WM_MBUTTONDOWN: { Mouse::Clicked(Mouse::MIDDLE_MOUSE_INDEX); } break;
+			case WM_MBUTTONUP: { Mouse::Released(Mouse::MIDDLE_MOUSE_INDEX); } break;
+			case WM_RBUTTONDOWN: { Mouse::Clicked(Mouse::RIGHT_MOUSE_INDEX); } break;
+			case WM_RBUTTONUP: { Mouse::Released(Mouse::RIGHT_MOUSE_INDEX);	} break;
+
+			// window resize
 			case WM_SIZE:
 			{
 				if (s_pFirst)
@@ -128,14 +137,12 @@ namespace Capstone
 				}
 			} break;
 
-			case WM_KEYDOWN:
+			// Exit window
+			case WM_DESTROY:
 			{
-				Keyboard::KeyHit(wParam);
-			} break;
-
-			case WM_KEYUP:
-			{
-				Keyboard::KeyRelease(wParam);
+				// close the application entirely
+				PostQuitMessage(0);
+				return 0;
 			} break;
 
 			default:

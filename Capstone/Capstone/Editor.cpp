@@ -3,6 +3,7 @@
 #include "DebugConsole.h"
 #include "EditorWindow.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 
 namespace Capstone
 {
@@ -124,10 +125,6 @@ namespace Capstone
 		//DebugConsole::Log("Frame [%d]\n", ct);
 		LogFPS(dt, 1.0f);
 		m_timer += dt; if (m_timer > m_loopTime) { m_timer -= m_loopTime; }
-
-		if (Keyboard::IsKeyDown(VK_UP)) { DebugConsole::Log("UP Down\n"); }
-		if (Keyboard::IsKeyUp(VK_UP)) { DebugConsole::Log("UP Up\n"); }
-		
 
 		m_t = m_timer <= m_halfLoopTime ? m_timer / m_halfLoopTime : (m_loopTime - m_timer) / m_halfLoopTime;
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);

@@ -7,7 +7,7 @@ namespace Capstone
 		struct KeyState
 		{
 			static const unsigned long long NUM_KEYS = 256;
-			static const unsigned long long VAL_SIZE = sizeof(unsigned long long);
+			static const unsigned long long VAL_SIZE = sizeof(unsigned long long) * 8;
 			static const unsigned long long NUM_VALS = NUM_KEYS / VAL_SIZE;
 
 			unsigned long long v[NUM_VALS];
@@ -17,24 +17,24 @@ namespace Capstone
 				for (int i = 0; i < NUM_VALS; ++i) { v[i] = 0; }
 			}
 
-			inline bool Set(int n)
+			bool Set(int n)
 			{
-				return (v[n / NUM_VALS] & (1ULL << (n % VAL_SIZE))) != 0;
+				return (v[n / VAL_SIZE] & (1ULL << (n % VAL_SIZE))) != 0;
 			}
 
-			inline bool NotSet(int n)
+			bool NotSet(int n)
 			{
-				return (v[n / NUM_VALS] & (1ULL << (n % VAL_SIZE))) == 0;
+				return (v[n / VAL_SIZE] & (1ULL << (n % VAL_SIZE))) == 0;
 			}
 
-			inline void Press(int n)
+			void Press(int n)
 			{
-				v[n / NUM_VALS] |= (1ULL << (n % VAL_SIZE));
+				v[n / VAL_SIZE] |= (1ULL << (n % VAL_SIZE));
 			}
 
-			inline void Release(int n)
+			void Release(int n)
 			{
-				v[n / NUM_VALS] &= ~(1ULL << (n % VAL_SIZE));
+				v[n / VAL_SIZE] &= ~(1ULL << (n % VAL_SIZE));
 			}
 		};
 
