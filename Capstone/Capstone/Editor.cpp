@@ -87,7 +87,7 @@ namespace Capstone
 			return false;
 		}
 
-		 // try to create buffer for sending projection matrices
+		// try to create buffer for sending projection matrices
 		if (FAILED(m_device->CreateBuffer(&constDesc, 0, &m_pProjectionBuffer)))
 		{
 			DebugConsole::Log("ERROR: FAILED TO CREATE PROJ BUFFER!!!\n");
@@ -126,6 +126,10 @@ namespace Capstone
 		LogFPS(dt, 1.0f);
 		m_timer += dt; if (m_timer > m_loopTime) { m_timer -= m_loopTime; }
 
+		//if (Keyboard::IsKeyPressed('W')) { DebugConsole::Log("W pressed\n"); }
+		//if (Keyboard::IsKeyReleased('W')) { DebugConsole::Log("W released\n"); }
+
+
 		m_t = m_timer <= m_halfLoopTime ? m_timer / m_halfLoopTime : (m_loopTime - m_timer) / m_halfLoopTime;
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
 	}
@@ -160,8 +164,8 @@ namespace Capstone
 		DirectX::XMFLOAT3 target(0.0f, 0.0f, 0.0f);
 		DirectX::XMFLOAT3 up(0.0f, 1.0f, 0.0f);
 		DirectX::XMMATRIX viewMat = DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&eye),
-															  DirectX::XMLoadFloat3(&target),
-															  DirectX::XMLoadFloat3(&up));
+			DirectX::XMLoadFloat3(&target),
+			DirectX::XMLoadFloat3(&up));
 		viewMat = DirectX::XMMatrixTranspose(viewMat);
 
 		// SEND MATRICES
@@ -182,6 +186,20 @@ namespace Capstone
 	void Editor::OnWindowResize()
 	{
 		CalculatePerspectiveMatrix();
+	}
+
+	void Editor::MouseScroll(int /*degrees*/)
+	{
+
+	}
+
+	void Editor::OnMouseScroll(int degrees, void * pInstance)
+	{
+		if (pInstance)
+		{
+			Editor *pEditor = reinterpret_cast<Editor *>(pInstance);
+			pEditor->MouseScroll(degrees);
+		}
 	}
 
 	void Editor::CalculatePerspectiveMatrix()

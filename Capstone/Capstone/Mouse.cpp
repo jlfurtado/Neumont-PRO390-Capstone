@@ -3,6 +3,8 @@
 
 namespace Capstone
 {
+	Mouse::MouseScrollCallback Mouse::s_onScroll = nullptr;
+	void *Mouse::s_pInstance = nullptr;
 	Mouse::MouseState Mouse::s_last;
 	Mouse::MouseState Mouse::s_current;
 	Mouse::MouseState Mouse::s_next;
@@ -19,11 +21,19 @@ namespace Capstone
 		s_next.Release(btn);
 	}
 
-	bool Mouse::Initialize()
+	void Mouse::Scroll(int degrees)
+	{
+		if (s_onScroll) { s_onScroll(degrees, s_pInstance); }
+	}
+
+	bool Mouse::Initialize(MouseScrollCallback onScroll, void *pInstance)
 	{
 		s_next.Clear();
 		s_current.Clear();
 		s_last.Clear();
+
+		s_onScroll = onScroll;
+		s_pInstance = pInstance;
 
 		DebugConsole::Log("Mouse Initialized!\n");
 		return true;

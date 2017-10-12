@@ -64,7 +64,7 @@ namespace Capstone
 		ElapsedTime::Initialize();
 		m_editor.Initialize(m_instanceHandle, m_windowHandle, this);
 		Keyboard::Initialize();
-		Mouse::Initialize();
+		Mouse::Initialize(Editor::OnMouseScroll, &m_editor);
 
 		// this struct holds Windows event messages
 		MSG msg = { 0 };
@@ -135,6 +135,9 @@ namespace Capstone
 			case WM_MBUTTONUP: { Mouse::Released(Mouse::MIDDLE_MOUSE_INDEX); } break;
 			case WM_RBUTTONDOWN: { Mouse::Clicked(Mouse::RIGHT_MOUSE_INDEX); } break;
 			case WM_RBUTTONUP: { Mouse::Released(Mouse::RIGHT_MOUSE_INDEX);	} break;
+
+			// mouse scroll event
+			case WM_MOUSEWHEEL:	{ Mouse::Scroll(GET_WHEEL_DELTA_WPARAM(wParam)); } break;
 
 			// window resize
 			case WM_SIZE:

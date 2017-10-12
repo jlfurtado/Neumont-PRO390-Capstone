@@ -35,7 +35,9 @@ namespace Capstone
 		};
 
 	public:
-		static bool Initialize();
+		typedef void(*MouseScrollCallback)(int, void*);
+
+		static bool Initialize(MouseScrollCallback onScroll, void *pInstance);
 		static void Update(int x, int y);
 		static bool LeftMouseClicked();
 		static bool LeftMouseReleased();
@@ -56,11 +58,14 @@ namespace Capstone
 		friend class EditorWindow;
 		static void Clicked(int btn);
 		static void Released(int btn);
+		static void Scroll(int degrees);
 
 		static const int LEFT_MOUSE_INDEX = 0;
 		static const int MIDDLE_MOUSE_INDEX = 1;
 		static const int RIGHT_MOUSE_INDEX = 2;
 
+		static MouseScrollCallback s_onScroll;
+		static void *s_pInstance;
 		static MouseState s_last;
 		static MouseState s_current;
 		static MouseState s_next;

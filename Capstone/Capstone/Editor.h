@@ -19,6 +19,9 @@ namespace Capstone
 
 			void OnWindowResize();
 
+			static void OnMouseScroll(int degrees, void *pInstance);
+			void MouseScroll(int degrees);
+
 	private:
 		struct VERTEX
 		{
