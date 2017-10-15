@@ -53,6 +53,8 @@ namespace Capstone
 		static bool MiddleMouseUp();
 		static int GetMouseX();
 		static int GetMouseY();
+		static int GetMouseDeltaX();
+		static int GetMouseDeltaY();
 
 	private:
 		friend class EditorWindow;
@@ -70,5 +72,6 @@ namespace Capstone
 		static MouseState s_current;
 		static MouseState s_next;
 		static int s_xPos, s_yPos;
+		static int s_lastXPos, s_lastYPos;
 	};
 }

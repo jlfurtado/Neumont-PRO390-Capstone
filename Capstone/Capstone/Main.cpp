@@ -1,6 +1,7 @@
 // include the basic windows header file
 #include <windows.h>
 #include "EditorWindow.h"
+#include <time.h>
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
@@ -15,6 +16,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	LPSTR /*lpCmdLine*/,
 	int nCmdShow)
 {
+	srand(static_cast<unsigned>(time(0)));
+
 	// make an instance of the pretty class that manages all the window stuff on the stack
 	Capstone::EditorWindow editorWindow;
 

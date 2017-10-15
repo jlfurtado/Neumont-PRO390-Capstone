@@ -2,6 +2,8 @@
 
 #include "DXBase.h"
 #include <DirectXMath.h>
+#include "Camera.h"
+#include "Mesh.h"
 
 namespace Capstone
 {
@@ -23,62 +25,8 @@ namespace Capstone
 			void MouseScroll(int degrees);
 
 	private:
-		struct VERTEX
-		{
-			FLOAT X, Y, Z;      // position
-			FLOAT r, g, b, a;   // color
-		};
-
-		VERTEX cubeVertices[36] =
-		{
-			/*   X      Y      Z     R     G     B     A */
-			{ -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, +1.0f },
-			{ +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f },
-			{ -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, -1.0f, +1.0f },
-			{ +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f },
-			{ +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f },
-			{ -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, +1.0f },
-
-			{ +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f },
-			{ -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, +1.0f },
-			{ +1.0f, -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f },
-			{ -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f },
-			{ -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, +1.0f },
-			{ +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f },
-
-			{ -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, +1.0f },
-			{ -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, +1.0f },
-			{ -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f },
-			{ -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, -1.0f, +1.0f },
-			{ -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, +1.0f },
-			{ -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, +1.0f },
-
-			{ +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f },
-			{ +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f },
-			{ +1.0f, -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f },
-			{ +1.0f, +1.0f,  1.0f, +1.0f, +1.0f,  1.0f, +1.0f },
-			{ +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f },
-			{ +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f },
-
-			{ -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, -1.0f, +1.0f },
-			{ +1.0f, -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f },
-			{ -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, +1.0f },
-			{ +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f },
-			{ +1.0f, -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f },
-			{ -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, -1.0f, +1.0f },
-
-			{ +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f },
-			{ -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f },
-			{ +1.0f, -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f },
-			{ -1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, +1.0f },
-			{ -1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f },
-			{ +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f }
-		};
-
 		void CalculatePerspectiveMatrix();
 		void LogFPS(float dt, float interval);
-
-		const int NUM_VERTICES = sizeof(cubeVertices) / sizeof(VERTEX);
 
 		float bgColorRGBA[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		float otherColorRGBA[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -97,6 +45,8 @@ namespace Capstone
 		const float m_loopTime = 10.0f;
 		const float m_halfLoopTime = m_loopTime / 2.0f;
 
+		Camera m_camera;
+		Mesh m_mesh;
 		DirectX::XMMATRIX m_projectionMatrix;
 	};
 }

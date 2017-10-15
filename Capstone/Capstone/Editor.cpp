@@ -22,7 +22,7 @@ namespace Capstone
 		MyUtils::MyClearFunc(&bd);
 
 		bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-		bd.ByteWidth = sizeof(VERTEX) * NUM_VERTICES;  // size is the VERTEX struct * 3
+		bd.ByteWidth = m_mesh.GetVertexBufferSize();  // size is the VERTEX struct * 3
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
 		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
 
@@ -31,7 +31,7 @@ namespace Capstone
 		// copy the vertices into the buffer
 		D3D11_MAPPED_SUBRESOURCE ms;
 		m_context->Map(pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
-		memcpy(ms.pData, cubeVertices, sizeof(cubeVertices));                 // copy the data
+		memcpy(ms.pData, m_mesh.GetVertexPointer(), m_mesh.GetVertexBufferSize());                 // copy the data
 		m_context->Unmap(pVBuffer, NULL);    // unmap the buffer
 
 		// load and compile the two shaders
@@ -120,6 +120,8 @@ namespace Capstone
 
 	void Editor::Update(float dt)
 	{
+		m_camera.Update(dt);
+
 		//int w, h;
 		//m_pMyWindow->GetWindowSize(w, h);
 		//DebugConsole::Log("Frame [%d]\n", ct);
@@ -129,6 +131,8 @@ namespace Capstone
 		//if (Keyboard::IsKeyPressed('W')) { DebugConsole::Log("W pressed\n"); }
 		//if (Keyboard::IsKeyReleased('W')) { DebugConsole::Log("W released\n"); }
 
+		m_mesh.Update(dt);
+		m_mesh.CalcMatrix();
 
 		m_t = m_timer <= m_halfLoopTime ? m_timer / m_halfLoopTime : (m_loopTime - m_timer) / m_halfLoopTime;
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
@@ -148,36 +152,23 @@ namespace Capstone
 		m_context->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		// select which vertex buffer to display
-		UINT stride = sizeof(VERTEX);
+		UINT stride = m_mesh.GetStride();
 		UINT offset = 0;
 		m_context->IASetVertexBuffers(0, 1, &pVBuffer, &stride, &offset);
 
 		// select which primtive type we are using
 		m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		// make the mtw matrix
-		DirectX::XMMATRIX worldMat = DirectX::XMMatrixIdentity();
-		worldMat = DirectX::XMMatrixTranspose(worldMat);
-
-		// make the wtv matrix
-		DirectX::XMFLOAT3 eye(2.0f - 10.0f * m_t, 5.0f - 10.0f * m_t, 10.0f * (m_t - 0.5f));
-		DirectX::XMFLOAT3 target(0.0f, 0.0f, 0.0f);
-		DirectX::XMFLOAT3 up(0.0f, 1.0f, 0.0f);
-		DirectX::XMMATRIX viewMat = DirectX::XMMatrixLookAtLH(DirectX::XMLoadFloat3(&eye),
-			DirectX::XMLoadFloat3(&target),
-			DirectX::XMLoadFloat3(&up));
-		viewMat = DirectX::XMMatrixTranspose(viewMat);
-
+		
 		// SEND MATRICES
-		m_context->UpdateSubresource(m_pModelToWorldBuffer, 0, 0, &worldMat, 0, 0);
-		m_context->UpdateSubresource(m_pWorldToViewBuffer, 0, 0, &viewMat, 0, 0);
+		m_context->UpdateSubresource(m_pModelToWorldBuffer, 0, 0, m_mesh.GetMTWMatrixPtr(), 0, 0);
+		m_context->UpdateSubresource(m_pWorldToViewBuffer, 0, 0, m_camera.GetWorldToViewMatrixPointer(), 0, 0);
 		m_context->UpdateSubresource(m_pProjectionBuffer, 0, 0, &m_projectionMatrix, 0, 0);
 		m_context->VSSetConstantBuffers(0, 1, &m_pModelToWorldBuffer);
 		m_context->VSSetConstantBuffers(1, 1, &m_pWorldToViewBuffer);
 		m_context->VSSetConstantBuffers(2, 1, &m_pProjectionBuffer);
 
 		// draw the vertex buffer to the back buffer
-		m_context->Draw(NUM_VERTICES, 0);
+		m_context->Draw(m_mesh.GetVertexCount(), 0);
 
 		// switch the back buffer and the front buffer
 		m_swapChain->Present(0, 0);

@@ -118,6 +118,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DebugConsole.cpp" />
     <ClCompile Include="DXBase.cpp" />
     <ClCompile Include="Editor.cpp" />
@@ -125,17 +126,24 @@
     <ClCompile Include="ElapsedTime.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MathUtility.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="Variations.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="DebugConsole.h" />
     <ClInclude Include="DXBase.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="ElapsedTime.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="MathUtility.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="Variations.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

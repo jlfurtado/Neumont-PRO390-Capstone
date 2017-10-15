@@ -10,6 +10,8 @@ namespace Capstone
 	Mouse::MouseState Mouse::s_next;
 	int Mouse::s_xPos = 0;
 	int Mouse::s_yPos = 0;
+	int Mouse::s_lastXPos = 0;
+	int Mouse::s_lastYPos = 0;
 
 	void Mouse::Clicked(int btn)
 	{
@@ -43,6 +45,10 @@ namespace Capstone
 	{
 		s_last = s_current;
 		s_current = s_next;
+		
+		s_lastXPos = s_xPos;
+		s_lastYPos = s_yPos;
+
 		s_xPos = x;
 		s_yPos = y;
 	}
@@ -115,5 +121,15 @@ namespace Capstone
 	int Mouse::GetMouseY()
 	{
 		return s_yPos;
+	}
+
+	int Mouse::GetMouseDeltaX()
+	{
+		return s_xPos - s_lastXPos;
+	}
+
+	int Mouse::GetMouseDeltaY()
+	{
+		return s_yPos - s_lastYPos;
 	}
 }
