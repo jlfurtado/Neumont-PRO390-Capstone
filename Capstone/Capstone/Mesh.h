@@ -21,6 +21,8 @@ namespace Capstone
 		void SaveHigh();
 		void VaryUniform();
 		void VaryBellApproximation();
+		void VaryComponentUniform();
+		void VaryComponentBellApproximation();
 		void RestoreLow();
 		void RestoreHigh();
 

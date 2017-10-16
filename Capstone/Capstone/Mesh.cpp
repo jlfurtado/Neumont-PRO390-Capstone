@@ -72,7 +72,12 @@ namespace Capstone
 
 		if (Keyboard::IsKeyPressed('L')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveLow(); } else { RestoreLow(); } }
 		if (Keyboard::IsKeyPressed('H')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveHigh(); } else { RestoreHigh(); } }
-		if (Keyboard::IsKeyPressed('V')) { VaryBellApproximation(); }
+
+		if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyDown('U')) { VaryUniform(); }
+		if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyUp('U')) { VaryBellApproximation(); }
+		if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyDown('U')) { VaryComponentUniform(); }
+		if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyUp('U')) { VaryComponentBellApproximation(); }
+
 	}
 
 	void Mesh::SaveLow()
@@ -93,7 +98,7 @@ namespace Capstone
 
 	void Mesh::VaryUniform()
 	{
-		DebugConsole::Log("Vary Uniform\n");
+		DebugConsole::Log("Vary Vector Uniform\n");
 		m_rotation = Variations::VectorUniform(m_lowRotation, m_highRotation);
 		m_translation = Variations::VectorUniform(m_lowTranslation, m_highTranslation);
 		m_scale = Variations::VectorUniform(m_lowScale, m_highScale);
@@ -101,10 +106,26 @@ namespace Capstone
 
 	void Mesh::VaryBellApproximation()
 	{
-		DebugConsole::Log("Vary Bell\n");
+		DebugConsole::Log("Vary Vector Bell\n");
 		m_rotation = Variations::VectorBellApproximation(m_lowRotation, m_highRotation, 10);
 		m_translation = Variations::VectorBellApproximation(m_lowTranslation, m_highTranslation, 10);
 		m_scale = Variations::VectorBellApproximation(m_lowScale, m_highScale, 10);
+	}
+
+	void Mesh::VaryComponentUniform()
+	{
+		DebugConsole::Log("Vary Component Uniform\n");
+		m_rotation = Variations::VectorComponentUniform(m_lowRotation, m_highRotation);
+		m_translation = Variations::VectorComponentUniform(m_lowTranslation, m_highTranslation);
+		m_scale = Variations::VectorComponentUniform(m_lowScale, m_highScale);
+	}
+
+	void Mesh::VaryComponentBellApproximation()
+	{
+		DebugConsole::Log("Vary Component Bell\n");
+		m_rotation = Variations::VectorComponentBellApproximation(m_lowRotation, m_highRotation, 10);
+		m_translation = Variations::VectorComponentBellApproximation(m_lowTranslation, m_highTranslation, 10);
+		m_scale = Variations::VectorComponentBellApproximation(m_lowScale, m_highScale, 10);
 	}
 
 	void Mesh::RestoreLow()
