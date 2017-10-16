@@ -72,7 +72,7 @@ namespace Capstone
 
 		if (Keyboard::IsKeyPressed('L')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveLow(); } else { RestoreLow(); } }
 		if (Keyboard::IsKeyPressed('H')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveHigh(); } else { RestoreHigh(); } }
-		if (Keyboard::IsKeyPressed('V')) { Vary(); }
+		if (Keyboard::IsKeyPressed('V')) { VaryBellApproximation(); }
 	}
 
 	void Mesh::SaveLow()
@@ -91,12 +91,20 @@ namespace Capstone
 		m_highRotation = m_rotation;
 	}
 
-	void Mesh::Vary()
+	void Mesh::VaryUniform()
 	{
-		DebugConsole::Log("Vary\n");
+		DebugConsole::Log("Vary Uniform\n");
 		m_rotation = Variations::VectorUniform(m_lowRotation, m_highRotation);
 		m_translation = Variations::VectorUniform(m_lowTranslation, m_highTranslation);
 		m_scale = Variations::VectorUniform(m_lowScale, m_highScale);
+	}
+
+	void Mesh::VaryBellApproximation()
+	{
+		DebugConsole::Log("Vary Bell\n");
+		m_rotation = Variations::VectorBellApproximation(m_lowRotation, m_highRotation, 10);
+		m_translation = Variations::VectorBellApproximation(m_lowTranslation, m_highTranslation, 10);
+		m_scale = Variations::VectorBellApproximation(m_lowScale, m_highScale, 10);
 	}
 
 	void Mesh::RestoreLow()

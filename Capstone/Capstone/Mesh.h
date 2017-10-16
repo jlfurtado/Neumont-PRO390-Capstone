@@ -19,7 +19,8 @@ namespace Capstone
 		void Update(float dt);
 		void SaveLow();
 		void SaveHigh();
-		void Vary();
+		void VaryUniform();
+		void VaryBellApproximation();
 		void RestoreLow();
 		void RestoreHigh();
 
