@@ -17,6 +17,11 @@ namespace Capstone
 		void CalcMatrix();
 		int GetVertexBufferSize();
 		void Update(float dt);
+		void SaveLow();
+		void SaveHigh();
+		void Vary();
+		void RestoreLow();
+		void RestoreHigh();
 
 	private:
 		struct VERTEX
@@ -29,6 +34,12 @@ namespace Capstone
 		DirectX::XMVECTOR m_scale;
 		DirectX::XMVECTOR m_translation;
 		DirectX::XMVECTOR m_rotation;
+		DirectX::XMVECTOR m_lowScale;
+		DirectX::XMVECTOR m_lowTranslation;
+		DirectX::XMVECTOR m_lowRotation;
+		DirectX::XMVECTOR m_highScale;
+		DirectX::XMVECTOR m_highTranslation;
+		DirectX::XMVECTOR m_highRotation;
 
 		VERTEX m_cubeVertices[36] =
 		{
