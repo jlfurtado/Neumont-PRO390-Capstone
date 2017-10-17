@@ -28,7 +28,7 @@ namespace Capstone
 
 	float * Mesh::GetVertexPointer()
 	{
-		return reinterpret_cast<float*>(&m_cubeVertices[0]);
+		return reinterpret_cast<float*>(pVerts);
 	}
 
 	int Mesh::GetStride()
@@ -142,5 +142,16 @@ namespace Capstone
 		m_scale = m_highScale;
 		m_rotation = m_highRotation;
 		m_translation = m_highTranslation;
+	}
+
+	void Mesh::RandomizeColors()
+	{
+		for (int i = 0; i < NUM_VERTICES; ++i)
+		{
+			float *pColors = reinterpret_cast<float*>(pVerts + i) + 3; // move i verts and 3 floats in
+			pColors[0] = Variations::ScalarUniform(0.0f, 1.0f);
+			pColors[1] = Variations::ScalarUniform(0.0f, 1.0f);
+			pColors[2] = Variations::ScalarUniform(0.0f, 1.0f);
+		}
 	}
 }

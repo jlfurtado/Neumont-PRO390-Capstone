@@ -28,6 +28,8 @@ namespace Capstone
 
 		m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
 
+		m_mesh.RandomizeColors();
+
 		// copy the vertices into the buffer
 		D3D11_MAPPED_SUBRESOURCE ms;
 		m_context->Map(pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
