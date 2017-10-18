@@ -129,6 +129,7 @@
     <ClCompile Include="MathUtility.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="ObjLoader.cpp" />
     <ClCompile Include="Variations.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +143,7 @@
     <ClInclude Include="MathUtility.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Variations.h" />
   </ItemGroup>

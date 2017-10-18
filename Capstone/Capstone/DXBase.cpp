@@ -83,7 +83,7 @@ namespace Capstone
 
 		if (FAILED(result))
 		{
-			printf("Failed to create the Direct3D device!");
+			DebugConsole::Log("Failed to create the Direct3D device!");
 			return false;
 		}
 
@@ -93,7 +93,7 @@ namespace Capstone
 
 		if (FAILED(result))
 		{
-			printf("Failed to get the swap chain back buffer!");
+			DebugConsole::Log("Failed to get the swap chain back buffer!");
 			return false;
 		}
 
@@ -104,7 +104,7 @@ namespace Capstone
 
 		if (FAILED(result))
 		{
-			printf("Failed to create the render target view!");
+			DebugConsole::Log("Failed to create the render target view!");
 			return false;
 		}
 
@@ -126,7 +126,7 @@ namespace Capstone
 
 		if (FAILED(result))
 		{
-			printf("Failed to create the depth texture!");
+			DebugConsole::Log("Failed to create the depth texture!");
 			return false;
 		}
 
@@ -141,7 +141,7 @@ namespace Capstone
 
 		if (FAILED(result))
 		{
-			printf("Failed to create the depth stencil target view!");
+			DebugConsole::Log("Failed to create the depth stencil target view!");
 			return false;
 		}
 

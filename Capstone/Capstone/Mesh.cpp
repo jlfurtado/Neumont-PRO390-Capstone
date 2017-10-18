@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "Variations.h"
 #include "DebugConsole.h"
+#include "ObjLoader.h"
 
 namespace Capstone
 {
@@ -10,6 +11,7 @@ namespace Capstone
 
 	Mesh::Mesh()
 	{
+		LoadMesh(nullptr);
 		m_scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
 		m_rotation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 		m_translation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
@@ -33,12 +35,12 @@ namespace Capstone
 
 	int Mesh::GetStride()
 	{
-		return sizeof(VERTEX);
+		return stride;
 	}
 
 	int Mesh::GetVertexCount()
 	{
-		return NUM_VERTICES;
+		return vertexCount;
 	}
 
 	void Mesh::CalcMatrix()
@@ -49,7 +51,7 @@ namespace Capstone
 
 	int Mesh::GetVertexBufferSize()
 	{
-		return sizeof(VERTEX) * NUM_VERTICES;
+		return vertexCount * stride;
 	}
 
 	void Mesh::Update(float dt)
@@ -146,12 +148,17 @@ namespace Capstone
 
 	void Mesh::RandomizeColors()
 	{
-		for (int i = 0; i < NUM_VERTICES; ++i)
+		for (int i = 0; i < vertexCount; ++i)
 		{
-			float *pColors = reinterpret_cast<float*>(pVerts + i) + 3; // move i verts and 3 floats in
+			float *pColors = reinterpret_cast<float*>(pVerts + (7*i)) + 3; // move i verts and 3 floats in
 			pColors[0] = Variations::ScalarUniform(0.0f, 1.0f);
 			pColors[1] = Variations::ScalarUniform(0.0f, 1.0f);
 			pColors[2] = Variations::ScalarUniform(0.0f, 1.0f);
 		}
+	}
+
+	void Mesh::LoadMesh(const char *const filePath)
+	{
+		ObjLoader::LoadPreset(filePath, &pVerts, &vertexCount, &stride);
 	}
 }
