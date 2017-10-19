@@ -11,7 +11,7 @@ namespace Capstone
 
 	Mesh::Mesh()
 	{
-		LoadMesh(nullptr);
+		LoadMesh("..\\Data\\OBJS\\BetterDargon.obj");
 		m_scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
 		m_rotation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 		m_translation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
@@ -21,6 +21,7 @@ namespace Capstone
 
 	Mesh::~Mesh()
 	{
+		if (pVerts != nullptr) { delete[] pVerts; }
 	}
 
 	DirectX::XMMATRIX * Mesh::GetMTWMatrixPtr()
@@ -159,6 +160,7 @@ namespace Capstone
 
 	void Mesh::LoadMesh(const char *const filePath)
 	{
-		ObjLoader::LoadPreset(filePath, &pVerts, &vertexCount, &stride);
+		ObjLoader::LoadObj(filePath, &pVerts, &vertexCount, &stride);
+		//ObjLoader::LoadPreset(filePath, &pVerts, &vertexCount, &stride);
 	}
 }
