@@ -14,6 +14,7 @@ namespace Capstone
 		float *GetVertexPointer();
 		int GetStride();
 		int GetVertexCount();
+		int GetFloatsPerVertex();
 		void CalcMatrix();
 		int GetVertexBufferSize();
 		void Update(float dt);
@@ -41,8 +42,9 @@ namespace Capstone
 		DirectX::XMVECTOR m_highRotation;
 
 		float *pVerts;
-		int stride;
-		int vertexCount;
+		int m_stride;
+		int m_vertexCount;
+		int m_floatsPerVertex;
 	};
 }
 

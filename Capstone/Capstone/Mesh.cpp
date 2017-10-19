@@ -36,12 +36,17 @@ namespace Capstone
 
 	int Mesh::GetStride()
 	{
-		return stride;
+		return m_stride;
 	}
 
 	int Mesh::GetVertexCount()
 	{
-		return vertexCount;
+		return m_vertexCount;
+	}
+
+	int Mesh::GetFloatsPerVertex()
+	{
+		return m_floatsPerVertex;
 	}
 
 	void Mesh::CalcMatrix()
@@ -52,7 +57,7 @@ namespace Capstone
 
 	int Mesh::GetVertexBufferSize()
 	{
-		return vertexCount * stride;
+		return m_vertexCount * m_stride;
 	}
 
 	void Mesh::Update(float dt)
@@ -149,9 +154,9 @@ namespace Capstone
 
 	void Mesh::RandomizeColors()
 	{
-		for (int i = 0; i < vertexCount; ++i)
+		for (int i = 0; i < m_vertexCount; ++i)
 		{
-			float *pColors = reinterpret_cast<float*>(pVerts + (7*i)) + 3; // move i verts and 3 floats in
+			float *pColors = reinterpret_cast<float*>(pVerts + (m_floatsPerVertex*i)) + 3; // move i verts and 3 floats in
 			pColors[0] = Variations::ScalarUniform(0.0f, 1.0f);
 			pColors[1] = Variations::ScalarUniform(0.0f, 1.0f);
 			pColors[2] = Variations::ScalarUniform(0.0f, 1.0f);
@@ -160,7 +165,8 @@ namespace Capstone
 
 	void Mesh::LoadMesh(const char *const filePath)
 	{
-		ObjLoader::LoadObj(filePath, &pVerts, &vertexCount, &stride);
+		ObjLoader::LoadObj(filePath, &pVerts, &m_vertexCount, &m_stride);
+		m_floatsPerVertex = m_stride / sizeof(float);
 		//ObjLoader::LoadPreset(filePath, &pVerts, &vertexCount, &stride);
 	}
 }
