@@ -6,6 +6,15 @@
 
 namespace Capstone
 {
+	const int FLOATS_PER_POSITION = 3;
+	const int POSITION_BYTES = FLOATS_PER_POSITION * sizeof(float);
+	const int FLOATS_PER_COLOR = 4;
+	const int COLOR_BYTES = FLOATS_PER_COLOR * sizeof(float);
+	const int FLOATS_PER_TEXTURE = 2;
+	const int TEXTURE_BYTES = FLOATS_PER_TEXTURE * sizeof(float);
+	const int FLOATS_PER_NORMAL = 3;
+	const int NORMAL_BYTES = FLOATS_PER_NORMAL * sizeof(float);
+
 	std::ifstream ObjLoader::s_fileStream;
 	int ObjLoader::s_numVertices = 0;
 	float *ObjLoader::s_pMeshVertexPositions = nullptr;
@@ -15,12 +24,10 @@ namespace Capstone
 	char ObjLoader::s_inputFile[MAX_CHARS]{ '\0' };
 	int *ObjLoader::s_pTempIndices = nullptr;
 	int ObjLoader::s_stride = 0;
-	bool ObjLoader::s_hasPosition = false;
 	bool ObjLoader::s_hasColor = false;
 	bool ObjLoader::s_hasTexture = false;
 	bool ObjLoader::s_hasNormal = false;
 
-	const int FLOATS_PER_COLOR = 4;
 	float ObjLoader::s_PCCubeVerts[CUBE_FLOAT_COUNT] = {
 		/*X      Y      Z      R      G      B      A */
 		-1.0f, +1.0f, +1.0f, -1.0f, +1.0f, +1.0f, +1.0f,
@@ -294,13 +301,12 @@ namespace Capstone
 	bool ObjLoader::AddVertex(const char *const line, int lineNumber)
 	{
 		// add vertex based on which part of the vertex it is and the vertex format
-		if (StringFuncs::IsWhiteSpace(line[1]) && s_hasPosition) { return AddVertexPosition(line, lineNumber); }
+		if (StringFuncs::IsWhiteSpace(line[1])) { return AddVertexPosition(line, lineNumber); }
 		else if (line[1] == 't' && s_hasTexture) { return AddVertexTexture(line, lineNumber); }
 		else if (line[1] == 'n' && s_hasNormal) { return AddVertexNormal(line, lineNumber); }
 		else { return true; }
 	}
 
-	const int FLOATS_PER_POSITION = 3;
 	bool ObjLoader::AddVertexPosition(const char * const line, int /*lineNumber*/)
 	{
 		// keep track of the location to add the next vertex
@@ -314,14 +320,11 @@ namespace Capstone
 		// grab the letter v
 		parse >> word;
 
-		// grab the first float
-		parse >> *(s_nextVertex*FLOATS_PER_POSITION + s_pMeshVertexPositions);
-
-		// grab the second float
-		parse >> *(s_nextVertex*FLOATS_PER_POSITION + s_pMeshVertexPositions + 1);
-
-		// grab the third float
-		parse >> *(s_nextVertex*FLOATS_PER_POSITION + s_pMeshVertexPositions + 2);
+		// grab the floats
+		float *pVerts = s_nextVertex*FLOATS_PER_POSITION + s_pMeshVertexPositions;
+		parse >> pVerts[0];
+		parse >> pVerts[1];
+		parse >> pVerts[2];
 
 		// increment vertex number
 		++s_nextVertex;
@@ -329,7 +332,6 @@ namespace Capstone
 		return true;
 	}
 
-	const int FLOATS_PER_TEXTURE = 2;
 	bool ObjLoader::AddVertexTexture(const char * const line, int /*lineNumber*/)
 	{
 		// keep track of the location to add the next vertex
@@ -343,11 +345,10 @@ namespace Capstone
 		// grab the letters v and t
 		parse >> word;
 
-		// grab the first float
-		parse >> *(s_nextVertex*FLOATS_PER_TEXTURE + s_pMeshVertexTextureCoords);
-
-		// grab the second float
-		parse >> *(s_nextVertex*FLOATS_PER_TEXTURE + s_pMeshVertexTextureCoords + 1);
+		// grab the floats
+		float *pVerts = s_nextVertex*FLOATS_PER_TEXTURE + s_pMeshVertexTextureCoords;
+		parse >> pVerts[0];
+		parse >> pVerts[1];
 
 		// increment vertex number
 		++s_nextVertex;
@@ -355,7 +356,6 @@ namespace Capstone
 		return true;
 	}
 
-	const int FLOATS_PER_NORMAL = 3;
 	bool ObjLoader::AddVertexNormal(const char * const line, int /*lineNumber*/)
 	{
 		// keep track of the location to add the next vertex
@@ -369,14 +369,11 @@ namespace Capstone
 		// grab the letter v
 		parse >> word;
 
-		// grab the first float
-		parse >> *(s_nextVertex*FLOATS_PER_NORMAL + s_pMeshVertexNormals);
-
-		// grab the second float
-		parse >> *(s_nextVertex*FLOATS_PER_NORMAL + s_pMeshVertexNormals + 1);
-
-		// grab the third float
-		parse >> *(s_nextVertex*FLOATS_PER_NORMAL + s_pMeshVertexNormals + 2);
+		// grab the floats
+		float *pVerts = s_nextVertex*FLOATS_PER_NORMAL + s_pMeshVertexNormals;
+		parse >> pVerts[0];
+		parse >> pVerts[1];
+		parse >> pVerts[2];
 
 		// increment vertex number
 		++s_nextVertex;
@@ -389,10 +386,11 @@ namespace Capstone
 		for (int i = 0; i < numFloats - FLOATS_PER_COLOR; i += FLOATS_PER_COLOR)
 		{
 			// randomize colors
-			*(s_pMeshVertexColors + i) = (1.0f*rand()) / RAND_MAX;
-			*(s_pMeshVertexColors + i + 1) = (1.0f*rand()) / RAND_MAX;
-			*(s_pMeshVertexColors + i + 2) = (1.0f*rand()) / RAND_MAX;
-			*(s_pMeshVertexColors + i + 3) = 1.0f;
+			float *pColor = s_pMeshVertexColors + i;
+			pColor[0] = (1.0f*rand()) / RAND_MAX;
+			pColor[1] = (1.0f*rand()) / RAND_MAX;
+			pColor[2] = (1.0f*rand()) / RAND_MAX;
+			pColor[3] = 1.0f;
 		}
 
 		return true;
@@ -449,13 +447,13 @@ namespace Capstone
 		}
 
 		// add indices from array of one-based indices to mesh and convert to zero-based indices
-		if (s_hasPosition) { s_pTempIndices[s_nextIndex++] = indices[0] - 1; }
+		s_pTempIndices[s_nextIndex++] = indices[0] - 1; 
 		if (s_hasTexture) { s_pTempIndices[s_nextIndex++] = indices[1] - 1; }
 		if (s_hasNormal) { s_pTempIndices[s_nextIndex++] = indices[2] - 1; }
-		if (s_hasPosition) { s_pTempIndices[s_nextIndex++] = indices[3] - 1; }
+		s_pTempIndices[s_nextIndex++] = indices[3] - 1;
 		if (s_hasTexture) { s_pTempIndices[s_nextIndex++] = indices[4] - 1; }
 		if (s_hasNormal) { s_pTempIndices[s_nextIndex++] = indices[5] - 1; }
-		if (s_hasPosition) { s_pTempIndices[s_nextIndex++] = indices[6] - 1; }
+		s_pTempIndices[s_nextIndex++] = indices[6] - 1; 
 		if (s_hasTexture) { s_pTempIndices[s_nextIndex++] = indices[7] - 1; }
 		if (s_hasNormal) { s_pTempIndices[s_nextIndex++] = indices[8] - 1; }
 
@@ -464,64 +462,56 @@ namespace Capstone
 
 	bool ObjLoader::ProcessIntoVertices(float **outAllocatedVerts)
 	{
-		int indexCount = (s_hasPosition ? 1 : 0) + (s_hasTexture ? 1 : 0) + (s_hasNormal ? 1 : 0);
+		int indexCount = 1 + (s_hasTexture ? 1 : 0) + (s_hasNormal ? 1 : 0);
 		int floatsPerVertex = s_stride / sizeof(float);
+
+		static const int offsetDeltas[3] = {3, 3, 2};
+		static const int ioffsetDeltas[3] = {1, 0, 1};
+
+		int offsets[4]{ 0 };
+		int ioffsets[4]{ 0 };
+		int bytes[4]{ 0 };
+		float *pArray[4]{ nullptr };
+		int idx = 1;
+		offsets[0] = 0;
+		ioffsets[0] = 0;
+		bytes[0] = POSITION_BYTES;
+		pArray[0] = s_pMeshVertexPositions;
+		if (s_hasColor) { offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1]; ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1]; bytes[idx] = COLOR_BYTES; pArray[idx] = s_pMeshVertexColors; ++idx; }
+		if (s_hasTexture) { offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1]; ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1]; bytes[idx] = TEXTURE_BYTES; pArray[idx] = s_pMeshVertexTextureCoords; ++idx; }
+		if (s_hasNormal) { offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1]; ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1]; bytes[idx] = NORMAL_BYTES; pArray[idx] = s_pMeshVertexNormals; ++idx; }
 
 		for (int i = 0; i < s_numVertices; ++i)
 		{
-			int offset = 0;
-			int ioffset = 0;
+			float *pVert = (*outAllocatedVerts) + (i*floatsPerVertex);
+			int *pIndices = (s_pTempIndices + (i*indexCount));
 
-			if (s_hasPosition)
+			for (int j = 0; j < idx; ++j)
 			{
-				float *pToStart = (*outAllocatedVerts) + (i*floatsPerVertex) + offset;
-				float *pFromStart = s_pMeshVertexPositions + 3 * (*(s_pTempIndices + (i*indexCount) + ioffset));
-
-				*(pToStart + 0) = *(pFromStart + 0);
-				*(pToStart + 1) = *(pFromStart + 1);
-				*(pToStart + 2) = *(pFromStart + 2);
-
-				offset += FLOATS_PER_POSITION;
-				ioffset++;
+				std::memcpy(pVert + offsets[j], pArray[j] + 3 * (*(pIndices + ioffsets[j])), bytes[j]);
 			}
+			//
+			//// copy position always
+			//std::memcpy(pVert, s_pMeshVertexPositions + 3 * (*pIndices), POSITION_BYTES);
 
-			if (s_hasColor)
-			{
-				float *pToStart = (*outAllocatedVerts) + (i*floatsPerVertex) + offset;
-				float *pFromStart = s_pMeshVertexPositions + 3 * (*(s_pTempIndices + (i*indexCount) + ioffset));
+			//if (s_hasColor)
+			//{
+			//	
+			//	offset += FLOATS_PER_COLOR;
+			//}
 
-				*(pToStart + 0) = *(pFromStart + 0);
-				*(pToStart + 1) = *(pFromStart + 1);
-				*(pToStart + 2) = *(pFromStart + 2);
-				
-				offset += FLOATS_PER_COLOR;
-			}
+			//if (s_hasTexture)
+			//{
+			//	std::memcpy(pVert + offset, s_pMeshVertexTextureCoords + 3 * (*(pIndices + ioffset)), TEXTURE_BYTES);
 
-			if (s_hasTexture)
-			{
-				float *pToStart = (*outAllocatedVerts) + (i*floatsPerVertex) + offset;
-				float *pFromStart = s_pMeshVertexPositions + 3 * (*(s_pTempIndices + (i*indexCount) + ioffset));
+			//	offset += FLOATS_PER_TEXTURE;
+			//	ioffset++;
+			//}
 
-				*(pToStart + 0) = *(pFromStart + 0);
-				*(pToStart + 1) = *(pFromStart + 1);
-				*(pToStart + 2) = *(pFromStart + 2);
-				
-				offset += FLOATS_PER_TEXTURE;
-				ioffset++;
-			}
-
-			if (s_hasNormal)
-			{
-				float *pToStart = (*outAllocatedVerts) + (i*floatsPerVertex) + offset;
-				float *pFromStart = s_pMeshVertexPositions + 3 * (*(s_pTempIndices + (i*indexCount) + ioffset));
-
-				*(pToStart + 0) = *(pFromStart + 0);
-				*(pToStart + 1) = *(pFromStart + 1);
-				*(pToStart + 2) = *(pFromStart + 2);
-				
-				offset += FLOATS_PER_NORMAL;
-				ioffset++;
-			}
+			//if (s_hasNormal)
+			//{
+			//	std::memcpy(pVert + offset, s_pMeshVertexNormals + 3 * (*(pIndices + ioffset)), NORMAL_BYTES);
+			//}
 		}
 
 		return true;
@@ -555,7 +545,6 @@ namespace Capstone
 		if (format[0] != 'P') { DebugConsole::Log("Invalid props format! Format must have position!\n"); return false; }
 		
 		s_stride = FLOATS_PER_POSITION;
-		s_hasPosition = true;
 		int idx = 1;
 		if (format[idx] == 'C') { s_hasColor = true; ++idx; s_stride += FLOATS_PER_COLOR; }
 		if (format[idx] == 'T') { s_hasTexture = true; ++idx; s_stride += FLOATS_PER_TEXTURE; }

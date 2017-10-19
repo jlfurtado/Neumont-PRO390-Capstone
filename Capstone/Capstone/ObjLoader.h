@@ -37,7 +37,6 @@ namespace Capstone
 		static float *s_pMeshVertexNormals;
 		static int *s_pTempIndices;
 		static int s_stride;
-		static bool s_hasPosition;
 		static bool s_hasColor;
 		static bool s_hasTexture;
 		static bool s_hasNormal;
