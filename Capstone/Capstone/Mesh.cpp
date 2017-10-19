@@ -11,7 +11,7 @@ namespace Capstone
 
 	Mesh::Mesh()
 	{
-		LoadMesh("..\\Data\\OBJS\\BetterDargon.obj");
+		LoadMesh("..\\Data\\OBJS\\Coil.obj");
 		m_scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
 		m_rotation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 		m_translation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);

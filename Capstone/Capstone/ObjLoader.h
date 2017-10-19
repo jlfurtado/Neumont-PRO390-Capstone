@@ -7,7 +7,7 @@ namespace Capstone
 	{
 	public:
 		static void LoadObj(const char *const filePath, float **outPVerts, int *outCount, int *outStride);
-		static void LoadPreset(const char *const name, float **outPVerts, int *outCount, int *outStride);
+		static void LoadStatic(float **outPVerts, int *outCount, int *outStride);
 
 	private:
 		static bool ProcessFile(const char *const fileName, const char *const format, float **outAllocatedVerts, int *outCount, int *outStride);

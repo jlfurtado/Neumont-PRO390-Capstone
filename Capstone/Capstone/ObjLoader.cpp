@@ -71,7 +71,7 @@ namespace Capstone
 		ProcessFile(filePath, "PC", outPVerts, outCount, outStride);
 	}
 
-	void ObjLoader::LoadPreset(const char * const name, float ** outPVerts, int * outCount, int *outStride)
+	void ObjLoader::LoadStatic(float ** outPVerts, int * outCount, int *outStride)
 	{
 		*outPVerts = s_PCCubeVerts;
 		*outCount = CUBE_VERTEX_COUNT;
