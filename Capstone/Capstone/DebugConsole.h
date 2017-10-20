@@ -20,6 +20,7 @@ namespace Capstone
 		static bool Shutdown();
 		
 	private:
+		static bool ShowBackground();
 		static void ProcessCommand();
 		static void WriteLog(const char *const str);
 

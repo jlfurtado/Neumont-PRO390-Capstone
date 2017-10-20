@@ -59,13 +59,25 @@ namespace Capstone
 	{
 		s_outputOnly = !s_outputOnly;
 
-		if (s_outputOnly) { Show(); }
+		if (s_outputOnly) { ShowBackground(); }
 		else { Hide(); }
 	}
 
 	bool DebugConsole::Shutdown()
 	{
 		s_writeHandle = NULL;
+		return true;
+	}
+
+	bool DebugConsole::ShowBackground()
+	{
+		if (s_hidden)
+		{
+			s_lastActive = GetActiveWindow();
+			ShowWindow(s_console, SW_SHOW);
+			SetActiveWindow(s_lastActive);
+			s_hidden = false;
+		}
 		return true;
 	}
 
