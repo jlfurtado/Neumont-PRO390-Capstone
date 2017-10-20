@@ -45,6 +45,7 @@ namespace Capstone
 		static bool IsKeyUp(int vKey);
 		static bool IsKeyPressed(int vKey);
 		static bool IsKeyReleased(int vKey);
+		static void ClearAll();
 
 	private:
 		friend class EditorWindow;

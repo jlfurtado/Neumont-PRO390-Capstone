@@ -137,6 +137,17 @@ namespace Capstone
 		m_mesh.CalcMatrix();
 
 		m_t = m_timer <= m_halfLoopTime ? m_timer / m_halfLoopTime : (m_loopTime - m_timer) / m_halfLoopTime;
+
+		if (Keyboard::IsKeyPressed(VK_RETURN))
+		{
+			DebugConsole::GetCommand();
+		}
+
+		if (Keyboard::IsKeyPressed('M'))
+		{
+			DebugConsole::ToggleKeep();
+		}
+
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
 	}
 

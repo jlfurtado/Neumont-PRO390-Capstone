@@ -43,6 +43,13 @@ namespace Capstone
 		return s_current.NotSet(vKey) && s_previous.Set(vKey);
 	}
 
+	void Keyboard::ClearAll()
+	{
+		s_current.Clear();
+		s_previous.Clear();
+		s_next.Clear();
+	}
+
 	void Keyboard::KeyHit(int vKey)
 	{
 		s_next.Press(vKey);

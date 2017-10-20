@@ -11,7 +11,7 @@ namespace Capstone
 	bool EditorWindow::MakeWindow(HINSTANCE instanceHandle, int nCmdShow, const char *const windowName, int screenWidth, int screenHeight)
 	{
 		if (s_pFirst == nullptr) { s_pFirst = this; }
-		if (!m_console.Initialize()) { return false; }
+		if (!m_console.Initialize(true)) { return false; }
 		
 		m_width = screenWidth;
 		m_height = screenHeight;
@@ -127,6 +127,9 @@ namespace Capstone
 			// keyboard events
 			case WM_KEYDOWN: { Keyboard::KeyHit(wParam); } break;
 			case WM_KEYUP:   { Keyboard::KeyRelease(wParam); } break;
+
+			// lose keyboard focus
+			case WM_KILLFOCUS: { Keyboard::ClearAll(); } break;
 
 			// mouse click events
 			case WM_LBUTTONDOWN: { Mouse::Clicked(Mouse::LEFT_MOUSE_INDEX);	} break;

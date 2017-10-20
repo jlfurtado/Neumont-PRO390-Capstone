@@ -490,28 +490,6 @@ namespace Capstone
 			{
 				std::memcpy(pVert + offsets[j], pArray[j] + 3 * (*(pIndices + ioffsets[j])), bytes[j]);
 			}
-			//
-			//// copy position always
-			//std::memcpy(pVert, s_pMeshVertexPositions + 3 * (*pIndices), POSITION_BYTES);
-
-			//if (s_hasColor)
-			//{
-			//	
-			//	offset += FLOATS_PER_COLOR;
-			//}
-
-			//if (s_hasTexture)
-			//{
-			//	std::memcpy(pVert + offset, s_pMeshVertexTextureCoords + 3 * (*(pIndices + ioffset)), TEXTURE_BYTES);
-
-			//	offset += FLOATS_PER_TEXTURE;
-			//	ioffset++;
-			//}
-
-			//if (s_hasNormal)
-			//{
-			//	std::memcpy(pVert + offset, s_pMeshVertexNormals + 3 * (*(pIndices + ioffset)), NORMAL_BYTES);
-			//}
 		}
 
 		return true;

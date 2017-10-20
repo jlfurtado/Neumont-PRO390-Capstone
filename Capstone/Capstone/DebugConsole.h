@@ -7,18 +7,29 @@ namespace Capstone
 	class DebugConsole
 	{
 	public:
-		static bool Initialize();
+		static bool Initialize(bool hide);
+		static bool Hide();
+		static bool Show();
+		static void GetCommand();
+
+		static void ToggleKeep();
 
 		template<typename...Args>
 		static void Log(const char *const format, Args... args);
 
 		static bool Shutdown();
-
+		
 	private:
+		static void ProcessCommand();
 		static void WriteLog(const char *const str);
 
 		static const int MAX_LOG_SIZE = 1000;
-		static HANDLE s_consoleHandle;
+		static HANDLE s_writeHandle;
+		static HANDLE s_readHandle;
+		static HWND s_console;
+		static HWND s_lastActive;
+		static bool s_hidden;
+		static bool s_outputOnly;
 	};
 
 	template <typename...Args>
