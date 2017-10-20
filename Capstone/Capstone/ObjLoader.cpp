@@ -27,6 +27,10 @@ namespace Capstone
 	bool ObjLoader::s_hasColor = false;
 	bool ObjLoader::s_hasTexture = false;
 	bool ObjLoader::s_hasNormal = false;
+	int ObjLoader::s_nextIndex = 0;
+	int ObjLoader::s_nextVertexPosition = 0;
+	int ObjLoader::s_nextVertexTexture = 0;
+	int ObjLoader::s_nextVertexNormal = 0;
 
 	float ObjLoader::s_PCCubeVerts[CUBE_FLOAT_COUNT] = {
 		/*X      Y      Z      R      G      B      A */
@@ -309,9 +313,6 @@ namespace Capstone
 
 	bool ObjLoader::AddVertexPosition(const char * const line, int /*lineNumber*/)
 	{
-		// keep track of the location to add the next vertex
-		static int s_nextVertex = 0;
-
 		// line should look like v [float] [float] [float]
 		// create std::things to parse the line
 		std::string word;
@@ -321,22 +322,19 @@ namespace Capstone
 		parse >> word;
 
 		// grab the floats
-		float *pVerts = s_nextVertex*FLOATS_PER_POSITION + s_pMeshVertexPositions;
+		float *pVerts = s_nextVertexPosition*FLOATS_PER_POSITION + s_pMeshVertexPositions;
 		parse >> pVerts[0];
 		parse >> pVerts[1];
 		parse >> pVerts[2];
 
 		// increment vertex number
-		++s_nextVertex;
+		++s_nextVertexPosition;
 
 		return true;
 	}
 
 	bool ObjLoader::AddVertexTexture(const char * const line, int /*lineNumber*/)
 	{
-		// keep track of the location to add the next vertex
-		static int s_nextVertex = 0;
-
 		// line should look like vt [float] [float]
 		// create std::things to parse the line
 		std::string word;
@@ -346,21 +344,18 @@ namespace Capstone
 		parse >> word;
 
 		// grab the floats
-		float *pVerts = s_nextVertex*FLOATS_PER_TEXTURE + s_pMeshVertexTextureCoords;
+		float *pVerts = s_nextVertexTexture*FLOATS_PER_TEXTURE + s_pMeshVertexTextureCoords;
 		parse >> pVerts[0];
 		parse >> pVerts[1];
 
 		// increment vertex number
-		++s_nextVertex;
+		++s_nextVertexTexture;
 
 		return true;
 	}
 
 	bool ObjLoader::AddVertexNormal(const char * const line, int /*lineNumber*/)
 	{
-		// keep track of the location to add the next vertex
-		static int s_nextVertex = 0;
-
 		// line should look like vn [float] [float] [float]
 		// create std::things to parse the line
 		std::string word;
@@ -370,13 +365,13 @@ namespace Capstone
 		parse >> word;
 
 		// grab the floats
-		float *pVerts = s_nextVertex*FLOATS_PER_NORMAL + s_pMeshVertexNormals;
+		float *pVerts = s_nextVertexNormal*FLOATS_PER_NORMAL + s_pMeshVertexNormals;
 		parse >> pVerts[0];
 		parse >> pVerts[1];
 		parse >> pVerts[2];
 
 		// increment vertex number
-		++s_nextVertex;
+		++s_nextVertexNormal;
 
 		return true;
 	}
@@ -398,9 +393,6 @@ namespace Capstone
 
 	bool ObjLoader::AddFaceIndices(const char *const line, int /*lineNumber*/)
 	{
-		// keep track of the next index location
-		static int s_nextIndex = 0;
-
 		// std::things to parse line
 		std::istringstream parse(line);
 		std::string word;
@@ -529,6 +521,13 @@ namespace Capstone
 		if (format[idx] == 'N') { s_hasNormal = true; ++idx; s_stride += FLOATS_PER_NORMAL; }
 
 		s_stride *= sizeof(float);
+
+		// reset IMPORTANT FLAGS
+		s_nextIndex = 0;
+		s_nextVertexPosition = 0;
+		s_nextVertexTexture = 0;
+		s_nextVertexNormal = 0;
+
 		return true;
 	}
 

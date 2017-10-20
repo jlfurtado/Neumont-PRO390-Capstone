@@ -89,6 +89,10 @@ namespace Capstone
 		
 		DWORD cCharsRead;
 		ReadConsole(s_readHandle, &buffer[0], BUFFER_SIZE, &cCharsRead, NULL);
+
+		buffer[cCharsRead - 1] = '\0'; // remove \n
+		buffer[cCharsRead - 2] = '\0'; // remove \r
+
 		CommandProcessor::ProcessCommand(&buffer[0]);
 	}
 

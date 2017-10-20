@@ -17,24 +17,7 @@ namespace Capstone
 
 	bool Editor::LoadContent()
 	{
-		// create the vertex buffer
-		D3D11_BUFFER_DESC bd;
-		MyUtils::MyClearFunc(&bd);
-
-		bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-		bd.ByteWidth = m_mesh.GetVertexBufferSize();  // size is the VERTEX struct * 3
-		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
-		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-
-		m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
-
-		m_mesh.RandomizeColors();
-
-		// copy the vertices into the buffer
-		D3D11_MAPPED_SUBRESOURCE ms;
-		m_context->Map(pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
-		memcpy(ms.pData, m_mesh.GetVertexPointer(), m_mesh.GetVertexBufferSize());                 // copy the data
-		m_context->Unmap(pVBuffer, NULL);    // unmap the buffer
+		MakeVertexBuffer();
 
 		// load and compile the two shaders
 		ID3DBlob* VS = nullptr;
@@ -201,6 +184,40 @@ namespace Capstone
 	void Editor::MouseScroll(int /*degrees*/)
 	{
 
+	}
+
+	void Editor::LoadObj(const char * const filePath)
+	{
+		m_mesh.LoadMesh(filePath);
+		MakeVertexBuffer();
+	}
+
+	void Editor::MakeVertexBuffer()
+	{
+		// create the vertex buffer
+		D3D11_BUFFER_DESC bd;
+		MyUtils::MyClearFunc(&bd);
+
+		bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+		bd.ByteWidth = m_mesh.GetVertexBufferSize();  // size is the VERTEX struct * 3
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
+		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+
+		if (pVBuffer) 
+		{
+			pVBuffer->Release();
+			pVBuffer = nullptr;
+		}
+
+		m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
+
+		m_mesh.RandomizeColors();
+
+		// copy the vertices into the buffer
+		D3D11_MAPPED_SUBRESOURCE ms;
+		m_context->Map(pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
+		memcpy(ms.pData, m_mesh.GetVertexPointer(), m_mesh.GetVertexBufferSize());                 // copy the data
+		m_context->Unmap(pVBuffer, NULL);    // unmap the buffer
 	}
 
 	void Editor::OnMouseScroll(int degrees, void * pInstance)

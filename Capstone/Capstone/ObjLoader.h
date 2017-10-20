@@ -41,6 +41,12 @@ namespace Capstone
 		static bool s_hasTexture;
 		static bool s_hasNormal;
 
+		static int s_nextIndex;
+		static int s_nextVertexPosition;
+		static int s_nextVertexTexture;
+		static int s_nextVertexNormal;
+
+
 		static const int CUBE_VERTEX_COUNT = 36;
 		static const int FLOATS_PER_PC_VERTEX = 7;
 		static const int CUBE_FLOAT_COUNT = CUBE_VERTEX_COUNT * FLOATS_PER_PC_VERTEX;

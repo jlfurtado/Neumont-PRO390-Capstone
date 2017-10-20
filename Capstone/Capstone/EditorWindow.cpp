@@ -62,7 +62,7 @@ namespace Capstone
 
 	int EditorWindow::Run()
 	{
-		CommandProcessor::Initialize(this);
+		CommandProcessor::Initialize(this, &m_editor);
 		ElapsedTime::Initialize();
 		m_editor.Initialize(m_instanceHandle, m_windowHandle, this);
 		Keyboard::Initialize();

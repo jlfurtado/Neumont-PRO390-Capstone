@@ -23,8 +23,10 @@ namespace Capstone
 
 			static void OnMouseScroll(int degrees, void *pInstance);
 			void MouseScroll(int degrees);
+			void LoadObj(const char *const filePath);
 
 	private:
+		void MakeVertexBuffer();
 		void CalculatePerspectiveMatrix();
 		void LogFPS(float dt, float interval);
 
