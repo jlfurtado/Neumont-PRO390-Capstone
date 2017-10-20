@@ -13,6 +13,7 @@ namespace Capstone
 		static int StringLen(const char *const str);
 		static int FindSubString(const char *const source, const char *const target);
 		static bool StringEndsWith(const char *const source, const char *const target);
+		static bool StringBeginsWith(const char *const source, const char *const target);
 
 		// methods that modify strings
 		static char *StringReverse(char *const str);

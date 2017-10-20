@@ -148,6 +148,12 @@ namespace Capstone
 			DebugConsole::ToggleKeep();
 		}
 
+
+		if (Keyboard::IsKeyPressed(VK_ESCAPE))
+		{
+			m_pMyWindow->CloseWindow();
+		}
+
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
 	}
 

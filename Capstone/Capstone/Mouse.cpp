@@ -30,9 +30,7 @@ namespace Capstone
 
 	bool Mouse::Initialize(MouseScrollCallback onScroll, void *pInstance)
 	{
-		s_next.Clear();
-		s_current.Clear();
-		s_last.Clear();
+		ClearAll();
 
 		s_onScroll = onScroll;
 		s_pInstance = pInstance;
@@ -131,5 +129,12 @@ namespace Capstone
 	int Mouse::GetMouseDeltaY()
 	{
 		return s_yPos - s_lastYPos;
+	}
+
+	void Mouse::ClearAll()
+	{
+		s_next.Clear();
+		s_current.Clear();
+		s_last.Clear();
 	}
 }

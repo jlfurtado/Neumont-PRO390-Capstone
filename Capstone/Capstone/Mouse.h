@@ -55,6 +55,7 @@ namespace Capstone
 		static int GetMouseY();
 		static int GetMouseDeltaX();
 		static int GetMouseDeltaY();
+		static void ClearAll();
 
 	private:
 		friend class EditorWindow;

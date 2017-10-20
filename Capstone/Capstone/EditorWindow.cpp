@@ -3,6 +3,7 @@
 #include "ElapsedTime.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "CommandProcessor.h"
 
 namespace Capstone
 {
@@ -61,6 +62,7 @@ namespace Capstone
 
 	int EditorWindow::Run()
 	{
+		CommandProcessor::Initialize(this);
 		ElapsedTime::Initialize();
 		m_editor.Initialize(m_instanceHandle, m_windowHandle, this);
 		Keyboard::Initialize();
@@ -94,6 +96,7 @@ namespace Capstone
 		// free resources
 		m_editor.Shutdown();
 		m_console.Shutdown();
+		CommandProcessor::Shutdown();
 
 		// return this part of the WM_QUIT message to Windows
 		return static_cast<int>(msg.wParam);
@@ -107,6 +110,11 @@ namespace Capstone
 	int EditorWindow::GetHeight()
 	{
 		return m_height;
+	}
+
+	void EditorWindow::CloseWindow()
+	{
+		PostMessage(m_windowHandle, WM_CLOSE, NULL, NULL);
 	}
 
 	LRESULT CALLBACK EditorWindow::WindowProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)
@@ -129,7 +137,7 @@ namespace Capstone
 			case WM_KEYUP:   { Keyboard::KeyRelease(wParam); } break;
 
 			// lose keyboard focus
-			case WM_KILLFOCUS: { Keyboard::ClearAll(); } break;
+			case WM_KILLFOCUS: { Keyboard::ClearAll(); Mouse::ClearAll(); } break;
 
 			// mouse click events
 			case WM_LBUTTONDOWN: { Mouse::Clicked(Mouse::LEFT_MOUSE_INDEX);	} break;

@@ -1,5 +1,6 @@
 #include "DebugConsole.h"
 #include <stdio.h>
+#include "CommandProcessor.h"
 
 
 namespace Capstone
@@ -88,6 +89,7 @@ namespace Capstone
 		
 		DWORD cCharsRead;
 		ReadConsole(s_readHandle, &buffer[0], BUFFER_SIZE, &cCharsRead, NULL);
+		CommandProcessor::ProcessCommand(&buffer[0]);
 	}
 
 	void DebugConsole::WriteLog(const char * const str)

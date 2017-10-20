@@ -16,6 +16,7 @@ namespace Capstone
 		int Run();
 		int GetWidth();
 		int GetHeight();
+		void CloseWindow();
 
 	private:
 		HWND m_windowHandle;

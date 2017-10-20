@@ -9,9 +9,7 @@ namespace Capstone
 
 	bool Keyboard::Initialize()
 	{
-		s_next.Clear();
-		s_current.Clear();
-		s_previous.Clear();
+		ClearAll();
 
 		DebugConsole::Log("Keyboard Initialized Successfully\n");
 		return true;

@@ -125,6 +125,23 @@ namespace Capstone
 		return true;
 	}
 
+	bool StringFuncs::StringBeginsWith(const char * const source, const char * const target)
+	{
+		if (!source || !target) return false;
+		if (target == source) return true;
+
+		int len = StringLen(target);
+		for (int i = 0; i < len; ++i)
+		{
+			if (*(source + i) != *(target + i))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	// Swaps the first half of the characters in a given string with the last half of the characters in the string
 	char *StringFuncs::StringReverse(char *const str)
 	{
