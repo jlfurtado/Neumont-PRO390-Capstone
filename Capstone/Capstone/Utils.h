@@ -12,5 +12,10 @@ namespace Capstone
 			memset(data, NULL, sizeof(*data));
 		}
 
+		template<typename T>
+		static void MyClearFunc(T *const data, int count)
+		{
+			memset(data, NULL, sizeof(*data) * count);
+		}
 	};
 }

@@ -28,6 +28,7 @@ namespace Capstone
 		void RestoreHigh();
 		void RandomizeColors();
 		void LoadMesh(const char *const filePath);
+		void ClearObjectLevelVariations();
 
 	private:
 		DirectX::XMMATRIX m_modelToWorld;

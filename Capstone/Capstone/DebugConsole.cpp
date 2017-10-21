@@ -1,7 +1,7 @@
 #include "DebugConsole.h"
 #include <stdio.h>
 #include "CommandProcessor.h"
-
+#include "Utils.h"
 
 namespace Capstone
 {
@@ -50,7 +50,6 @@ namespace Capstone
 		if (!s_outputOnly)
 		{
 			Show();
-			WriteLog("Enter command: ");
 			ProcessCommand();
 			Hide();
 		}
@@ -85,15 +84,24 @@ namespace Capstone
 	void DebugConsole::ProcessCommand()
 	{
 		static const int BUFFER_SIZE = 256;
-		char buffer[BUFFER_SIZE]{ '\0' };
-		
+		char buffer[BUFFER_SIZE];
 		DWORD cCharsRead;
-		ReadConsole(s_readHandle, &buffer[0], BUFFER_SIZE, &cCharsRead, NULL);
+		bool failed;
 
-		buffer[cCharsRead - 1] = '\0'; // remove \n
-		buffer[cCharsRead - 2] = '\0'; // remove \r
+		do
+		{
+			MyUtils::MyClearFunc(&buffer[0], BUFFER_SIZE);
+			MyUtils::MyClearFunc(&cCharsRead);
+			
+			WriteLog("Enter command: ");
+			ReadConsole(s_readHandle, &buffer[0], BUFFER_SIZE, &cCharsRead, NULL);
 
-		CommandProcessor::ProcessCommand(&buffer[0]);
+			buffer[cCharsRead - 1] = '\0'; // remove \n
+			buffer[cCharsRead - 2] = '\0'; // remove \r
+
+			failed = !CommandProcessor::ProcessCommand(&buffer[0]);
+			if (failed) { FlushConsoleInputBuffer(s_readHandle); }
+		} while (failed);
 	}
 
 	void DebugConsole::WriteLog(const char * const str)
