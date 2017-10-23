@@ -26,6 +26,14 @@ namespace Capstone
 		float t = ScalarUniform(0.0f, 1.0f);
 		return (v1 * t) + ((1.0f - t) * v2);
 	}
+
+	void Variations::TripleVectorUniform(const DirectX::XMVECTOR & l1, const DirectX::XMVECTOR & h1, DirectX::XMVECTOR * pOut1, const DirectX::XMVECTOR & l2, const DirectX::XMVECTOR & h2, DirectX::XMVECTOR * pOut2, const DirectX::XMVECTOR & l3, const DirectX::XMVECTOR & h3, DirectX::XMVECTOR * pOut3)
+	{
+		float t = ScalarUniform(0.0f, 1.0f);
+		*pOut1 = (l1 * t) + ((1.0f - t) * h1);
+		*pOut2 = (l2 * t) + ((1.0f - t) * h2);
+		*pOut3 = (l3 * t) + ((1.0f - t) * h3);
+	}
 	
 	float Variations::ScalarBellApproximation(float v1, float v2, int sampleSize)
 	{
@@ -51,5 +59,13 @@ namespace Capstone
 	{
 		float t = ScalarBellApproximation(0.0f, 1.0f, sampleSize);
 		return (v1 * t) + ((1.0f - t) * v2);
+	}
+
+	void Variations::TripleVectorBellApproximation(const DirectX::XMVECTOR & l1, const DirectX::XMVECTOR & h1, DirectX::XMVECTOR * pOut1, const DirectX::XMVECTOR & l2, const DirectX::XMVECTOR & h2, DirectX::XMVECTOR * pOut2, const DirectX::XMVECTOR & l3, const DirectX::XMVECTOR & h3, DirectX::XMVECTOR * pOut3, int sampleSize)
+	{
+		float t = ScalarBellApproximation(0.0f, 1.0f, sampleSize);
+		*pOut1 = (l1 * t) + ((1.0f - t) * h1);
+		*pOut2 = (l2 * t) + ((1.0f - t) * h2);
+		*pOut3 = (l3 * t) + ((1.0f - t) * h3);
 	}
 }

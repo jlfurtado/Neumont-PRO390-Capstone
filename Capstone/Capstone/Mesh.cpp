@@ -81,11 +81,12 @@ namespace Capstone
 		if (Keyboard::IsKeyPressed('L')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveLow(); } else { RestoreLow(); } }
 		if (Keyboard::IsKeyPressed('H')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveHigh(); } else { RestoreHigh(); } }
 
-		if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyDown('U')) { VaryUniform(); }
-		if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyUp('U')) { VaryBellApproximation(); }
+		if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyDown('U')) { VaryVectorUniform(); }
+		if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyUp('U')) { VaryVectorBellApproximation(); }
 		if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyDown('U')) { VaryComponentUniform(); }
 		if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyUp('U')) { VaryComponentBellApproximation(); }
-
+		if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyDown('U')) { VarySmoothUniform(); }
+		if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyUp('U')) { VarySmoothBellApproximation(); }
 	}
 
 	void Mesh::SaveLow()
@@ -104,7 +105,7 @@ namespace Capstone
 		m_highRotation = m_rotation;
 	}
 
-	void Mesh::VaryUniform()
+	void Mesh::VaryVectorUniform()
 	{
 		DebugConsole::Log("Vary Vector Uniform\n");
 		m_rotation = Variations::VectorUniform(m_lowRotation, m_highRotation);
@@ -112,7 +113,7 @@ namespace Capstone
 		m_scale = Variations::VectorUniform(m_lowScale, m_highScale);
 	}
 
-	void Mesh::VaryBellApproximation()
+	void Mesh::VaryVectorBellApproximation()
 	{
 		DebugConsole::Log("Vary Vector Bell\n");
 		m_rotation = Variations::VectorBellApproximation(m_lowRotation, m_highRotation, 10);
@@ -134,6 +135,23 @@ namespace Capstone
 		m_rotation = Variations::VectorComponentBellApproximation(m_lowRotation, m_highRotation, 10);
 		m_translation = Variations::VectorComponentBellApproximation(m_lowTranslation, m_highTranslation, 10);
 		m_scale = Variations::VectorComponentBellApproximation(m_lowScale, m_highScale, 10);
+	}
+
+	void Mesh::VarySmoothBellApproximation()
+	{
+		DebugConsole::Log("Vary Smooth Bell");
+		Variations::TripleVectorBellApproximation(m_lowRotation, m_highRotation, &m_rotation,
+												  m_lowScale, m_highScale, &m_scale,
+												  m_lowTranslation, m_highTranslation, &m_translation,
+												  10);
+	}
+
+	void Mesh::VarySmoothUniform()
+	{
+		DebugConsole::Log("Vary Smooth Uniform");
+		Variations::TripleVectorUniform(m_lowRotation, m_highRotation, &m_rotation,
+										m_lowScale, m_highScale, &m_scale,
+										m_lowTranslation, m_highTranslation, &m_translation);
 	}
 
 	void Mesh::RestoreLow()
@@ -158,13 +176,17 @@ namespace Capstone
 		int vertexCount = 0, stride = 0;
 		if (!ObjLoader::LoadObj(filePath, &pVerts, &vertexCount, &stride)) { return false; }
 
+		ClearObjectLevelVariations();
 		ReleaseVerts();
-		m_pVerts = pVerts;
 		m_vertexCount = vertexCount;
 		m_stride = stride;
 		m_floatsPerVertex = m_stride / sizeof(float);
-		ClearObjectLevelVariations();
-		// TODO: ALSO CLEAR VERTEX VARIATIONS
+
+		m_pBaseVerts = pVerts;
+
+		// copy the vertices because we're going to be working with a copy so we can revert and stuff!
+		m_pVerts = new float[m_floatsPerVertex * m_vertexCount]{ 0.0f };
+		std::memcpy(m_pVerts, m_pBaseVerts, m_stride * m_vertexCount);	
 
 		return true;
 	}

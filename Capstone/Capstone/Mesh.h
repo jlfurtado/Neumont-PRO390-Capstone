@@ -20,10 +20,12 @@ namespace Capstone
 		void Update(float dt);
 		void SaveLow();
 		void SaveHigh();
-		void VaryUniform();
-		void VaryBellApproximation();
+		void VaryVectorUniform();
+		void VaryVectorBellApproximation();
 		void VaryComponentUniform();
 		void VaryComponentBellApproximation();
+		void VarySmoothBellApproximation();
+		void VarySmoothUniform();
 		void RestoreLow();
 		void RestoreHigh();
 		bool LoadMesh(const char *const filePath);
