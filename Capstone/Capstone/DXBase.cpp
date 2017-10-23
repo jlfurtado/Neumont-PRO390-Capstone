@@ -199,7 +199,8 @@ namespace Capstone
 		{
 			if (errorBuffer != 0)
 			{
-				OutputDebugStringA((char*)errorBuffer->GetBufferPointer());
+				//OutputDebugStringA((char*)errorBuffer->GetBufferPointer());
+				DebugConsole::Log((char*)errorBuffer->GetBufferPointer());
 				errorBuffer->Release();
 			}
 

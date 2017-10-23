@@ -30,6 +30,11 @@ namespace Capstone
 		return m_worldToViewMatrix;
 	}
 
+	DirectX::XMVECTOR * Camera::GetPositionPointer()
+	{
+		return &m_position;
+	}
+
 	void Camera::Update(float dt)
 	{
 		float moveAmount = dt * m_speed;

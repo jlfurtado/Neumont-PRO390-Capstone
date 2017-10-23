@@ -11,6 +11,7 @@ namespace Capstone
 
 		DirectX::XMMATRIX *GetWorldToViewMatrixPointer();
 		DirectX::XMMATRIX GetWorldToViewMatrix();
+		DirectX::XMVECTOR *GetPositionPointer();
 
 		void Update(float dt);
 

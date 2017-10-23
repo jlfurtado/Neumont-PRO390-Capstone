@@ -24,7 +24,7 @@ namespace Capstone
 		static void ProcessCommand();
 		static void WriteLog(const char *const str);
 
-		static const int MAX_LOG_SIZE = 1000;
+		static const int MAX_LOG_SIZE = 1500;
 		static HANDLE s_writeHandle;
 		static HANDLE s_readHandle;
 		static HWND s_console;

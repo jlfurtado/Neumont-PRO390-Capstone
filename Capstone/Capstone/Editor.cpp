@@ -7,6 +7,8 @@
 
 namespace Capstone
 {
+	using namespace DirectX;
+
 	Editor::Editor()
 	{
 	}
@@ -22,12 +24,12 @@ namespace Capstone
 		// load and compile the two shaders
 		ID3DBlob* VS = nullptr;
 		ID3DBlob* PS = nullptr;
-		if (!CompileD3DShader(L"..//data//shaders//shaders.shader", "VertexShaderFunction", VERTEX_SHADER_STR, &VS))
+		if (!CompileD3DShader(L"..//data//shaders//phong.shader", "VertexShaderFunction", VERTEX_SHADER_STR, &VS))
 		{
 			DebugConsole::Log("ERROR: FAILED TO COMPILE VERTEX SHADER!!!\n");
 			return false;
 		}
-		if (!CompileD3DShader(L"..//data//shaders//shaders.shader", "PixelShaderFunction", PIXEL_SHADER_STR, &PS))
+		if (!CompileD3DShader(L"..//data//shaders//phong.shader", "PixelShaderFunction", PIXEL_SHADER_STR, &PS))
 		{
 			DebugConsole::Log("ERROR: FAILED TO COMPILE PIXEL SHADER!!!\n");
 			return false;
@@ -45,39 +47,30 @@ namespace Capstone
 		D3D11_INPUT_ELEMENT_DESC ied[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
 		m_device->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
 		m_context->IASetInputLayout(pLayout);
 
-		// make something to describe a matrix buffer, we'll use this three times coming up
-		D3D11_BUFFER_DESC constDesc;
-		ZeroMemory(&constDesc, sizeof(constDesc));
-		constDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		constDesc.ByteWidth = sizeof(DirectX::XMFLOAT4X4);
-		constDesc.Usage = D3D11_USAGE_DEFAULT;
+		// send data to our shader!!!!
+		if (!m_uniformManager.AddUniform("mtw", sizeof(DirectX::XMFLOAT4X4), m_mesh.GetMTWMatrixPtr(), false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("wtv", sizeof(DirectX::XMFLOAT4X4), m_camera.GetWorldToViewMatrixPointer(), false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("proj", sizeof(DirectX::XMFLOAT4X4), &m_projectionMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("LightColor", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("LightPos", sizeof(DirectX::XMFLOAT4), &m_lightPos, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("DiffuseColor", sizeof(DirectX::XMFLOAT4), &m_diffuseColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("DiffuseIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("AmbientColor", sizeof(DirectX::XMFLOAT4), &m_ambientColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("AmbientIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("SpecularColor", sizeof(DirectX::XMFLOAT4), &m_specularColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("SpecularIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("SpecularPower", sizeof(DirectX::XMFLOAT4), &m_specularIntensity, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("CameraPosition", sizeof(DirectX::XMFLOAT4), m_camera.GetPositionPointer(), true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_uniformManager.AddUniform("ITMTW", sizeof(DirectX::XMFLOAT4X4), &m_inverseTransposeModelToWorldMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 
-		// try to create buffer for sending the model to world matrices
-		if (FAILED(m_device->CreateBuffer(&constDesc, 0, &m_pModelToWorldBuffer)))
-		{
-			DebugConsole::Log("ERROR: FAILED TO CREATE MTW BUFFER!!!\n");
-			return false;
-		}
 
-		// try to create buffer for sending world to view matrices
-		if (FAILED(m_device->CreateBuffer(&constDesc, 0, &m_pWorldToViewBuffer)))
-		{
-			DebugConsole::Log("ERROR: FAILED TO CREATE WTV BUFFER!!!\n");
-			return false;
-		}
-
-		// try to create buffer for sending projection matrices
-		if (FAILED(m_device->CreateBuffer(&constDesc, 0, &m_pProjectionBuffer)))
-		{
-			DebugConsole::Log("ERROR: FAILED TO CREATE PROJ BUFFER!!!\n");
-			return false;
-		}
+		if (!m_uniformManager.Initialize(m_device, VS, PS)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
 
 		CalculatePerspectiveMatrix();
 
@@ -86,17 +79,13 @@ namespace Capstone
 
 	void Editor::UnloadContent()
 	{
+		m_uniformManager.Shutdown();
+
 		if (pVS) pVS->Release();
 		if (pPS) pPS->Release();
 		if (pVBuffer) pVBuffer->Release();
 		if (pLayout) pLayout->Release();
-		if (m_pModelToWorldBuffer) m_pModelToWorldBuffer->Release();
-		if (m_pWorldToViewBuffer) m_pWorldToViewBuffer->Release();
-		if (m_pProjectionBuffer) m_pProjectionBuffer->Release();
 
-		m_pModelToWorldBuffer = 0;
-		m_pWorldToViewBuffer = 0;
-		m_pProjectionBuffer = 0;
 		pVS = 0;
 		pPS = 0;
 		pVBuffer = 0;
@@ -138,6 +127,9 @@ namespace Capstone
 		}
 
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
+
+		m_inverseTransposeModelToWorldMatrix = XMMatrixTranspose(XMMatrixInverse(NULL, *m_mesh.GetMTWMatrixPtr()));
+		m_lightPos = *m_camera.GetPositionPointer();
 	}
 
 	void Editor::Render()
@@ -162,12 +154,7 @@ namespace Capstone
 		m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		// SEND MATRICES
-		m_context->UpdateSubresource(m_pModelToWorldBuffer, 0, 0, m_mesh.GetMTWMatrixPtr(), 0, 0);
-		m_context->UpdateSubresource(m_pWorldToViewBuffer, 0, 0, m_camera.GetWorldToViewMatrixPointer(), 0, 0);
-		m_context->UpdateSubresource(m_pProjectionBuffer, 0, 0, &m_projectionMatrix, 0, 0);
-		m_context->VSSetConstantBuffers(0, 1, &m_pModelToWorldBuffer);
-		m_context->VSSetConstantBuffers(1, 1, &m_pWorldToViewBuffer);
-		m_context->VSSetConstantBuffers(2, 1, &m_pProjectionBuffer);
+		m_uniformManager.PassUniforms(m_context);
 
 		// draw the vertex buffer to the back buffer
 		m_context->Draw(m_mesh.GetVertexCount(), 0);
@@ -186,10 +173,12 @@ namespace Capstone
 
 	}
 
-	void Editor::LoadObj(const char * const filePath)
+	bool Editor::LoadObj(const char * const filePath)
 	{
-		m_mesh.LoadMesh(filePath);
+		if (!m_mesh.LoadMesh(filePath)) { return false; }
+		
 		MakeVertexBuffer();
+		return true;
 	}
 
 	void Editor::MakeVertexBuffer()
@@ -210,8 +199,6 @@ namespace Capstone
 		}
 
 		m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
-
-		m_mesh.RandomizeColors();
 
 		// copy the vertices into the buffer
 		D3D11_MAPPED_SUBRESOURCE ms;

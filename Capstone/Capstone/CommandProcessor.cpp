@@ -44,7 +44,7 @@ namespace Capstone
 		return true;
 	}
 
-	bool CommandProcessor::ProcessExitCommand(const char * const command)
+	bool CommandProcessor::ProcessExitCommand(const char * const /*command*/)
 	{
 		s_pMyWindow->CloseWindow();
 		return true;
@@ -52,8 +52,7 @@ namespace Capstone
 
 	bool CommandProcessor::ProcessLoadObjCommand(const char * const command)
 	{
-		s_pEditor->LoadObj(command + StringFuncs::StringLen("loadObj ")); // TOTALLY A HACK
-		return true;
+		return s_pEditor->LoadObj(command + StringFuncs::StringLen("loadObj "));
 	}
 
 	bool CommandProcessor::ProcessCancelCommand(const char * const /*command*/)

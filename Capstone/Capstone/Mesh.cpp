@@ -152,26 +152,15 @@ namespace Capstone
 		m_translation = m_highTranslation;
 	}
 
-	const int POSITION_FLOATS = 3;
-	void Mesh::RandomizeColors()
+	bool Mesh::LoadMesh(const char *const filePath)
 	{
-		for (int i = 0; i < m_vertexCount; ++i)
-		{
-			float *pColors = reinterpret_cast<float*>(pVerts + (m_floatsPerVertex*i)) + POSITION_FLOATS; // move i verts and 3 floats in
-			pColors[0] = Variations::ScalarUniform(0.0f, 1.0f);
-			pColors[1] = Variations::ScalarUniform(0.0f, 1.0f);
-			pColors[2] = Variations::ScalarUniform(0.0f, 1.0f);
-		}
-	}
+		if (!ObjLoader::LoadObj(filePath, &pVerts, &m_vertexCount, &m_stride)) { return false; }
 
-	void Mesh::LoadMesh(const char *const filePath)
-	{
-		/// TODO: RETURN FAIL SO AS NOT REMAKE BUFFER IF FAIL
-		ObjLoader::LoadObj(filePath, &pVerts, &m_vertexCount, &m_stride);
 		m_floatsPerVertex = m_stride / sizeof(float);
-
 		ClearObjectLevelVariations();
 		// TODO: ALSO CLEAR VERTEX VARIATIONS
+
+		return true;
 	}
 
 	void Mesh::ClearObjectLevelVariations()

@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include "Camera.h"
 #include "Mesh.h"
+#include "UniformManager.h"
 
 namespace Capstone
 {
@@ -23,7 +24,7 @@ namespace Capstone
 
 			static void OnMouseScroll(int degrees, void *pInstance);
 			void MouseScroll(int degrees);
-			void LoadObj(const char *const filePath);
+			bool LoadObj(const char *const filePath);
 
 	private:
 		void MakeVertexBuffer();
@@ -39,16 +40,22 @@ namespace Capstone
 		ID3D11InputLayout *pLayout = 0;    // global
 		const char *const VERTEX_SHADER_STR = "vs_5_0";
 		const char *const PIXEL_SHADER_STR = "ps_5_0";
-		ID3D11Buffer *m_pModelToWorldBuffer = 0;
-		ID3D11Buffer *m_pWorldToViewBuffer = 0;
-		ID3D11Buffer *m_pProjectionBuffer = 0;
+
 		float m_t = 0.0f;
 		float m_timer = 0.0f;
 		const float m_loopTime = 10.0f;
 		const float m_halfLoopTime = m_loopTime / 2.0f;
 
+		UniformManager m_uniformManager;
 		Camera m_camera;
 		Mesh m_mesh;
 		DirectX::XMMATRIX m_projectionMatrix;
+		DirectX::XMMATRIX m_inverseTransposeModelToWorldMatrix;
+		DirectX::XMVECTOR m_lightColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+		DirectX::XMVECTOR m_lightPos{ 0.0f, 50.0f, 0.0f, 1.0f };
+		DirectX::XMVECTOR m_diffuseColor{ 0.7f, 0.7f, 0.7f, 1.0f };
+		DirectX::XMVECTOR m_ambientColor{ 0.1f, 0.1f, 0.1f, 1.0f };
+		DirectX::XMVECTOR m_specularColor{ 0.1f, 0.1f, 0.1f, 1.0f };
+		DirectX::XMVECTOR m_specularIntensity{ 32.0f, 0.0f, 0.0f, 0.0f };
 	};
 }

@@ -1,7 +1,7 @@
 #pragma once
-#include <windows.h>
 #include "Editor.h"
 #include "DebugConsole.h"
+#include <windows.h>
 
 namespace Capstone
 {

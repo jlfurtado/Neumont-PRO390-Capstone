@@ -26,8 +26,7 @@ namespace Capstone
 		void VaryComponentBellApproximation();
 		void RestoreLow();
 		void RestoreHigh();
-		void RandomizeColors();
-		void LoadMesh(const char *const filePath);
+		bool LoadMesh(const char *const filePath);
 		void ClearObjectLevelVariations();
 
 	private:

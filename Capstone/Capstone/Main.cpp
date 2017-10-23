@@ -1,12 +1,13 @@
 // include the basic windows header file
-#include <windows.h>
 #include "EditorWindow.h"
-#include <time.h>
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d11.lib")
+#pragma comment (lib, "dxguid.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
+#include <windows.h>
+#include <time.h>
 const int SCREEN_WIDTH = 800, SCREEN_HEIGHT = 600;
 const char *const WINDOW_TITLE = "Capstone";
 

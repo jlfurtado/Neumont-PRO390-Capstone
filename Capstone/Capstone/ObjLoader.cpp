@@ -77,9 +77,9 @@ namespace Capstone
 		+1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f
 	};
 
-	void ObjLoader::LoadObj(const char * const filePath, float ** outPVerts, int * outCount, int *outStride)
+	bool ObjLoader::LoadObj(const char * const filePath, float ** outPVerts, int * outCount, int *outStride)
 	{
-		ProcessFile(filePath, "PCN", outPVerts, outCount, outStride);
+		return ProcessFile(filePath, "PN", outPVerts, outCount, outStride);
 	}
 
 	void ObjLoader::LoadStatic(float ** outPVerts, int * outCount, int *outStride)
