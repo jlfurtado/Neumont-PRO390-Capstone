@@ -112,11 +112,13 @@ namespace Capstone
 
 		if (Keyboard::IsKeyPressed(VK_RETURN))
 		{
+			ExitFullScreen(); // UGLY BUG FIX
 			DebugConsole::GetCommand();
 		}
 
 		if (Keyboard::IsKeyPressed('M'))
 		{
+			ExitFullScreen(); // UGLY BUG FIX
 			DebugConsole::ToggleKeep();
 		}
 
@@ -179,6 +181,16 @@ namespace Capstone
 		
 		MakeVertexBuffer();
 		return true;
+	}
+
+	void Editor::ExitFullScreen()
+	{
+		if (m_swapChain)
+		{
+			BOOL isFullScreen;
+			m_swapChain->GetFullscreenState(&isFullScreen, NULL);
+			if (isFullScreen) { m_swapChain->SetFullscreenState(FALSE, NULL); }
+		}
 	}
 
 	void Editor::MakeVertexBuffer()

@@ -41,10 +41,13 @@ namespace Capstone
 		DirectX::XMVECTOR m_highTranslation;
 		DirectX::XMVECTOR m_highRotation;
 
-		float *pVerts;
+		float *m_pVerts;
+		float *m_pBaseVerts;
 		int m_stride;
 		int m_vertexCount;
 		int m_floatsPerVertex;
+
+		void ReleaseVerts();
 	};
 }
 

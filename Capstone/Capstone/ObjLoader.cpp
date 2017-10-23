@@ -119,6 +119,7 @@ namespace Capstone
 		// try to read data from input file into a mesh, if it fails, do not proceed - indicate failure
 		if (!ReadFileIntoMesh(outAllocatedVerts))
 		{
+			CleanUp();
 			DebugConsole::Log("ObjLoader failed to ProcessFile()! Failed to read input file [%s] into mesh!\n", s_inputFile);
 			return false;
 		}

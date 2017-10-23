@@ -21,7 +21,7 @@ namespace Capstone
 
 	Mesh::~Mesh()
 	{
-		if (pVerts != nullptr) { delete[] pVerts; }
+		ReleaseVerts();
 	}
 
 	DirectX::XMMATRIX * Mesh::GetMTWMatrixPtr()
@@ -31,7 +31,7 @@ namespace Capstone
 
 	float * Mesh::GetVertexPointer()
 	{
-		return reinterpret_cast<float*>(pVerts);
+		return reinterpret_cast<float*>(m_pVerts);
 	}
 
 	int Mesh::GetStride()
@@ -154,8 +154,14 @@ namespace Capstone
 
 	bool Mesh::LoadMesh(const char *const filePath)
 	{
-		if (!ObjLoader::LoadObj(filePath, &pVerts, &m_vertexCount, &m_stride)) { return false; }
+		float *pVerts = nullptr;
+		int vertexCount = 0, stride = 0;
+		if (!ObjLoader::LoadObj(filePath, &pVerts, &vertexCount, &stride)) { return false; }
 
+		ReleaseVerts();
+		m_pVerts = pVerts;
+		m_vertexCount = vertexCount;
+		m_stride = stride;
 		m_floatsPerVertex = m_stride / sizeof(float);
 		ClearObjectLevelVariations();
 		// TODO: ALSO CLEAR VERTEX VARIATIONS
@@ -170,5 +176,13 @@ namespace Capstone
 		m_rotation = XMVectorZero();
 		SaveLow();
 		SaveHigh();
+	}
+
+	void Mesh::ReleaseVerts()
+	{
+		if (m_pVerts) { delete[] m_pVerts; }
+		if (m_pBaseVerts) { delete[] m_pBaseVerts; }
+		m_pVerts = nullptr;
+		m_pBaseVerts = nullptr;
 	}
 }

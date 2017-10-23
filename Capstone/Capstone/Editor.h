@@ -27,6 +27,7 @@ namespace Capstone
 			bool LoadObj(const char *const filePath);
 
 	private:
+		void ExitFullScreen();
 		void MakeVertexBuffer();
 		void CalculatePerspectiveMatrix();
 		void LogFPS(float dt, float interval);
