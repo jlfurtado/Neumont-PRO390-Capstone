@@ -85,7 +85,7 @@ VOut VertexShaderFunction(float4 position : POSITION, float4 normal : NORMAL0)
 	
     output.position = mul( output.position, worldtoViewMatrix);
     output.position = mul( output.position, projectionMatrix);
-	output.fragNormWorld = (float3)normalize(mul(inverseTransposeModelToWorldMatrix, normal));
+	output.fragNormWorld = (float3)normalize(mul(normal, inverseTransposeModelToWorldMatrix));
 	
     return output;
 }
