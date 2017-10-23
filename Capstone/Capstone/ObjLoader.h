@@ -6,7 +6,7 @@ namespace Capstone
 	class ObjLoader
 	{
 	public:
-		static bool LoadObj(const char *const filePath, float **outPVerts, int *outCount, int *outStride);
+		static bool LoadObj(const char *const filePath, const char *const format, float **outPVerts, int *outCount, int *outStride);
 		static void LoadStatic(float **outPVerts, int *outCount, int *outStride);
 
 	private:

@@ -30,6 +30,7 @@ namespace Capstone
 		void RestoreHigh();
 		bool LoadMesh(const char *const filePath);
 		void ClearObjectLevelVariations();
+		void UpdateSelectedColors();
 
 	private:
 		DirectX::XMMATRIX m_modelToWorld;
@@ -48,8 +49,10 @@ namespace Capstone
 		int m_stride;
 		int m_vertexCount;
 		int m_floatsPerVertex;
+		const char *const m_format;
 
 		void ReleaseVerts();
+		void SetColor(int idx, float r, float g, float b);
 	};
 }
 

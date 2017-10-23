@@ -77,9 +77,9 @@ namespace Capstone
 		+1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f, +1.0f
 	};
 
-	bool ObjLoader::LoadObj(const char * const filePath, float ** outPVerts, int * outCount, int *outStride)
+	bool ObjLoader::LoadObj(const char * const filePath, const char *const format, float ** outPVerts, int * outCount, int *outStride)
 	{
-		return ProcessFile(filePath, "PN", outPVerts, outCount, outStride);
+		return ProcessFile(filePath, format, outPVerts, outCount, outStride);
 	}
 
 	void ObjLoader::LoadStatic(float ** outPVerts, int * outCount, int *outStride)
@@ -458,7 +458,7 @@ namespace Capstone
 		int indexCount = 1 + (s_hasTexture ? 1 : 0) + (s_hasNormal ? 1 : 0);
 		int floatsPerVertex = s_stride / sizeof(float);
 
-		static const int offsetDeltas[3] = {3, 3, 2};
+		static const int offsetDeltas[3] = {FLOATS_PER_POSITION, FLOATS_PER_COLOR, FLOATS_PER_TEXTURE};
 		static const int ioffsetDeltas[3] = {1, 0, 1};
 
 		int offsets[4]{ 0 };

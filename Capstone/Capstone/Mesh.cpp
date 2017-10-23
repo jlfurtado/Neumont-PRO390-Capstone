@@ -10,8 +10,9 @@ namespace Capstone
 	using namespace DirectX;
 
 	Mesh::Mesh()
+		: m_format("PCN")
 	{
-		LoadMesh("..\\Data\\OBJS\\BetterDargon.obj");
+		LoadMesh("..\\Data\\OBJS\\Sphere.obj");
 		m_scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
 		m_rotation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 		m_translation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
@@ -174,7 +175,7 @@ namespace Capstone
 	{
 		float *pVerts = nullptr;
 		int vertexCount = 0, stride = 0;
-		if (!ObjLoader::LoadObj(filePath, &pVerts, &vertexCount, &stride)) { return false; }
+		if (!ObjLoader::LoadObj(filePath, m_format, &pVerts, &vertexCount, &stride)) { return false; }
 
 		ClearObjectLevelVariations();
 		ReleaseVerts();
@@ -206,5 +207,22 @@ namespace Capstone
 		if (m_pBaseVerts) { delete[] m_pBaseVerts; }
 		m_pVerts = nullptr;
 		m_pBaseVerts = nullptr;
+	}
+
+	void Mesh::SetColor(int idx, float r, float g, float b)
+	{
+		float *pColor = m_pVerts + (idx * m_floatsPerVertex) + 3;
+		pColor[0] = r;
+		pColor[1] = g;
+		pColor[2] = b;
+	}
+
+	void Mesh::UpdateSelectedColors()
+	{
+		for (int i = 0; i < m_vertexCount; ++i)
+		{
+			if (/*selected*/false) { SetColor(i, 1.0f, 0.0f, 0.0f); }
+			else { SetColor(i, 1.0f, 1.0f, 1.0f); }
+		}
 	}
 }

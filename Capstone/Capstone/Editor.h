@@ -58,5 +58,6 @@ namespace Capstone
 		DirectX::XMVECTOR m_ambientColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 		DirectX::XMVECTOR m_specularColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 		DirectX::XMVECTOR m_specularIntensity{ 32.0f, 0.0f, 0.0f, 0.0f };
+		DirectX::XMVECTOR m_interp{ 0.75f };
 	};
 }

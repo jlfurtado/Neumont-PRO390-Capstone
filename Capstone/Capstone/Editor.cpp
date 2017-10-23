@@ -24,12 +24,12 @@ namespace Capstone
 		// load and compile the two shaders
 		ID3DBlob* VS = nullptr;
 		ID3DBlob* PS = nullptr;
-		if (!CompileD3DShader(L"..//data//shaders//phong.shader", "VertexShaderFunction", VERTEX_SHADER_STR, &VS))
+		if (!CompileD3DShader(L"..//data//shaders//pcnphong.shader", "VertexShaderFunction", VERTEX_SHADER_STR, &VS))
 		{
 			DebugConsole::Log("ERROR: FAILED TO COMPILE VERTEX SHADER!!!\n");
 			return false;
 		}
-		if (!CompileD3DShader(L"..//data//shaders//phong.shader", "PixelShaderFunction", PIXEL_SHADER_STR, &PS))
+		if (!CompileD3DShader(L"..//data//shaders//pcnphong.shader", "PixelShaderFunction", PIXEL_SHADER_STR, &PS))
 		{
 			DebugConsole::Log("ERROR: FAILED TO COMPILE PIXEL SHADER!!!\n");
 			return false;
@@ -47,10 +47,11 @@ namespace Capstone
 		D3D11_INPUT_ELEMENT_DESC ied[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
-		m_device->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
+		m_device->CreateInputLayout(ied, 3, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
 		m_context->IASetInputLayout(pLayout);
 
 		// send data to our shader!!!!
@@ -69,6 +70,9 @@ namespace Capstone
 		if (!m_uniformManager.AddUniform("CameraPosition", sizeof(DirectX::XMFLOAT4), m_camera.GetPositionPointer(), true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_uniformManager.AddUniform("ITMTW", sizeof(DirectX::XMFLOAT4X4), &m_inverseTransposeModelToWorldMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 
+		float t = 0.75f;
+		m_interp = XMVectorSet(t, t, t, t);
+		if (!m_uniformManager.AddUniform("Interp", sizeof(DirectX::XMVECTOR), &m_interp, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 
 		if (!m_uniformManager.Initialize(m_device, VS, PS)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
 
@@ -128,6 +132,12 @@ namespace Capstone
 			m_pMyWindow->CloseWindow();
 		}
 
+		if (Keyboard::IsKeyPressed(VK_SPACE))
+		{
+			m_mesh.UpdateSelectedColors();
+			MakeVertexBuffer();
+		}
+
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
 
 		m_inverseTransposeModelToWorldMatrix = XMMatrixTranspose(XMMatrixInverse(NULL, *m_mesh.GetMTWMatrixPtr()));
@@ -154,7 +164,7 @@ namespace Capstone
 
 		// select which primtive type we are using
 		m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		
+
 		// SEND MATRICES
 		m_uniformManager.PassUniforms(m_context);
 

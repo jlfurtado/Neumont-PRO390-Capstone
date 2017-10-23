@@ -121,7 +121,7 @@ namespace Capstone
 		depthTexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		depthTexDesc.CPUAccessFlags = 0;
 		depthTexDesc.MiscFlags = 0;
-
+		
 		result = m_device->CreateTexture2D(&depthTexDesc, NULL, &m_depthTexture);
 
 		if (FAILED(result))
@@ -136,7 +136,7 @@ namespace Capstone
 		descDSV.Format = depthTexDesc.Format;
 		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		descDSV.Texture2D.MipSlice = 0;
-
+		
 		result = m_device->CreateDepthStencilView(m_depthTexture, &descDSV, &m_depthStencilView);
 
 		if (FAILED(result))
