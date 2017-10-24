@@ -133,6 +133,7 @@
     <ClCompile Include="ObjLoader.cpp" />
     <ClCompile Include="StringFuncs.cpp" />
     <ClCompile Include="UniformManager.cpp" />
+    <ClCompile Include="VariationController.cpp" />
     <ClCompile Include="Variations.cpp" />
     <ClCompile Include="VertexGroup.cpp" />
   </ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="StringFuncs.h" />
     <ClInclude Include="UniformManager.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="VariationController.h" />
     <ClInclude Include="Variations.h" />
     <ClInclude Include="VertexGroup.h" />
   </ItemGroup>

@@ -98,11 +98,7 @@ namespace Capstone
 		// set all the values to value then start adding at the beginning again
 		void Clear(T value)
 		{
-			for (unsigned i = 0; i < m_next; ++i)
-			{
-				m_pData[i] = value;
-			}
-
+			memset(m_pData, value, sizeof(T) * m_size);
 			m_next = 0;
 		}
 

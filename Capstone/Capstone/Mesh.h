@@ -1,6 +1,7 @@
 #pragma once
 
 #include <DirectXMath.h>
+#include "VariationController.h"
 
 namespace Capstone
 {
@@ -18,16 +19,7 @@ namespace Capstone
 		void CalcMatrix();
 		int GetVertexBufferSize();
 		void Update(float dt);
-		void SaveLow();
-		void SaveHigh();
-		void VaryVectorUniform();
-		void VaryVectorBellApproximation();
-		void VaryComponentUniform();
-		void VaryComponentBellApproximation();
-		void VarySmoothBellApproximation();
-		void VarySmoothUniform();
-		void RestoreLow();
-		void RestoreHigh();
+		
 		bool LoadMesh(const char *const filePath);
 		void ClearObjectLevelVariations();
 		void UpdateSelectedColors();
@@ -37,12 +29,7 @@ namespace Capstone
 		DirectX::XMVECTOR m_scale;
 		DirectX::XMVECTOR m_translation;
 		DirectX::XMVECTOR m_rotation;
-		DirectX::XMVECTOR m_lowScale;
-		DirectX::XMVECTOR m_lowTranslation;
-		DirectX::XMVECTOR m_lowRotation;
-		DirectX::XMVECTOR m_highScale;
-		DirectX::XMVECTOR m_highTranslation;
-		DirectX::XMVECTOR m_highRotation;
+		VariationController m_objectLevelVariation;
 
 		float *m_pVerts;
 		float *m_pBaseVerts;
@@ -53,6 +40,7 @@ namespace Capstone
 
 		void ReleaseVerts();
 		void SetColor(int idx, float r, float g, float b);
+		static void DoNothing();
 	};
 }
 

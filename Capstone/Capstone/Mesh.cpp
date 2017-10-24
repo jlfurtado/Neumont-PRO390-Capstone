@@ -1,7 +1,6 @@
 #include "Mesh.h"
 #include "Keyboard.h"
 #include <windows.h>
-#include "Variations.h"
 #include "DebugConsole.h"
 #include "ObjLoader.h"
 
@@ -12,12 +11,8 @@ namespace Capstone
 	Mesh::Mesh()
 		: m_format("PCN")
 	{
+		m_objectLevelVariation.Initialize(Mesh::DoNothing, &m_scale, &m_translation, &m_rotation); // must come before load
 		LoadMesh("..\\Data\\OBJS\\Sphere.obj");
-		m_scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
-		m_rotation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-		m_translation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-		SaveLow();
-		SaveHigh();
 	}
 
 	Mesh::~Mesh()
@@ -63,112 +58,7 @@ namespace Capstone
 
 	void Mesh::Update(float dt)
 	{
-		XMVECTOR f(dt * XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f));
-		XMVECTOR r(dt * XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f));
-		XMVECTOR u(dt * XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f));
-
-		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('T')) { m_translation += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; }
-		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('T')) { m_translation += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; }
-		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('T')) { m_translation += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; }
-
-		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('R')) { m_rotation += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; }
-		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('R')) { m_rotation += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; }
-		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('R')) { m_rotation += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; }
-
-		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('E')) { m_scale += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; }
-		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('E')) { m_scale += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; }
-		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('E')) { m_scale += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; }
-
-		if (Keyboard::IsKeyPressed('L')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveLow(); } else { RestoreLow(); } }
-		if (Keyboard::IsKeyPressed('H')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveHigh(); } else { RestoreHigh(); } }
-
-		if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyDown('U')) { VaryVectorUniform(); }
-		if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyUp('U')) { VaryVectorBellApproximation(); }
-		if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyDown('U')) { VaryComponentUniform(); }
-		if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyUp('U')) { VaryComponentBellApproximation(); }
-		if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyDown('U')) { VarySmoothUniform(); }
-		if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyUp('U')) { VarySmoothBellApproximation(); }
-	}
-
-	void Mesh::SaveLow()
-	{
-		DebugConsole::Log("SaveLow\n");
-		m_lowScale = m_scale;
-		m_lowTranslation = m_translation;
-		m_lowRotation = m_rotation;
-	}
-
-	void Mesh::SaveHigh()
-	{
-		DebugConsole::Log("SaveHigh\n");
-		m_highScale = m_scale;
-		m_highTranslation = m_translation;
-		m_highRotation = m_rotation;
-	}
-
-	void Mesh::VaryVectorUniform()
-	{
-		DebugConsole::Log("Vary Vector Uniform\n");
-		m_rotation = Variations::VectorUniform(m_lowRotation, m_highRotation);
-		m_translation = Variations::VectorUniform(m_lowTranslation, m_highTranslation);
-		m_scale = Variations::VectorUniform(m_lowScale, m_highScale);
-	}
-
-	void Mesh::VaryVectorBellApproximation()
-	{
-		DebugConsole::Log("Vary Vector Bell\n");
-		m_rotation = Variations::VectorBellApproximation(m_lowRotation, m_highRotation, 10);
-		m_translation = Variations::VectorBellApproximation(m_lowTranslation, m_highTranslation, 10);
-		m_scale = Variations::VectorBellApproximation(m_lowScale, m_highScale, 10);
-	}
-
-	void Mesh::VaryComponentUniform()
-	{
-		DebugConsole::Log("Vary Component Uniform\n");
-		m_rotation = Variations::VectorComponentUniform(m_lowRotation, m_highRotation);
-		m_translation = Variations::VectorComponentUniform(m_lowTranslation, m_highTranslation);
-		m_scale = Variations::VectorComponentUniform(m_lowScale, m_highScale);
-	}
-
-	void Mesh::VaryComponentBellApproximation()
-	{
-		DebugConsole::Log("Vary Component Bell\n");
-		m_rotation = Variations::VectorComponentBellApproximation(m_lowRotation, m_highRotation, 10);
-		m_translation = Variations::VectorComponentBellApproximation(m_lowTranslation, m_highTranslation, 10);
-		m_scale = Variations::VectorComponentBellApproximation(m_lowScale, m_highScale, 10);
-	}
-
-	void Mesh::VarySmoothBellApproximation()
-	{
-		DebugConsole::Log("Vary Smooth Bell");
-		Variations::TripleVectorBellApproximation(m_lowRotation, m_highRotation, &m_rotation,
-												  m_lowScale, m_highScale, &m_scale,
-												  m_lowTranslation, m_highTranslation, &m_translation,
-												  10);
-	}
-
-	void Mesh::VarySmoothUniform()
-	{
-		DebugConsole::Log("Vary Smooth Uniform");
-		Variations::TripleVectorUniform(m_lowRotation, m_highRotation, &m_rotation,
-										m_lowScale, m_highScale, &m_scale,
-										m_lowTranslation, m_highTranslation, &m_translation);
-	}
-
-	void Mesh::RestoreLow()
-	{
-		DebugConsole::Log("RestoreLow\n");
-		m_scale = m_lowScale;
-		m_rotation = m_lowRotation;
-		m_translation = m_lowTranslation;
-	}
-
-	void Mesh::RestoreHigh()
-	{
-		DebugConsole::Log("RestoreHigh\n");
-		m_scale = m_highScale;
-		m_rotation = m_highRotation;
-		m_translation = m_highTranslation;
+		m_objectLevelVariation.Update(dt);
 	}
 
 	bool Mesh::LoadMesh(const char *const filePath)
@@ -194,11 +84,7 @@ namespace Capstone
 
 	void Mesh::ClearObjectLevelVariations()
 	{
-		m_scale = XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
-		m_translation = XMVectorZero();
-		m_rotation = XMVectorZero();
-		SaveLow();
-		SaveHigh();
+		m_objectLevelVariation.ClearVariations();
 	}
 
 	void Mesh::ReleaseVerts()
@@ -209,12 +95,17 @@ namespace Capstone
 		m_pBaseVerts = nullptr;
 	}
 
+	const int POSITION_FLOATS = 3;
 	void Mesh::SetColor(int idx, float r, float g, float b)
 	{
-		float *pColor = m_pVerts + (idx * m_floatsPerVertex) + 3;
+		float *pColor = m_pVerts + (idx * m_floatsPerVertex) + POSITION_FLOATS;
 		pColor[0] = r;
 		pColor[1] = g;
 		pColor[2] = b;
+	}
+
+	void Mesh::DoNothing()
+	{
 	}
 
 	void Mesh::UpdateSelectedColors()
