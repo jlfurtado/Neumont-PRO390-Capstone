@@ -10,6 +10,7 @@ namespace Capstone
 	using namespace DirectX;
 
 	Editor::Editor()
+		: m_mesh(this)
 	{
 	}
 
@@ -78,6 +79,9 @@ namespace Capstone
 
 		CalculatePerspectiveMatrix();
 
+		m_initialized = true;
+		m_mesh.InitTestGroup();
+
 		return true;
 	}
 
@@ -94,11 +98,16 @@ namespace Capstone
 		pPS = 0;
 		pVBuffer = 0;
 		pLayout = 0;
+		m_initialized = false;
 	}
 
 	void Editor::Update(float dt)
 	{
+		Frustum cameraFrustum = Frustum(*m_camera.GetPositionPointer(), *m_camera.GetViewDirPointer(), *m_camera.GetUpPointer(),
+									    m_fovy, m_nearClip, (float)m_pMyWindow->GetWidth(), (float)m_pMyWindow->GetHeight(), m_farClip);
+
 		m_camera.Update(dt);
+		DebugConsole::Log("%s\n", cameraFrustum.PointInFrustum(XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f)) ? "In Frustum" : "Not in frustum");
 
 		//int w, h;
 		//m_pMyWindow->GetWindowSize(w, h);
@@ -130,12 +139,6 @@ namespace Capstone
 		if (Keyboard::IsKeyPressed(VK_ESCAPE))
 		{
 			m_pMyWindow->CloseWindow();
-		}
-
-		if (Keyboard::IsKeyPressed(VK_SPACE))
-		{
-			m_mesh.UpdateSelectedColors();
-			MakeVertexBuffer();
 		}
 
 		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
@@ -190,7 +193,21 @@ namespace Capstone
 		if (!m_mesh.LoadMesh(filePath)) { return false; }
 		
 		MakeVertexBuffer();
+		m_mesh.InitTestGroup();
+
 		return true;
+	}
+
+	void Editor::ReSendVerticesSameBuffer()
+	{
+		if (m_initialized)
+		{
+			// copy the vertices into the buffer
+			D3D11_MAPPED_SUBRESOURCE ms;
+			m_context->Map(pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
+			memcpy(ms.pData, m_mesh.GetVertexPointer(), m_mesh.GetVertexBufferSize());                 // copy the data
+			m_context->Unmap(pVBuffer, NULL);    // unmap the buffer
+		}
 	}
 
 	void Editor::ExitFullScreen()
@@ -220,7 +237,8 @@ namespace Capstone
 			pVBuffer = nullptr;
 		}
 
-		m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
+		HRESULT r = m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
+		HRESULT r2 = m_device->GetDeviceRemovedReason();
 
 		// copy the vertices into the buffer
 		D3D11_MAPPED_SUBRESOURCE ms;
@@ -243,7 +261,7 @@ namespace Capstone
 		if (m_pMyWindow)
 		{
 			int w = m_pMyWindow->GetWidth(), h = m_pMyWindow->GetHeight();
-			m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PIDIV4, (float)w / (float)h, 0.01f, 100.0f);
+			m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(m_fovy, (float)w / (float)h, m_nearClip, m_farClip);
 			m_projectionMatrix = DirectX::XMMatrixTranspose(m_projectionMatrix);
 		}
 	}

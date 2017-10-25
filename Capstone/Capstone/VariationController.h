@@ -8,9 +8,9 @@ namespace Capstone
 	class VariationController
 	{
 	public:
-		typedef void(*VariationChangedCallback)();
+		typedef void(*VariationChangedCallback)(void *pInstance);
 
-		void Initialize(VariationChangedCallback onModified, DirectX::XMVECTOR *pScale, DirectX::XMVECTOR *pTranslation, DirectX::XMVECTOR *pRotation);
+		void Initialize(VariationChangedCallback onModified, void *m_pInstance, DirectX::XMVECTOR *pScale, DirectX::XMVECTOR *pRotation, DirectX::XMVECTOR *pTranslation);
 		void Update(float dt);
 		void ClearVariations();
 
@@ -36,6 +36,7 @@ namespace Capstone
 		DirectX::XMVECTOR *m_pScale{ nullptr };
 		DirectX::XMVECTOR *m_pTranslation{ nullptr };
 		DirectX::XMVECTOR *m_pRotation{ nullptr };
+		void *m_pInstance{ nullptr };
 		VariationChangedCallback m_onVariationChanged{ nullptr };
 	};
 }

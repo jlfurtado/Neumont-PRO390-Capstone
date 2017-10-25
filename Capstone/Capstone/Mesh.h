@@ -2,13 +2,15 @@
 
 #include <DirectXMath.h>
 #include "VariationController.h"
+#include "VertexGroup.h"
 
 namespace Capstone
 {
+	class Editor;
 	class Mesh
 	{
 	public:
-		Mesh();
+		Mesh(Editor *pEditor);
 		~Mesh();
 
 		DirectX::XMMATRIX *GetMTWMatrixPtr();
@@ -22,7 +24,8 @@ namespace Capstone
 		
 		bool LoadMesh(const char *const filePath);
 		void ClearObjectLevelVariations();
-		void UpdateSelectedColors();
+		void ColorAll(float r, float g, float b);
+		void InitTestGroup();
 
 	private:
 		DirectX::XMMATRIX m_modelToWorld;
@@ -40,7 +43,15 @@ namespace Capstone
 
 		void ReleaseVerts();
 		void SetColor(int idx, float r, float g, float b);
-		static void DoNothing();
+		static void DoNothing(void *);
+
+		static void UpdateTestGroup(void *pMesh);
+		VertexGroup m_testGroup;
+		Editor *m_pEditor;
+
+		int m_lastMouseX;
+		int m_lastMouseY;
+		bool m_clicked;
 	};
 }
 

@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "UniformManager.h"
+#include "Frustum.h"
 
 namespace Capstone
 {
@@ -25,6 +26,7 @@ namespace Capstone
 			static void OnMouseScroll(int degrees, void *pInstance);
 			void MouseScroll(int degrees);
 			bool LoadObj(const char *const filePath);
+			void ReSendVerticesSameBuffer();
 
 	private:
 		void ExitFullScreen();
@@ -59,5 +61,9 @@ namespace Capstone
 		DirectX::XMVECTOR m_specularColor{ 0.1f, 0.1f, 0.1f, 1.0f };
 		DirectX::XMVECTOR m_specularIntensity{ 32.0f, 0.0f, 0.0f, 0.0f };
 		DirectX::XMVECTOR m_interp{ 0.75f };
+		bool m_initialized{ false };
+		float m_fovy{ DirectX::XM_PIDIV4 };
+		float m_nearClip{ 0.01f };
+		float m_farClip{ 100.0f };
 	};
 }

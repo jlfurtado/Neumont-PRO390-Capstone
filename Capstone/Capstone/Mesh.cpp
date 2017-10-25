@@ -1,17 +1,20 @@
 #include "Mesh.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 #include <windows.h>
 #include "DebugConsole.h"
 #include "ObjLoader.h"
+#include "Utils.h"
+#include "Editor.h"
 
 namespace Capstone
 {
 	using namespace DirectX;
 
-	Mesh::Mesh()
-		: m_format("PCN")
+	Mesh::Mesh(Editor * pEditor)
+		: m_format("PCN"), m_testGroup(Mesh::UpdateTestGroup, this), m_pEditor(pEditor)
 	{
-		m_objectLevelVariation.Initialize(Mesh::DoNothing, &m_scale, &m_translation, &m_rotation); // must come before load
+		m_objectLevelVariation.Initialize(Mesh::DoNothing, this, &m_scale, &m_rotation, &m_translation); // must come before load
 		LoadMesh("..\\Data\\OBJS\\Sphere.obj");
 	}
 
@@ -47,8 +50,7 @@ namespace Capstone
 
 	void Mesh::CalcMatrix()
 	{
-		m_modelToWorld = XMMatrixScalingFromVector(m_scale) * XMMatrixRotationRollPitchYawFromVector(m_rotation) * XMMatrixTranslationFromVector(m_translation);
-		m_modelToWorld = XMMatrixTranspose(m_modelToWorld);
+		m_modelToWorld = DirectX::XMMatrixTranspose(MyUtils::MTWFromSRT(&m_scale, &m_rotation, &m_translation));
 	}
 
 	int Mesh::GetVertexBufferSize()
@@ -58,7 +60,22 @@ namespace Capstone
 
 	void Mesh::Update(float dt)
 	{
-		m_objectLevelVariation.Update(dt);
+		//m_objectLevelVariation.Update(dt);
+		m_testGroup.Update(dt);
+
+		if (Mouse::LeftMouseClicked())
+		{
+			m_clicked = true;
+			m_lastMouseX = Mouse::GetMouseX();
+			m_lastMouseY = Mouse::GetMouseY();
+		}
+		else if (m_clicked && Mouse::LeftMouseReleased())
+		{
+			m_clicked = false;
+			int mouseX = Mouse::GetMouseX();
+			int mouseY = Mouse::GetMouseY();
+			DebugConsole::Log("(%d, %d, %d, %d)\n", m_lastMouseX, m_lastMouseY, mouseX, mouseY);
+		}
 	}
 
 	bool Mesh::LoadMesh(const char *const filePath)
@@ -77,7 +94,7 @@ namespace Capstone
 
 		// copy the vertices because we're going to be working with a copy so we can revert and stuff!
 		m_pVerts = new float[m_floatsPerVertex * m_vertexCount]{ 0.0f };
-		std::memcpy(m_pVerts, m_pBaseVerts, m_stride * m_vertexCount);	
+		std::memcpy(m_pVerts, m_pBaseVerts, m_stride * m_vertexCount);
 
 		return true;
 	}
@@ -85,6 +102,14 @@ namespace Capstone
 	void Mesh::ClearObjectLevelVariations()
 	{
 		m_objectLevelVariation.ClearVariations();
+	}
+
+	void Mesh::ColorAll(float r, float g, float b)
+	{
+		for (int i = 0; i < m_vertexCount; ++i)
+		{
+			SetColor(i, r, g, b);
+		}
 	}
 
 	void Mesh::ReleaseVerts()
@@ -104,16 +129,54 @@ namespace Capstone
 		pColor[2] = b;
 	}
 
-	void Mesh::DoNothing()
+	void Mesh::DoNothing(void *)
 	{
 	}
 
-	void Mesh::UpdateSelectedColors()
+	void Mesh::UpdateTestGroup(void * pMesh)
 	{
-		for (int i = 0; i < m_vertexCount; ++i)
+		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
+
+		if (pM && pM->m_pEditor)
 		{
-			if (/*selected*/false) { SetColor(i, 1.0f, 0.0f, 0.0f); }
-			else { SetColor(i, 1.0f, 1.0f, 1.0f); }
+			const int *pIndices = pM->m_testGroup.GetIndices();
+
+			// same matrix per group
+			DirectX::XMMATRIX MTW = pM->m_testGroup.CalcMTW();
+			for (int i = 0; i < pM->m_testGroup.Count(); ++i)
+			{
+				int vertIdx = *(pIndices + i);
+				int floatIdx = vertIdx * pM->m_floatsPerVertex;
+				float *pBase = pM->m_pBaseVerts + floatIdx;
+				float *pVert = pM->m_pVerts + floatIdx;
+
+				XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 1.0f), MTW);
+				pVert[0] = XMVectorGetX(newVertPos);
+				pVert[1] = XMVectorGetY(newVertPos);
+				pVert[2] = XMVectorGetZ(newVertPos);
+			}
+
+			pM->m_pEditor->ReSendVerticesSameBuffer();
 		}
+	}
+
+	void Mesh::InitTestGroup()
+	{
+		m_testGroup.Clear();
+
+		for (int i = 0; i < m_vertexCount * 1 / 3; ++i)
+		{
+			m_testGroup.Add(i);
+		}
+
+		ColorAll(1.0f, 1.0f, 1.0f);
+
+		const int *pInd = m_testGroup.GetIndices();
+		for (int i = 0; i < m_testGroup.Count(); ++i)
+		{
+			SetColor(*(pInd + i), 1.0f, 0.0f, 0.0f);
+		}
+		
+		m_pEditor->ReSendVerticesSameBuffer();
 	}
 }

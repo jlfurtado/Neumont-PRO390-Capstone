@@ -7,6 +7,7 @@
 // Defines a templated array class that resizes 
 
 #include "DebugConsole.h"
+#include <cstring>
 
 namespace Capstone
 {
@@ -98,8 +99,13 @@ namespace Capstone
 		// set all the values to value then start adding at the beginning again
 		void Clear(T value)
 		{
-			memset(m_pData, value, sizeof(T) * m_size);
+			std::memset(m_pData, value, sizeof(T) * m_size);
 			m_next = 0;
+		}
+
+		const T *GetDataPtr()
+		{
+			return m_pData;
 		}
 
 	private:

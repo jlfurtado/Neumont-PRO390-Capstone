@@ -125,11 +125,13 @@
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="EditorWindow.cpp" />
     <ClCompile Include="ElapsedTime.cpp" />
+    <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MathUtility.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="MousePicker.cpp" />
     <ClCompile Include="ObjLoader.cpp" />
     <ClCompile Include="StringFuncs.cpp" />
     <ClCompile Include="UniformManager.cpp" />
@@ -146,10 +148,12 @@
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="ElapsedTime.h" />
+    <ClInclude Include="Frustum.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="MathUtility.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="MousePicker.h" />
     <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="StringFuncs.h" />
     <ClInclude Include="UniformManager.h" />
