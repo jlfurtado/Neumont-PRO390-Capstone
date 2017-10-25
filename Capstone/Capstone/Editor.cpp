@@ -4,6 +4,7 @@
 #include "EditorWindow.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "MathUtility.h"
 
 namespace Capstone
 {
@@ -103,11 +104,7 @@ namespace Capstone
 
 	void Editor::Update(float dt)
 	{
-		Frustum cameraFrustum = Frustum(*m_camera.GetPositionPointer(), *m_camera.GetViewDirPointer(), *m_camera.GetUpPointer(),
-									    m_fovy, m_nearClip, (float)m_pMyWindow->GetWidth(), (float)m_pMyWindow->GetHeight(), m_farClip);
-
 		m_camera.Update(dt);
-		DebugConsole::Log("%s\n", cameraFrustum.PointInFrustum(XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f)) ? "In Frustum" : "Not in frustum");
 
 		//int w, h;
 		//m_pMyWindow->GetWindowSize(w, h);
@@ -141,7 +138,33 @@ namespace Capstone
 			m_pMyWindow->CloseWindow();
 		}
 
-		//DebugConsole::Log("Size: [%d, %d]\n", w, h);
+		if (Mouse::LeftMouseClicked())
+		{
+			m_clicked = true;
+			m_lastMouseX = Mouse::GetMouseX();
+			m_lastMouseY = Mouse::GetMouseY();
+		}
+		else if (m_clicked && Mouse::LeftMouseReleased())
+		{
+			m_clicked = false;
+			int mouseX = Mouse::GetMouseX();
+			int mouseY = Mouse::GetMouseY();
+			Frustum cameraFrustum = Frustum(*m_camera.GetPositionPointer(), *m_camera.GetViewDirPointer(), *m_camera.GetUpPointer(),
+										    m_fovy, m_nearClip, (float)m_pMyWindow->GetWidth(), (float)m_pMyWindow->GetHeight(), m_farClip);
+
+			float lastXPercent = m_lastMouseX / (float)m_pMyWindow->GetWidth();
+			float currentXPercent = mouseX / (float)m_pMyWindow->GetWidth();
+			float lastYPercent = m_lastMouseY / (float)m_pMyWindow->GetHeight();
+			float currentYPercent = mouseY / (float)m_pMyWindow->GetHeight();
+
+			float lowXPerc = MathUtility::Min(lastXPercent, currentXPercent);
+			float highXPerc = MathUtility::Max(lastXPercent, currentXPercent);
+			float lowYPerc = MathUtility::Min(lastYPercent, currentYPercent);
+			float highYPerc = MathUtility::Max(lastYPercent, currentYPercent);
+
+			Frustum mouseFrustum = Frustum::GetSubFrustum(cameraFrustum, lowXPerc, lowYPerc, highXPerc, highYPerc);
+			m_mesh.SelectVerticesInFrustum(mouseFrustum);
+		}
 
 		m_inverseTransposeModelToWorldMatrix = XMMatrixTranspose(XMMatrixInverse(NULL, *m_mesh.GetMTWMatrixPtr()));
 		m_lightPos = *m_camera.GetPositionPointer();
@@ -237,8 +260,9 @@ namespace Capstone
 			pVBuffer = nullptr;
 		}
 
-		HRESULT r = m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
-		HRESULT r2 = m_device->GetDeviceRemovedReason();
+		// TODO ERROR CHECK HERE!!!
+		m_device->CreateBuffer(&bd, NULL, &pVBuffer);       // create the buffer
+		//HRESULT r2 = m_device->GetDeviceRemovedReason();
 
 		// copy the vertices into the buffer
 		D3D11_MAPPED_SUBRESOURCE ms;

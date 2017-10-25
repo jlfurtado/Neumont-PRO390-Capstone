@@ -62,20 +62,6 @@ namespace Capstone
 	{
 		//m_objectLevelVariation.Update(dt);
 		m_testGroup.Update(dt);
-
-		if (Mouse::LeftMouseClicked())
-		{
-			m_clicked = true;
-			m_lastMouseX = Mouse::GetMouseX();
-			m_lastMouseY = Mouse::GetMouseY();
-		}
-		else if (m_clicked && Mouse::LeftMouseReleased())
-		{
-			m_clicked = false;
-			int mouseX = Mouse::GetMouseX();
-			int mouseY = Mouse::GetMouseY();
-			DebugConsole::Log("(%d, %d, %d, %d)\n", m_lastMouseX, m_lastMouseY, mouseX, mouseY);
-		}
 	}
 
 	bool Mesh::LoadMesh(const char *const filePath)
@@ -164,9 +150,29 @@ namespace Capstone
 	{
 		m_testGroup.Clear();
 
-		for (int i = 0; i < m_vertexCount * 1 / 3; ++i)
+		ColorAll(1.0f, 1.0f, 1.0f);
+
+		const int *pInd = m_testGroup.GetIndices();
+		for (int i = 0; i < m_testGroup.Count(); ++i)
 		{
-			m_testGroup.Add(i);
+			SetColor(*(pInd + i), 1.0f, 0.0f, 0.0f);
+		}
+		
+		m_pEditor->ReSendVerticesSameBuffer();
+	}
+
+	void Mesh::SelectVerticesInFrustum(const Frustum & frustum)
+	{
+		m_testGroup.Clear();
+
+		for (int i = 0; i < m_vertexCount; ++i)
+		{
+			int idx = i * m_floatsPerVertex;
+			if (frustum.PointInFrustum(XMVectorSet(m_pVerts[idx], m_pVerts[idx + 1], m_pVerts[idx + 2], 1.0f)))
+			{
+				m_testGroup.Add(i);
+
+			}
 		}
 
 		ColorAll(1.0f, 1.0f, 1.0f);
@@ -176,7 +182,7 @@ namespace Capstone
 		{
 			SetColor(*(pInd + i), 1.0f, 0.0f, 0.0f);
 		}
-		
+
 		m_pEditor->ReSendVerticesSameBuffer();
 	}
 }

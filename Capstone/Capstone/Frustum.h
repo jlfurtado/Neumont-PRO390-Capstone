@@ -11,9 +11,15 @@ namespace Capstone
 				float fovyRadians, float nearClipDistance, float screenWidth, float screenHeight, float farClipDistance);
 		~Frustum();
 
-		bool PointInFrustum(const DirectX::XMVECTOR& point);
+		static Frustum GetSubFrustum(const Frustum& container, float xLeftPerc, float yTopPerc, float xRightPerc, float yBottomPerc);
 
-	private:
+		bool PointInFrustum(const DirectX::XMVECTOR& point) const;
+
+	public:
+		Frustum(const DirectX::XMVECTOR *points);
+
+		void CalculatePlanesFromPoints();
+
 		static const int PLANES_PER_FRUSTUM = 6;
 		static const int TOP_PLANE = 0, BOTTOM_PLANE = 1, LEFT_PLANE = 2, RIGHT_PLANE = 3, NEAR_PLANE = 4, FAR_PLANE= 5;
 		static const int POINTS_PER_FRUSTUM = 8;

@@ -3,6 +3,7 @@
 #include <DirectXMath.h>
 #include "VariationController.h"
 #include "VertexGroup.h"
+#include "Frustum.h"
 
 namespace Capstone
 {
@@ -27,6 +28,8 @@ namespace Capstone
 		void ColorAll(float r, float g, float b);
 		void InitTestGroup();
 
+		void SelectVerticesInFrustum(const Frustum& frustum);
+
 	private:
 		DirectX::XMMATRIX m_modelToWorld;
 		DirectX::XMVECTOR m_scale;
@@ -48,10 +51,6 @@ namespace Capstone
 		static void UpdateTestGroup(void *pMesh);
 		VertexGroup m_testGroup;
 		Editor *m_pEditor;
-
-		int m_lastMouseX;
-		int m_lastMouseY;
-		bool m_clicked;
 	};
 }
 

@@ -69,9 +69,6 @@
     <ClCompile Include="VariationController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MousePicker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Frustum.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -132,9 +129,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VariationController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MousePicker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Frustum.h">

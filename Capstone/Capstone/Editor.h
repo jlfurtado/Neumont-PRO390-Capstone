@@ -65,5 +65,9 @@ namespace Capstone
 		float m_fovy{ DirectX::XM_PIDIV4 };
 		float m_nearClip{ 0.01f };
 		float m_farClip{ 100.0f };
+
+		int m_lastMouseX;
+		int m_lastMouseY;
+		bool m_clicked;
 	};
 }

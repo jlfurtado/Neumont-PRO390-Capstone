@@ -10,8 +10,8 @@ namespace Capstone
 
 	Camera::Camera()
 		: m_position(XMVectorSet(0.0f, 0.0f, -10.0f, 1.0f)), 
-		  m_forward(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f)),
-		  m_up(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f)),
+		  m_forward(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f)),
+		  m_up(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)),
 		  m_speed(10.0f), m_rotateSpeed(0.5f)
 	{
 	}
