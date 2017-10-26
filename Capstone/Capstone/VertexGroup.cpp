@@ -1,30 +1,37 @@
 #include "VertexGroup.h"
 #include "Mesh.h"
 #include "Utils.h"
+#include "DebugConsole.h"
 
 namespace Capstone
 {
 	using namespace DirectX;
 
-	VertexGroup::VertexGroup(VariationController::VariationChangedCallback cb, Mesh *pMesh)
+	VertexGroup::VertexGroup()
 		: m_vertexIndices(1 << 12)
 	{
-		m_variation.Initialize(cb, pMesh, &m_scale, &m_rotation, &m_translation);
+		m_variation.Initialize(VertexGroup::LogNotSet, nullptr, &m_scale, &m_rotation, &m_translation);
+		Clear();
 	}
 
 	VertexGroup::~VertexGroup()
 	{
 	}
 
+	void VertexGroup::Initialize(VariationController::VariationChangedCallback cb, Mesh * pMesh)
+	{
+		m_variation.Initialize(cb, pMesh, &m_scale, &m_rotation, &m_translation);
+	}
+
 	void VertexGroup::Clear()
 	{
-		m_vertexIndices.Clear(0); // must come before!
+		m_vertexIndices.clear(); // must come before!
 		m_variation.ClearVariations();
 	}
 
 	int VertexGroup::Count()
 	{
-		return m_vertexIndices.GetCount();
+		return m_vertexIndices.size();
 	}
 
 	void VertexGroup::Update(float dt)
@@ -34,20 +41,44 @@ namespace Capstone
 
 	void VertexGroup::Add(int idx)
 	{
-		if (!m_vertexIndices.Contains(idx))
+		if (!Contains(idx))
 		{
-			m_vertexIndices.Add(idx);
+			m_vertexIndices.push_back(idx);
 		}
 	}
 
 	const int * VertexGroup::GetIndices()
 	{
-		return m_vertexIndices.GetDataPtr();
+		return m_vertexIndices.data();
 	}
 
 	DirectX::XMMATRIX VertexGroup::CalcMTW()
 	{
 		return MyUtils::MTWFromSRT(&m_scale, &m_rotation, &m_translation);
+	}
+
+	void VertexGroup::DoNothingOnPurpose(void *)
+	{
+	}
+
+	VariationController * VertexGroup::GetVariationPointer()
+	{
+		return &m_variation;
+	}
+
+	bool VertexGroup::Contains(int idx)
+	{
+		for (size_t i = 0; i < m_vertexIndices.size(); ++i)
+		{
+			if (m_vertexIndices[i] == idx) { return true; }
+		}
+
+		return false;
+	}
+
+	void VertexGroup::LogNotSet(void *)
+	{
+		DebugConsole::Log("Vertex Group has unset variation callback!\n");
 	}
 
 

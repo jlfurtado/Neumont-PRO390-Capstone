@@ -81,7 +81,8 @@ namespace Capstone
 		CalculatePerspectiveMatrix();
 
 		m_initialized = true;
-		m_mesh.InitTestGroup();
+		m_mesh.ClearObjectLevelVariations();
+		m_mesh.ClearVertexGroups();
 
 		return true;
 	}
@@ -116,7 +117,6 @@ namespace Capstone
 		//if (Keyboard::IsKeyReleased('W')) { DebugConsole::Log("W released\n"); }
 
 		m_mesh.Update(dt);
-		m_mesh.CalcMatrix();
 
 		m_t = m_timer <= m_halfLoopTime ? m_timer / m_halfLoopTime : (m_loopTime - m_timer) / m_halfLoopTime;
 
@@ -216,7 +216,6 @@ namespace Capstone
 		if (!m_mesh.LoadMesh(filePath)) { return false; }
 		
 		MakeVertexBuffer();
-		m_mesh.InitTestGroup();
 
 		return true;
 	}

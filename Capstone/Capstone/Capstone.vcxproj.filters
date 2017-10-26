@@ -122,9 +122,6 @@
     <ClInclude Include="UniformManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DynamicArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VertexGroup.h">
       <Filter>Header Files</Filter>
     </ClInclude>

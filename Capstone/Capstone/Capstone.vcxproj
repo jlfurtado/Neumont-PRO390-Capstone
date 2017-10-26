@@ -143,7 +143,6 @@
     <ClInclude Include="CommandProcessor.h" />
     <ClInclude Include="DebugConsole.h" />
     <ClInclude Include="DXBase.h" />
-    <ClInclude Include="DynamicArray.h" />
     <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="ElapsedTime.h" />

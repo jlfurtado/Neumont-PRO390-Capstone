@@ -12,9 +12,10 @@ namespace Capstone
 	using namespace DirectX;
 
 	Mesh::Mesh(Editor * pEditor)
-		: m_format("PCN"), m_testGroup(Mesh::UpdateTestGroup, this), m_pEditor(pEditor)
+		: m_format("PCN"), m_pEditor(pEditor), m_testGroups(1 << 4)
 	{
-		m_objectLevelVariation.Initialize(Mesh::DoNothing, this, &m_scale, &m_rotation, &m_translation); // must come before load
+		m_objectLevelVariation.Initialize(VertexGroup::DoNothingOnPurpose, this, &m_scale, &m_rotation, &m_translation); // must come before load
+		m_objectLevelVariation.ClearVariations();
 		LoadMesh("..\\Data\\OBJS\\Sphere.obj");
 	}
 
@@ -60,8 +61,77 @@ namespace Capstone
 
 	void Mesh::Update(float dt)
 	{
-		//m_objectLevelVariation.Update(dt);
-		m_testGroup.Update(dt);
+		if (m_currentVertexGroup < 0) { m_objectLevelVariation.Update(dt); CalcMatrix(); }
+		else { m_testGroups[m_currentVertexGroup].Update(dt); }
+
+		if (Keyboard::IsKeyDown(VK_SHIFT))
+		{
+			if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyDown('U'))
+			{ 
+				m_objectLevelVariation.VarySmoothUniform();
+				for (size_t i = 0; i < m_testGroups.size(); ++i)
+				{
+					m_testGroups[i].GetVariationPointer()->VarySmoothUniform();
+				}
+
+				UpdateAllVertexGroups(this);
+			}
+
+			if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyUp('U'))
+			{
+				m_objectLevelVariation.VarySmoothBellApproximation();
+				for (size_t i = 0; i < m_testGroups.size(); ++i)
+				{
+					m_testGroups[i].GetVariationPointer()->VarySmoothBellApproximation();
+				}
+
+				UpdateAllVertexGroups(this);
+			}
+
+			if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyDown('U'))
+			{
+				m_objectLevelVariation.VaryVectorUniform();
+				for (size_t i = 0; i < m_testGroups.size(); ++i)
+				{
+					m_testGroups[i].GetVariationPointer()->VaryVectorUniform();
+				}
+
+				UpdateAllVertexGroups(this);
+			}
+
+			if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyUp('U'))
+			{
+				m_objectLevelVariation.VaryVectorBellApproximation();
+				for (size_t i = 0; i < m_testGroups.size(); ++i)
+				{
+					m_testGroups[i].GetVariationPointer()->VaryVectorBellApproximation();
+				}
+
+				UpdateAllVertexGroups(this);
+			}
+
+			if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyDown('U'))
+			{
+				m_objectLevelVariation.VaryComponentUniform();
+				for (size_t i = 0; i < m_testGroups.size(); ++i)
+				{
+					m_testGroups[i].GetVariationPointer()->VaryComponentUniform();
+				}
+
+				UpdateAllVertexGroups(this);
+			}
+
+			if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyUp('U'))
+			{
+				m_objectLevelVariation.VaryComponentBellApproximation();
+				for (size_t i = 0; i < m_testGroups.size(); ++i)
+				{
+					m_testGroups[i].GetVariationPointer()->VaryComponentBellApproximation();
+				}
+
+				UpdateAllVertexGroups(this);
+			}
+		}
 	}
 
 	bool Mesh::LoadMesh(const char *const filePath)
@@ -72,6 +142,7 @@ namespace Capstone
 
 		ClearObjectLevelVariations();
 		ReleaseVerts();
+		ClearVertexGroups();
 		m_vertexCount = vertexCount;
 		m_stride = stride;
 		m_floatsPerVertex = m_stride / sizeof(float);
@@ -81,6 +152,8 @@ namespace Capstone
 		// copy the vertices because we're going to be working with a copy so we can revert and stuff!
 		m_pVerts = new float[m_floatsPerVertex * m_vertexCount]{ 0.0f };
 		std::memcpy(m_pVerts, m_pBaseVerts, m_stride * m_vertexCount);
+
+		ColorAll(0.0f, 0.0f, 1.0f);
 
 		return true;
 	}
@@ -96,6 +169,17 @@ namespace Capstone
 		{
 			SetColor(i, r, g, b);
 		}
+	}
+
+	void Mesh::ClearVertexGroups()
+	{
+		for (unsigned i = 0; i < m_testGroups.size(); ++i)
+		{
+			m_testGroups[i].Clear();
+		}
+
+		m_testGroups.clear();
+		m_currentVertexGroup = -1;
 	}
 
 	void Mesh::ReleaseVerts()
@@ -115,21 +199,38 @@ namespace Capstone
 		pColor[2] = b;
 	}
 
-	void Mesh::DoNothing(void *)
+	void Mesh::UpdateCurrentVertexGroup(void * pMesh)
 	{
+		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
+		if (pM->m_currentVertexGroup >= 0) { UpdateVertexGroup(pMesh, pM->m_currentVertexGroup); }
 	}
 
-	void Mesh::UpdateTestGroup(void * pMesh)
+	void Mesh::UpdateAllVertexGroups(void * pMesh)
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
 
 		if (pM && pM->m_pEditor)
 		{
-			const int *pIndices = pM->m_testGroup.GetIndices();
+			for (size_t currentVertexGroup = 0; currentVertexGroup < pM->m_testGroups.size(); ++currentVertexGroup)
+			{
+				UpdateVertexGroup(pMesh, currentVertexGroup);
+			}
+			
+			pM->m_pEditor->ReSendVerticesSameBuffer();
+		}
+	}
+
+	void Mesh::UpdateVertexGroup(void * pMesh, int groupIdx)
+	{
+		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
+
+		if (pM && pM->m_pEditor && pM->m_pBaseVerts && pM->m_pVerts)
+		{
+			const int *pIndices = pM->m_testGroups[groupIdx].GetIndices();
 
 			// same matrix per group
-			DirectX::XMMATRIX MTW = pM->m_testGroup.CalcMTW();
-			for (int i = 0; i < pM->m_testGroup.Count(); ++i)
+			DirectX::XMMATRIX MTW = pM->m_testGroups[groupIdx].CalcMTW();
+			for (int i = 0; i < pM->m_testGroups[groupIdx].Count(); ++i)
 			{
 				int vertIdx = *(pIndices + i);
 				int floatIdx = vertIdx * pM->m_floatsPerVertex;
@@ -146,41 +247,46 @@ namespace Capstone
 		}
 	}
 
-	void Mesh::InitTestGroup()
-	{
-		m_testGroup.Clear();
-
-		ColorAll(1.0f, 1.0f, 1.0f);
-
-		const int *pInd = m_testGroup.GetIndices();
-		for (int i = 0; i < m_testGroup.Count(); ++i)
-		{
-			SetColor(*(pInd + i), 1.0f, 0.0f, 0.0f);
-		}
-		
-		m_pEditor->ReSendVerticesSameBuffer();
-	}
-
 	void Mesh::SelectVerticesInFrustum(const Frustum & frustum)
 	{
-		m_testGroup.Clear();
+		// add the test group, select it, and make sure its empty
+		m_testGroups.push_back(VertexGroup());
+		m_currentVertexGroup = m_testGroups.size() - 1;
+		m_testGroups[m_currentVertexGroup].Clear();
+		
+		// IN CASE RESIZED RE-HOOK UP POINTERS!!!!
+		for (int i = 0; i < m_testGroups.size(); ++i)
+		{
+			m_testGroups[i].Initialize(Mesh::UpdateCurrentVertexGroup, this);
+		}
 
+		XMMATRIX mtwT = XMMatrixTranspose(m_modelToWorld);
 		for (int i = 0; i < m_vertexCount; ++i)
 		{
 			int idx = i * m_floatsPerVertex;
-			if (frustum.PointInFrustum(XMVectorSet(m_pVerts[idx], m_pVerts[idx + 1], m_pVerts[idx + 2], 1.0f)))
+			XMVECTOR modelSpacePoint = XMVectorSet(m_pVerts[idx], m_pVerts[idx + 1], m_pVerts[idx + 2], 1.0f);
+			XMVECTOR worldSpacePoint = XMVector4Transform(modelSpacePoint, mtwT);
+			if (frustum.PointInFrustum(worldSpacePoint))
 			{
-				m_testGroup.Add(i);
-
+				m_testGroups[m_currentVertexGroup].Add(i);
 			}
 		}
 
-		ColorAll(1.0f, 1.0f, 1.0f);
-
-		const int *pInd = m_testGroup.GetIndices();
-		for (int i = 0; i < m_testGroup.Count(); ++i)
+		if (m_testGroups[m_currentVertexGroup].Count() > 0)
 		{
-			SetColor(*(pInd + i), 1.0f, 0.0f, 0.0f);
+			ColorAll(1.0f, 1.0f, 1.0f);
+
+			const int *pInd = m_testGroups[m_currentVertexGroup].GetIndices();
+			for (int i = 0; i < m_testGroups[m_currentVertexGroup].Count(); ++i)
+			{
+				SetColor(*(pInd + i), 1.0f, 0.0f, 0.0f);
+			}
+		}
+		else
+		{
+			m_testGroups.pop_back();
+			m_currentVertexGroup = -1;
+			ColorAll(0.0f, 0.0f, 1.0f);
 		}
 
 		m_pEditor->ReSendVerticesSameBuffer();

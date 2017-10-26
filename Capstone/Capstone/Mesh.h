@@ -4,6 +4,7 @@
 #include "VariationController.h"
 #include "VertexGroup.h"
 #include "Frustum.h"
+#include <vector>
 
 namespace Capstone
 {
@@ -26,7 +27,7 @@ namespace Capstone
 		bool LoadMesh(const char *const filePath);
 		void ClearObjectLevelVariations();
 		void ColorAll(float r, float g, float b);
-		void InitTestGroup();
+		void ClearVertexGroups();
 
 		void SelectVerticesInFrustum(const Frustum& frustum);
 
@@ -46,10 +47,13 @@ namespace Capstone
 
 		void ReleaseVerts();
 		void SetColor(int idx, float r, float g, float b);
-		static void DoNothing(void *);
 
-		static void UpdateTestGroup(void *pMesh);
-		VertexGroup m_testGroup;
+		static void UpdateCurrentVertexGroup(void *pMesh);
+		static void UpdateAllVertexGroups(void *pMesh);
+		static void UpdateVertexGroup(void *pMesh, int groupIdx);
+
+		std::vector<VertexGroup> m_testGroups;
+		int m_currentVertexGroup{ -1 };
 		Editor *m_pEditor;
 	};
 }
