@@ -27,6 +27,9 @@ namespace Capstone
 			void MouseScroll(int degrees);
 			bool LoadObj(const char *const filePath);
 			void ReSendVerticesSameBuffer();
+			bool SetPivotCamera();
+			bool SetPivotXYZ(float x, float y, float z);
+			bool SetPivotCenter();
 
 	private:
 		void ExitFullScreen();

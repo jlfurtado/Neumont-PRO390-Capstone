@@ -230,6 +230,7 @@ namespace Capstone
 
 			// same matrix per group
 			DirectX::XMMATRIX MTW = pM->m_testGroups[groupIdx].CalcMTW();
+			DirectX::XMVECTOR pivot = pM->m_testGroups[groupIdx].GetPivot();
 			for (int i = 0; i < pM->m_testGroups[groupIdx].Count(); ++i)
 			{
 				int vertIdx = *(pIndices + i);
@@ -237,7 +238,7 @@ namespace Capstone
 				float *pBase = pM->m_pBaseVerts + floatIdx;
 				float *pVert = pM->m_pVerts + floatIdx;
 
-				XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 1.0f), MTW);
+				XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 1.0f) - pivot, MTW) + pivot;
 				pVert[0] = XMVectorGetX(newVertPos);
 				pVert[1] = XMVectorGetY(newVertPos);
 				pVert[2] = XMVectorGetZ(newVertPos);
@@ -255,7 +256,7 @@ namespace Capstone
 		m_testGroups[m_currentVertexGroup].Clear();
 		
 		// IN CASE RESIZED RE-HOOK UP POINTERS!!!!
-		for (int i = 0; i < m_testGroups.size(); ++i)
+		for (size_t i = 0; i < m_testGroups.size(); ++i)
 		{
 			m_testGroups[i].Initialize(Mesh::UpdateCurrentVertexGroup, this);
 		}
@@ -290,5 +291,34 @@ namespace Capstone
 		}
 
 		m_pEditor->ReSendVerticesSameBuffer();
+	}
+	
+	bool Mesh::SetPivotCoords(float x, float y, float z)
+	{
+		if (m_currentVertexGroup < 0 || (unsigned)m_currentVertexGroup >= m_testGroups.size()) { DebugConsole::Log("Cannot setPivot! No selected vertex group!\n"); return false; }
+		
+		m_testGroups[m_currentVertexGroup].SetPivot(XMVectorSet(x, y, z, 0.0f));
+		return true;
+	}
+
+	bool Mesh::SetPivotCenter()
+	{
+		if (m_currentVertexGroup < 0 || (unsigned)m_currentVertexGroup >= m_testGroups.size()) { DebugConsole::Log("Cannot setPivot! No selected vertex group!\n"); return false; }
+
+		const int *pIndices = m_testGroups[m_currentVertexGroup].GetIndices();
+
+		XMVECTOR center = XMVectorZero();
+
+		for (int i = 0; i < m_testGroups[m_currentVertexGroup].Count(); ++i)
+		{
+			int idx = pIndices[i];
+			int floatIdx = idx * m_floatsPerVertex;
+			center += XMVectorSet(m_pVerts[floatIdx + 0], m_pVerts[floatIdx + 1], m_pVerts[floatIdx + 2], 0.0f);
+		}
+
+		center /= (float)m_testGroups[m_currentVertexGroup].Count();
+		m_testGroups[m_currentVertexGroup].SetPivot(center);
+
+		return true;
 	}
 }

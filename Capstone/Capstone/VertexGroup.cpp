@@ -11,6 +11,7 @@ namespace Capstone
 		: m_vertexIndices(1 << 12)
 	{
 		m_variation.Initialize(VertexGroup::LogNotSet, nullptr, &m_scale, &m_rotation, &m_translation);
+		m_pivot = XMVectorZero();
 		Clear();
 	}
 
@@ -41,10 +42,10 @@ namespace Capstone
 
 	void VertexGroup::Add(int idx)
 	{
-		if (!Contains(idx))
-		{
+		//if (!Contains(idx))
+		//{
 			m_vertexIndices.push_back(idx);
-		}
+		//}
 	}
 
 	const int * VertexGroup::GetIndices()
@@ -64,6 +65,16 @@ namespace Capstone
 	VariationController * VertexGroup::GetVariationPointer()
 	{
 		return &m_variation;
+	}
+
+	DirectX::XMVECTOR VertexGroup::GetPivot()
+	{
+		return m_pivot;
+	}
+
+	void VertexGroup::SetPivot(const DirectX::XMVECTOR & pivot)
+	{
+		m_pivot = pivot;
 	}
 
 	bool VertexGroup::Contains(int idx)

@@ -30,6 +30,8 @@ namespace Capstone
 		void ClearVertexGroups();
 
 		void SelectVerticesInFrustum(const Frustum& frustum);
+		bool SetPivotCoords(float x, float y, float z);
+		bool SetPivotCenter();
 
 	private:
 		DirectX::XMMATRIX m_modelToWorld;

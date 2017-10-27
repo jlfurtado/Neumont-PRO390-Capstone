@@ -2,6 +2,7 @@
 
 namespace Capstone
 {
+	class EditorWindow;
 	class Mouse
 	{
 		struct MouseState
@@ -37,7 +38,7 @@ namespace Capstone
 	public:
 		typedef void(*MouseScrollCallback)(int, void*);
 
-		static bool Initialize(MouseScrollCallback onScroll, void *pInstance);
+		static bool Initialize(MouseScrollCallback onScroll, void *pInstance, EditorWindow *pWindow);
 		static void Update(int x, int y);
 		static bool LeftMouseClicked();
 		static bool LeftMouseReleased();
@@ -63,12 +64,15 @@ namespace Capstone
 		static void Released(int btn);
 		static void Scroll(int degrees);
 
+		static void ClearStateOutOfBounds();
+
 		static const int LEFT_MOUSE_INDEX = 0;
 		static const int MIDDLE_MOUSE_INDEX = 1;
 		static const int RIGHT_MOUSE_INDEX = 2;
 
 		static MouseScrollCallback s_onScroll;
 		static void *s_pInstance;
+		static EditorWindow *s_pMyWindow;
 		static MouseState s_last;
 		static MouseState s_current;
 		static MouseState s_next;

@@ -23,14 +23,14 @@ namespace Capstone
 		DirectX::XMMATRIX CalcMTW();
 		static void DoNothingOnPurpose(void *);
 		VariationController *GetVariationPointer();
-		float TX() { return DirectX::XMVectorGetX(m_translation); }
-		float TY() { return DirectX::XMVectorGetY(m_translation); }
-		float TZ() { return DirectX::XMVectorGetZ(m_translation); }
+		DirectX::XMVECTOR GetPivot();
+		void SetPivot(const DirectX::XMVECTOR& pivot);
 
 	private:
 		DirectX::XMVECTOR m_scale;
 		DirectX::XMVECTOR m_translation;
 		DirectX::XMVECTOR m_rotation;
+		DirectX::XMVECTOR m_pivot;
 		VariationController m_variation;
 		std::vector<int> m_vertexIndices;
 		bool Contains(int idx);

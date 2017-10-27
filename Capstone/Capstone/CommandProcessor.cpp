@@ -11,7 +11,8 @@ namespace Capstone
 		{"exit", CommandProcessor::ProcessExitCommand},
 		{"loadObj", CommandProcessor::ProcessLoadObjCommand},
 		{"back", CommandProcessor::ProcessCancelCommand},
-		{"cancel", CommandProcessor::ProcessCancelCommand }
+		{"cancel", CommandProcessor::ProcessCancelCommand },
+		{"setPivot", CommandProcessor::ProcessSetPivotCommand }
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -58,5 +59,30 @@ namespace Capstone
 	bool CommandProcessor::ProcessCancelCommand(const char * const /*command*/)
 	{
 		return true;
+	}
+
+	bool CommandProcessor::ProcessSetPivotCommand(const char * const command)
+	{
+		static const int EXPECTED_FLOATS = 3;
+		float xyz[EXPECTED_FLOATS]{ 0.0f };
+		const char *const args = command + StringFuncs::StringLen("setPivot ");
+
+		if (StringFuncs::StringBeginsWith(args, "camera"))
+		{
+			return s_pEditor->SetPivotCamera();
+		}
+
+		if (StringFuncs::StringBeginsWith(args, "center"))
+		{
+			return s_pEditor->SetPivotCenter();
+		}
+
+		if (StringFuncs::GetFloatsFromString(args, EXPECTED_FLOATS, &xyz[0]))
+		{
+			return s_pEditor->SetPivotXYZ(xyz[0], xyz[1], xyz[2]);
+		}
+
+
+		return false;
 	}
 }

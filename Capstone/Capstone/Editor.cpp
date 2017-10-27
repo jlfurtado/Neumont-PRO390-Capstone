@@ -227,9 +227,24 @@ namespace Capstone
 			// copy the vertices into the buffer
 			D3D11_MAPPED_SUBRESOURCE ms;
 			m_context->Map(pVBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);    // map the buffer
-			memcpy(ms.pData, m_mesh.GetVertexPointer(), m_mesh.GetVertexBufferSize());                 // copy the data
+			memcpy(ms.pData, m_mesh.GetVertexPointer(), m_mesh.GetVertexBufferSize());  // copy the mesh data
 			m_context->Unmap(pVBuffer, NULL);    // unmap the buffer
 		}
+	}
+
+	bool Editor::SetPivotCamera()
+	{
+		return m_mesh.SetPivotCoords(XMVectorGetX(*m_camera.GetPositionPointer()), XMVectorGetY(*m_camera.GetPositionPointer()), XMVectorGetZ(*m_camera.GetPositionPointer()));
+	}
+
+	bool Editor::SetPivotXYZ(float x, float y, float z)
+	{
+		return m_mesh.SetPivotCoords(x, y, z);
+	}
+
+	bool Editor::SetPivotCenter()
+	{
+		return m_mesh.SetPivotCenter();
 	}
 
 	void Editor::ExitFullScreen()

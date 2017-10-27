@@ -66,7 +66,7 @@ namespace Capstone
 		if (!ElapsedTime::Initialize()) { CloseWindow(); }
 		if (!m_editor.Initialize(m_instanceHandle, m_windowHandle, this)) { CloseWindow(); }
 		if (!Keyboard::Initialize()) { CloseWindow(); }
-		if (!Mouse::Initialize(Editor::OnMouseScroll, &m_editor)) { CloseWindow(); }
+		if (!Mouse::Initialize(Editor::OnMouseScroll, &m_editor, this)) { CloseWindow(); }
 
 		// this struct holds Windows event messages
 		MSG msg = { 0 };

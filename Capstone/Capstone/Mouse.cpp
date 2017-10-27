@@ -1,10 +1,12 @@
 #include "Mouse.h"
 #include "DebugConsole.h"
+#include "EditorWindow.h"
 
 namespace Capstone
 {
 	Mouse::MouseScrollCallback Mouse::s_onScroll = nullptr;
 	void *Mouse::s_pInstance = nullptr;
+	EditorWindow *Mouse::s_pMyWindow = nullptr;
 	Mouse::MouseState Mouse::s_last;
 	Mouse::MouseState Mouse::s_current;
 	Mouse::MouseState Mouse::s_next;
@@ -28,12 +30,21 @@ namespace Capstone
 		if (s_onScroll) { s_onScroll(degrees, s_pInstance); }
 	}
 
-	bool Mouse::Initialize(MouseScrollCallback onScroll, void *pInstance)
+	void Mouse::ClearStateOutOfBounds()
+	{
+		if (s_xPos < 0 || s_xPos > s_pMyWindow->GetWidth() || s_yPos < 0 || s_yPos > s_pMyWindow->GetHeight())
+		{
+			ClearAll();
+		}
+	}
+
+	bool Mouse::Initialize(MouseScrollCallback onScroll, void *pInstance, EditorWindow *pWindow)
 	{
 		ClearAll();
 
 		s_onScroll = onScroll;
 		s_pInstance = pInstance;
+		s_pMyWindow = pWindow;
 
 		DebugConsole::Log("Mouse Initialized!\n");
 		return true;
@@ -49,6 +60,8 @@ namespace Capstone
 
 		s_xPos = x;
 		s_yPos = y;
+
+		ClearStateOutOfBounds();
 	}
 
 	bool Mouse::LeftMouseClicked()

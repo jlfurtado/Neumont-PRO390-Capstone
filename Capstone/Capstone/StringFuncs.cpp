@@ -300,7 +300,7 @@ namespace Capstone
 		}
 
 		if (outOffset < numFloats) { DebugConsole::Log("GetFloatsForString expected to find [%d] floats but found [%d]! Aborting!\n", numFloats, outOffset); return false; }
-		else { DebugConsole::Log("Found the correct number of floats!\n"); }
+		//else { DebugConsole::Log("Found the correct number of floats!\n"); }
 
 		return true;
 	}
@@ -331,7 +331,7 @@ namespace Capstone
 		}
 
 		if (outOffset < numInts) { DebugConsole::Log("GetIntsForKey expected to find [%d] ints but found [%d]! Aborting!\n", numInts, outOffset); return false; }
-		else { DebugConsole::Log("Found the correct number of ints!\n"); }
+		//else { DebugConsole::Log("Found the correct number of ints!\n"); }
 		return true;
 	}
 
