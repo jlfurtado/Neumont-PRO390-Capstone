@@ -6,6 +6,7 @@
 #include "ObjLoader.h"
 #include "Utils.h"
 #include "Editor.h"
+#include "StringFuncs.h"
 
 namespace Capstone
 {
@@ -220,6 +221,8 @@ namespace Capstone
 		}
 	}
 
+	const int COLOR_FLOATS = 4;
+	const int TEXTURE_FLOATS = 2;
 	void Mesh::UpdateVertexGroup(void * pMesh, int groupIdx)
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
@@ -242,6 +245,26 @@ namespace Capstone
 				pVert[0] = XMVectorGetX(newVertPos);
 				pVert[1] = XMVectorGetY(newVertPos);
 				pVert[2] = XMVectorGetZ(newVertPos);
+			}
+
+			int normalPos = StringFuncs::FindSubString(pM->m_format, "N");
+			if (normalPos >= 0)
+			{
+				// handle all fomats
+				int normalIdx = normalPos == 1 ? POSITION_FLOATS : (normalPos == 2 ? (POSITION_FLOATS + COLOR_FLOATS) : (POSITION_FLOATS + COLOR_FLOATS + TEXTURE_FLOATS));
+				DirectX::XMMATRIX inverseTranspose = XMMatrixInverse(nullptr, XMMatrixTranspose(MTW));
+				for (int i = 0; i < pM->m_testGroups[groupIdx].Count(); ++i)
+				{
+					int vertIdx = *(pIndices + i);
+					int floatIdx = vertIdx * pM->m_floatsPerVertex + normalIdx;
+					float *pBase = pM->m_pBaseVerts + floatIdx;
+					float *pVert = pM->m_pVerts + floatIdx;
+
+					XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 0.0f), inverseTranspose);
+					pVert[0] = XMVectorGetX(newVertPos);
+					pVert[1] = XMVectorGetY(newVertPos);
+					pVert[2] = XMVectorGetZ(newVertPos);
+				}
 			}
 
 			pM->m_pEditor->ReSendVerticesSameBuffer();
