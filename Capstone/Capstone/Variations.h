@@ -21,6 +21,6 @@ namespace Capstone
 												  const DirectX::XMVECTOR& l2, const DirectX::XMVECTOR& h2, DirectX::XMVECTOR *pOut2,
 												  const DirectX::XMVECTOR& l3, const DirectX::XMVECTOR& h3, DirectX::XMVECTOR *pOut3,
 												  int sampleSize);
-
+		
 	};
 }

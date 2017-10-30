@@ -67,67 +67,12 @@ namespace Capstone
 
 		if (Keyboard::IsKeyDown(VK_SHIFT))
 		{
-			if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyDown('U'))
+			if (Keyboard::IsKeyPressed('V'))
 			{ 
-				m_objectLevelVariation.VarySmoothUniform();
+				m_objectLevelVariation.Vary();
 				for (size_t i = 0; i < m_testGroups.size(); ++i)
 				{
-					m_testGroups[i].GetVariationPointer()->VarySmoothUniform();
-				}
-
-				UpdateAllVertexGroups(this);
-			}
-
-			if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyUp('U'))
-			{
-				m_objectLevelVariation.VarySmoothBellApproximation();
-				for (size_t i = 0; i < m_testGroups.size(); ++i)
-				{
-					m_testGroups[i].GetVariationPointer()->VarySmoothBellApproximation();
-				}
-
-				UpdateAllVertexGroups(this);
-			}
-
-			if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyDown('U'))
-			{
-				m_objectLevelVariation.VaryVectorUniform();
-				for (size_t i = 0; i < m_testGroups.size(); ++i)
-				{
-					m_testGroups[i].GetVariationPointer()->VaryVectorUniform();
-				}
-
-				UpdateAllVertexGroups(this);
-			}
-
-			if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyUp('U'))
-			{
-				m_objectLevelVariation.VaryVectorBellApproximation();
-				for (size_t i = 0; i < m_testGroups.size(); ++i)
-				{
-					m_testGroups[i].GetVariationPointer()->VaryVectorBellApproximation();
-				}
-
-				UpdateAllVertexGroups(this);
-			}
-
-			if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyDown('U'))
-			{
-				m_objectLevelVariation.VaryComponentUniform();
-				for (size_t i = 0; i < m_testGroups.size(); ++i)
-				{
-					m_testGroups[i].GetVariationPointer()->VaryComponentUniform();
-				}
-
-				UpdateAllVertexGroups(this);
-			}
-
-			if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyUp('U'))
-			{
-				m_objectLevelVariation.VaryComponentBellApproximation();
-				for (size_t i = 0; i < m_testGroups.size(); ++i)
-				{
-					m_testGroups[i].GetVariationPointer()->VaryComponentBellApproximation();
+					m_testGroups[i].GetVariationPointer()->Vary();
 				}
 
 				UpdateAllVertexGroups(this);
@@ -262,7 +207,7 @@ namespace Capstone
 
 					XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 0.0f), inverseTranspose);
 					pVert[0] = XMVectorGetX(newVertPos);
-					pVert[1] = XMVectorGetY(newVertPos);
+					pVert[1] = XMVectorGetY(newVertPos);	
 					pVert[2] = XMVectorGetZ(newVertPos);
 				}
 			}
@@ -342,6 +287,25 @@ namespace Capstone
 		center /= (float)m_testGroups[m_currentVertexGroup].Count();
 		m_testGroups[m_currentVertexGroup].SetPivot(center);
 
+		return true;
+	}
+
+	bool Mesh::SetVariationType(VariationType type)
+	{
+		return (m_currentVertexGroup >= 0 && (unsigned)m_currentVertexGroup < m_testGroups.size()) ? SetVariationTypeForCurrentGroup(type) : SetObjectLevelVariationType(type);
+	}
+
+	bool Mesh::SetVariationTypeForCurrentGroup(VariationType type)
+	{
+		if (m_currentVertexGroup < 0 || (unsigned)m_currentVertexGroup >= m_testGroups.size()) { DebugConsole::Log("Cannot SetVariationType! No selected vertex group!\n"); return false; }
+
+		m_testGroups[m_currentVertexGroup].SetVariationType(type);
+		return true;
+	}
+
+	bool Mesh::SetObjectLevelVariationType(VariationType type)
+	{
+		m_objectLevelVariation.SetVariationType(type);
 		return true;
 	}
 }

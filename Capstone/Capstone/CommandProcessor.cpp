@@ -2,6 +2,7 @@
 #include "EditorWindow.h"
 #include "Editor.h"
 #include "StringFuncs.h"
+#include "VariationType.h"
 
 namespace Capstone
 {
@@ -12,7 +13,8 @@ namespace Capstone
 		{"loadObj", CommandProcessor::ProcessLoadObjCommand},
 		{"back", CommandProcessor::ProcessCancelCommand},
 		{"cancel", CommandProcessor::ProcessCancelCommand },
-		{"setPivot", CommandProcessor::ProcessSetPivotCommand }
+		{"setPivot", CommandProcessor::ProcessSetPivotCommand },
+		{"setVariationType", CommandProcessor::ProcessSetVariationTypeCommand }
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -82,7 +84,34 @@ namespace Capstone
 			return s_pEditor->SetPivotXYZ(xyz[0], xyz[1], xyz[2]);
 		}
 
+		DebugConsole::Log("Invalid args to setPivot!\n");
+		return false;
+	}
 
+	bool CommandProcessor::ProcessSetVariationTypeCommand(const char * const command)
+	{
+		static const int NUM_TYPES = static_cast<int>(VariationType::USED_TYPES);
+		static const VariationType s_types[NUM_TYPES]{ VariationType::COMPONENT_UNIFORM, VariationType::VECTOR_UNIFORM, VariationType::SMOOTH_UNIFORM, VariationType::COMPONENT_BELL, VariationType::VECTOR_BELL, VariationType::SMOOTH_BELL};
+		static const char *const s_prefixes[NUM_TYPES]{ "componentUniform", "vectorUniform", "smoothUniform", "componentBell", "vectorBell", "smoothBell" };
+
+		const char *const args = command + StringFuncs::StringLen("setVariationType ");
+		int outInt = -1;
+
+		for (int i = 0; i < NUM_TYPES; ++i)
+		{
+			if (StringFuncs::StringBeginsWith(args, s_prefixes[i]))
+			{
+				return s_pEditor->SetVariationType(s_types[i]);
+			}
+		}
+
+		if (StringFuncs::GetSingleIntFromString(args, outInt))
+		{
+			if (outInt < 0 || outInt >= NUM_TYPES) { DebugConsole::Log("Invalid args to setVariationType! type must be between [0] and [%d]\n", NUM_TYPES); return false; }
+			return s_pEditor->SetVariationType(static_cast<VariationType>(outInt));
+		}
+
+		DebugConsole::Log("Invalid args to setVariationType!\n");
 		return false;
 	}
 }

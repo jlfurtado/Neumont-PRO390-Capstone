@@ -30,6 +30,7 @@ namespace Capstone
 			bool SetPivotCamera();
 			bool SetPivotXYZ(float x, float y, float z);
 			bool SetPivotCenter();
+			bool SetVariationType(VariationType type);
 
 	private:
 		void ExitFullScreen();

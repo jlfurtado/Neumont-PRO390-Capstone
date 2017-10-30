@@ -247,6 +247,11 @@ namespace Capstone
 		return m_mesh.SetPivotCenter();
 	}
 
+	bool Editor::SetVariationType(VariationType type)
+	{
+		return m_mesh.SetVariationType(type);
+	}
+
 	void Editor::ExitFullScreen()
 	{
 		if (m_swapChain)

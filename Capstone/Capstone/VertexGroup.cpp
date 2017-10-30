@@ -77,6 +77,11 @@ namespace Capstone
 		m_pivot = pivot;
 	}
 
+	void VertexGroup::SetVariationType(VariationType type)
+	{
+		m_variation.SetVariationType(type);
+	}
+
 	bool VertexGroup::Contains(int idx)
 	{
 		for (size_t i = 0; i < m_vertexIndices.size(); ++i)

@@ -8,6 +8,15 @@ namespace Capstone
 {
 	using namespace DirectX;
 
+	VariationController::VaryCallback VariationController::s_varyFuncs[VARIATION_CALLBACKS] = {
+		VariationController::VaryComponentUniform,
+		VariationController::VaryVectorUniform,
+		VariationController::VarySmoothUniform,
+		VariationController::VaryComponentBellApproximation,
+		VariationController::VaryVectorBellApproximation,
+		VariationController::VarySmoothBellApproximation
+	};
+
 	void VariationController::Initialize(VariationChangedCallback onModified, void *pInstance, DirectX::XMVECTOR * pScale, DirectX::XMVECTOR * pRotation, DirectX::XMVECTOR * pTranslation)
 	{
 		m_pScale = pScale;
@@ -40,12 +49,7 @@ namespace Capstone
 		
 		if (Keyboard::IsKeyUp(VK_SHIFT))
 		{
-			if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyDown('U')) { VaryVectorUniform(); CallChanged(); }
-			if (Keyboard::IsKeyPressed('V') && Keyboard::IsKeyUp('U')) { VaryVectorBellApproximation(); CallChanged();}
-			if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyDown('U')) { VaryComponentUniform(); CallChanged(); }
-			if (Keyboard::IsKeyPressed('C') && Keyboard::IsKeyUp('U')) { VaryComponentBellApproximation(); CallChanged(); }
-			if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyDown('U')) { VarySmoothUniform(); CallChanged(); }
-			if (Keyboard::IsKeyPressed('B') && Keyboard::IsKeyUp('U')) { VarySmoothBellApproximation(); CallChanged(); }
+			if (Keyboard::IsKeyPressed('V')) { Vary(); CallChanged(); }
 		}
 	}
 
@@ -135,5 +139,46 @@ namespace Capstone
 		SaveLow();
 		SaveHigh();
 		CallChanged();
+	}
+
+	void VariationController::Vary()
+	{
+		DebugConsole::Log("%d\n", static_cast<int>(m_variationType));
+		s_varyFuncs[static_cast<int>(m_variationType)](this);
+	}
+
+	void VariationController::SetVariationType(VariationType type)
+	{
+		m_variationType = type;
+	}
+
+	void VariationController::VaryVectorUniform(VariationController * pController)
+	{
+		pController->VaryVectorUniform();
+	}
+
+	void VariationController::VaryVectorBellApproximation(VariationController * pController)
+	{
+		pController->VaryVectorBellApproximation();
+	}
+
+	void VariationController::VaryComponentUniform(VariationController * pController)
+	{
+		pController->VaryComponentUniform();
+	}
+
+	void VariationController::VaryComponentBellApproximation(VariationController * pController)
+	{
+		pController->VaryComponentBellApproximation();
+	}
+
+	void VariationController::VarySmoothBellApproximation(VariationController * pController)
+	{
+		pController->VarySmoothBellApproximation();
+	}
+
+	void VariationController::VarySmoothUniform(VariationController * pController)
+	{
+		pController->VarySmoothUniform();
 	}
 }

@@ -157,6 +157,7 @@
     <ClInclude Include="Utils.h" />
     <ClInclude Include="VariationController.h" />
     <ClInclude Include="Variations.h" />
+    <ClInclude Include="VariationType.h" />
     <ClInclude Include="VertexGroup.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

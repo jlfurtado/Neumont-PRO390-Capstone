@@ -5,6 +5,7 @@
 #include "VertexGroup.h"
 #include "Frustum.h"
 #include <vector>
+#include "VariationType.h"
 
 namespace Capstone
 {
@@ -33,6 +34,8 @@ namespace Capstone
 		bool SetPivotCoords(float x, float y, float z);
 		bool SetPivotCenter();
 
+		bool SetVariationType(VariationType type);
+
 	private:
 		DirectX::XMMATRIX m_modelToWorld;
 		DirectX::XMVECTOR m_scale;
@@ -49,6 +52,9 @@ namespace Capstone
 
 		void ReleaseVerts();
 		void SetColor(int idx, float r, float g, float b);
+
+		bool SetVariationTypeForCurrentGroup(VariationType type);
+		bool SetObjectLevelVariationType(VariationType type);
 
 		static void UpdateCurrentVertexGroup(void *pMesh);
 		static void UpdateAllVertexGroups(void *pMesh);

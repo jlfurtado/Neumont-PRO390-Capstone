@@ -4,6 +4,7 @@
 #include "VariationController.h"
 #include <DirectXMath.h>
 #include <malloc.h>
+#include "VariationType.h"
 
 namespace Capstone
 {
@@ -25,6 +26,7 @@ namespace Capstone
 		VariationController *GetVariationPointer();
 		DirectX::XMVECTOR GetPivot();
 		void SetPivot(const DirectX::XMVECTOR& pivot);
+		void SetVariationType(VariationType type);
 
 	private:
 		DirectX::XMVECTOR m_scale;
