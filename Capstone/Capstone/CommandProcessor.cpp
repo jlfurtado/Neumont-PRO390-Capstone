@@ -9,12 +9,13 @@ namespace Capstone
 	EditorWindow *CommandProcessor::s_pMyWindow = nullptr;
 	Editor *CommandProcessor::s_pEditor = nullptr;
 	CommandProcessor::Command CommandProcessor::s_commands[NUM_COMMANDS] = {
-		{"exit", CommandProcessor::ProcessExitCommand},
-		{"loadObj", CommandProcessor::ProcessLoadObjCommand},
-		{"back", CommandProcessor::ProcessCancelCommand},
-		{"cancel", CommandProcessor::ProcessCancelCommand },
-		{"setPivot", CommandProcessor::ProcessSetPivotCommand },
-		{"setVariationType", CommandProcessor::ProcessSetVariationTypeCommand }
+		{"exit", CommandProcessor::ProcessExitCommand, "shuts down and closes the application."},
+		{"loadObj", CommandProcessor::ProcessLoadObjCommand, "loads an .obj file, argument is file path to obj file."},
+		{"back", CommandProcessor::ProcessCancelCommand, "closes the console and returns to the editor."},
+		{"cancel", CommandProcessor::ProcessCancelCommand, "closes the console and returns to the editor." },
+		{"setPivot", CommandProcessor::ProcessSetPivotCommand, "sets the pivot for the current vertex group. Args: [x y z] xor 'center' xor 'camera'." },
+		{"setVariationType", CommandProcessor::ProcessSetVariationTypeCommand, "sets the variation type for the current vertex group or the whole object. Args: 'componentUniform', 'vectorUniform', 'smoothUniform', 'componentBell', 'vectorBell', or 'smoothBell'." },
+		{"help", CommandProcessor::ProcessHelpCommand, "displays the help text for every command."}
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -113,5 +114,18 @@ namespace Capstone
 
 		DebugConsole::Log("Invalid args to setVariationType!\n");
 		return false;
+	}
+
+	bool CommandProcessor::ProcessHelpCommand(const char * const /*command*/)
+	{
+		DebugConsole::Log("Begin help for [%d] commands\n", NUM_COMMANDS);
+
+		for (int i = 0; i < NUM_COMMANDS; ++i)
+		{
+			DebugConsole::Log(" - Command [%d][%s]: %s\n", i, s_commands[i].m_prefix, s_commands[i].m_helpText);
+		}
+
+		DebugConsole::Log("End help for [%d] commands\n", NUM_COMMANDS);
+		return false; // don't close after help
 	}
 }

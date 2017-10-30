@@ -143,7 +143,6 @@ namespace Capstone
 
 	void VariationController::Vary()
 	{
-		DebugConsole::Log("%d\n", static_cast<int>(m_variationType));
 		s_varyFuncs[static_cast<int>(m_variationType)](this);
 	}
 

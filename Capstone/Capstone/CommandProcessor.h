@@ -17,6 +17,7 @@ namespace Capstone
 		{
 			const char *const m_prefix;
 			CommandProcessCallback m_callback;
+			const char *const m_helpText;
 		};
 
 		static bool ProcessExitCommand(const char *const command);
@@ -24,11 +25,12 @@ namespace Capstone
 		static bool ProcessCancelCommand(const char * const command);
 		static bool ProcessSetPivotCommand(const char *const command);
 		static bool ProcessSetVariationTypeCommand(const char *const command);
+		static bool ProcessHelpCommand(const char *const command);
 
 		static EditorWindow *s_pMyWindow;
 		static Editor *s_pEditor;
 
-		static const int NUM_COMMANDS = 6;
+		static const int NUM_COMMANDS = 7;
 		static Command s_commands[NUM_COMMANDS];
 	};
 
