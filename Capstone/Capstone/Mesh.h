@@ -35,6 +35,8 @@ namespace Capstone
 		bool SetPivotCenter();
 
 		bool SetVariationType(VariationType type);
+		bool WriteToFile(const char *const filePath);
+		bool ReadFromFile(const char *const filePath);
 
 	private:
 		DirectX::XMMATRIX m_modelToWorld;
@@ -59,6 +61,10 @@ namespace Capstone
 		static void UpdateCurrentVertexGroup(void *pMesh);
 		static void UpdateAllVertexGroups(void *pMesh);
 		static void UpdateVertexGroup(void *pMesh, int groupIdx);
+
+		bool InitVariations();
+		bool InitObjectLevelVariaitions();
+		bool InitVertexGroupVariations();
 
 		std::vector<VertexGroup> m_testGroups;
 		int m_currentVertexGroup{ -1 };

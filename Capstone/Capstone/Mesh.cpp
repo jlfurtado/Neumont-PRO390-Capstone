@@ -7,6 +7,7 @@
 #include "Utils.h"
 #include "Editor.h"
 #include "StringFuncs.h"
+#include "CustomIO.h"
 
 namespace Capstone
 {
@@ -15,7 +16,7 @@ namespace Capstone
 	Mesh::Mesh(Editor * pEditor)
 		: m_format("PCN"), m_pEditor(pEditor), m_testGroups(1 << 4)
 	{
-		m_objectLevelVariation.Initialize(VertexGroup::DoNothingOnPurpose, this, &m_scale, &m_rotation, &m_translation); // must come before load
+		InitObjectLevelVariaitions(); // must come before 
 		m_objectLevelVariation.ClearVariations();
 		LoadMesh("..\\Data\\OBJS\\Sphere.obj");
 	}
@@ -216,6 +217,27 @@ namespace Capstone
 		}
 	}
 
+	bool Mesh::InitVariations()
+	{
+		return InitObjectLevelVariaitions() && InitVertexGroupVariations();
+	}
+
+	bool Mesh::InitObjectLevelVariaitions()
+	{
+		m_objectLevelVariation.Initialize(VertexGroup::DoNothingOnPurpose, this, &m_scale, &m_rotation, &m_translation); // must come before load
+		return true;
+	}
+
+	bool Mesh::InitVertexGroupVariations()
+	{
+		for (size_t i = 0; i < m_testGroups.size(); ++i)
+		{
+			m_testGroups[i].Initialize(Mesh::UpdateCurrentVertexGroup, this);
+		}
+
+		return true;
+	}
+
 	void Mesh::SelectVerticesInFrustum(const Frustum & frustum)
 	{
 		// add the test group, select it, and make sure its empty
@@ -224,10 +246,7 @@ namespace Capstone
 		m_testGroups[m_currentVertexGroup].Clear();
 		
 		// IN CASE RESIZED RE-HOOK UP POINTERS!!!!
-		for (size_t i = 0; i < m_testGroups.size(); ++i)
-		{
-			m_testGroups[i].Initialize(Mesh::UpdateCurrentVertexGroup, this);
-		}
+		InitVertexGroupVariations();
 
 		XMMATRIX mtwT = XMMatrixTranspose(m_modelToWorld);
 		for (int i = 0; i < m_vertexCount; ++i)
@@ -293,6 +312,40 @@ namespace Capstone
 	bool Mesh::SetVariationType(VariationType type)
 	{
 		return (m_currentVertexGroup >= 0 && (unsigned)m_currentVertexGroup < m_testGroups.size()) ? SetVariationTypeForCurrentGroup(type) : SetObjectLevelVariationType(type);
+	}
+
+	bool Mesh::WriteToFile(const char * const filePath)
+	{
+		return CustomIO::WriteMeshToFile(filePath, m_pBaseVerts, m_vertexCount, m_floatsPerVertex, &m_testGroups, &m_objectLevelVariation);
+	}
+
+	bool Mesh::ReadFromFile(const char * const filePath)
+	{
+		float *pVerts = nullptr;
+		int vertexCount = 0, floatsPerVertex = 0;
+		std::vector<VertexGroup> outGroups;
+		VariationController outVariation;
+		if (!CustomIO::ReadMeshFromFile(filePath, &pVerts, &vertexCount, &floatsPerVertex, &outGroups, &outVariation)) { return false; }
+
+		ClearObjectLevelVariations();
+		ReleaseVerts();
+		ClearVertexGroups();
+		m_vertexCount = vertexCount;
+		m_floatsPerVertex = floatsPerVertex;
+		m_stride = floatsPerVertex * sizeof(float);
+
+		m_pBaseVerts = pVerts;
+
+		// copy the vertices because we're going to be working with a copy so we can revert and stuff!
+		m_pVerts = new float[m_floatsPerVertex * m_vertexCount]{ 0.0f };
+		std::memcpy(m_pVerts, m_pBaseVerts, m_stride * m_vertexCount);
+
+		m_testGroups = outGroups;
+		m_objectLevelVariation = outVariation;
+		InitVariations();
+
+		ColorAll(0.0f, 0.0f, 1.0f);
+		return true;
 	}
 
 	bool Mesh::SetVariationTypeForCurrentGroup(VariationType type)

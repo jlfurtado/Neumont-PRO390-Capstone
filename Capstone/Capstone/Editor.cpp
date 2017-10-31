@@ -252,6 +252,20 @@ namespace Capstone
 		return m_mesh.SetVariationType(type);
 	}
 
+	bool Editor::WriteMeshToFile(const char * const filePath)
+	{
+		return m_mesh.WriteToFile(filePath);
+	}
+
+	bool Editor::ReadMeshFromFile(const char * const filePath)
+	{
+		if (!m_mesh.ReadFromFile(filePath)) { return false; }
+
+		MakeVertexBuffer();
+
+		return true;
+	}
+
 	void Editor::ExitFullScreen()
 	{
 		if (m_swapChain)

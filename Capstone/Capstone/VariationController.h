@@ -11,7 +11,7 @@ namespace Capstone
 
 	public:
 		typedef void(*VariationChangedCallback)(void *pInstance);
-		void Initialize(VariationChangedCallback onModified, void *m_pInstance, DirectX::XMVECTOR *pScale, DirectX::XMVECTOR *pRotation, DirectX::XMVECTOR *pTranslation);
+		void Initialize(VariationChangedCallback onModified, void *pInstance, DirectX::XMVECTOR *pScale, DirectX::XMVECTOR *pRotation, DirectX::XMVECTOR *pTranslation);
 		void Update(float dt);
 		void ClearVariations();
 		void Vary();
@@ -55,6 +55,8 @@ namespace Capstone
 
 		static const int VARIATION_CALLBACKS = 6;
 		static VaryCallback s_varyFuncs[VARIATION_CALLBACKS];
+
+		friend class CustomIO;
 	};
 }
 

@@ -15,7 +15,9 @@ namespace Capstone
 		{"cancel", CommandProcessor::ProcessCancelCommand, "closes the console and returns to the editor." },
 		{"setPivot", CommandProcessor::ProcessSetPivotCommand, "sets the pivot for the current vertex group. Args: [x y z] xor 'center' xor 'camera'." },
 		{"setVariationType", CommandProcessor::ProcessSetVariationTypeCommand, "sets the variation type for the current vertex group or the whole object. Args: 'componentUniform', 'vectorUniform', 'smoothUniform', 'componentBell', 'vectorBell', or 'smoothBell'." },
-		{"help", CommandProcessor::ProcessHelpCommand, "displays the help text for every command."}
+		{"help", CommandProcessor::ProcessHelpCommand, "displays the help text for every command."},
+		{"save", CommandProcessor::ProcessSaveCommand, "saves the base vertices, object level variations, and vertex groups to a custom file format. Args: filePath."},
+		{"load", CommandProcessor::ProcessLoadCommand, "loads the base vertices, object level variations, and vertex groups from a custom file format. Args: filePath."}
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -127,5 +129,17 @@ namespace Capstone
 
 		DebugConsole::Log("End help for [%d] commands\n", NUM_COMMANDS);
 		return false; // don't close after help
+	}
+
+	bool CommandProcessor::ProcessSaveCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("save ");
+		return s_pEditor->WriteMeshToFile(args);
+	}
+
+	bool CommandProcessor::ProcessLoadCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("load ");
+		return s_pEditor->ReadMeshFromFile(args);
 	}
 }

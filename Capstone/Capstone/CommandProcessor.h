@@ -26,11 +26,13 @@ namespace Capstone
 		static bool ProcessSetPivotCommand(const char *const command);
 		static bool ProcessSetVariationTypeCommand(const char *const command);
 		static bool ProcessHelpCommand(const char *const command);
+		static bool ProcessSaveCommand(const char *const command);
+		static bool ProcessLoadCommand(const char *const command);
 
 		static EditorWindow *s_pMyWindow;
 		static Editor *s_pEditor;
 
-		static const int NUM_COMMANDS = 7;
+		static const int NUM_COMMANDS = 9;
 		static Command s_commands[NUM_COMMANDS];
 	};
 

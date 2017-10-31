@@ -31,6 +31,8 @@ namespace Capstone
 			bool SetPivotXYZ(float x, float y, float z);
 			bool SetPivotCenter();
 			bool SetVariationType(VariationType type);
+			bool WriteMeshToFile(const char *const filePath);
+			bool ReadMeshFromFile(const char *const filePath);
 
 	private:
 		void ExitFullScreen();

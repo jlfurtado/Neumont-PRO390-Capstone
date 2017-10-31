@@ -35,8 +35,11 @@ namespace Capstone
 		DirectX::XMVECTOR m_pivot;
 		VariationController m_variation;
 		std::vector<int> m_vertexIndices;
+
 		bool Contains(int idx);
 
 		static void LogNotSet(void *);
+
+		friend class CustomIO;
 	};
 }

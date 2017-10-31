@@ -120,6 +120,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommandProcessor.cpp" />
+    <ClCompile Include="CustomIO.cpp" />
     <ClCompile Include="DebugConsole.cpp" />
     <ClCompile Include="DXBase.cpp" />
     <ClCompile Include="Editor.cpp" />
@@ -141,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommandProcessor.h" />
+    <ClInclude Include="CustomIO.h" />
     <ClInclude Include="DebugConsole.h" />
     <ClInclude Include="DXBase.h" />
     <ClInclude Include="Editor.h" />

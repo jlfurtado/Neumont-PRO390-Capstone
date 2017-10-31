@@ -10,7 +10,7 @@ namespace Capstone
 	VertexGroup::VertexGroup()
 		: m_vertexIndices(1 << 12)
 	{
-		m_variation.Initialize(VertexGroup::LogNotSet, nullptr, &m_scale, &m_rotation, &m_translation);
+		m_variation.Initialize(VertexGroup::DoNothingOnPurpose, nullptr, &m_scale, &m_rotation, &m_translation);
 		m_pivot = XMVectorZero();
 		Clear();
 	}
