@@ -13,7 +13,8 @@ namespace Capstone
 		bool AddUniform(const char *const name, int size, void *pData, bool pixelShader);
 
 		void PassUniforms(ID3D11DeviceContext* pContext);
-		int GetLocation(const char *const name, ID3DBlob* pBuff);
+
+		static int GetLocation(const char *const name, ID3DBlob* pBuff);
 
 	private:
 		struct Uniform

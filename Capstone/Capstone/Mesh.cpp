@@ -163,7 +163,7 @@ namespace Capstone
 				UpdateVertexGroup(pMesh, currentVertexGroup);
 			}
 			
-			pM->m_pEditor->ReSendVerticesSameBuffer();
+			pM->m_pEditor->ReSendMeshVerticesSameBuffer();
 		}
 	}
 
@@ -213,7 +213,7 @@ namespace Capstone
 				}
 			}
 
-			pM->m_pEditor->ReSendVerticesSameBuffer();
+			pM->m_pEditor->ReSendMeshVerticesSameBuffer();
 		}
 	}
 
@@ -277,7 +277,7 @@ namespace Capstone
 			ColorAll(0.0f, 0.0f, 1.0f);
 		}
 
-		m_pEditor->ReSendVerticesSameBuffer();
+		m_pEditor->ReSendMeshVerticesSameBuffer();
 	}
 	
 	bool Mesh::SetPivotCoords(float x, float y, float z)

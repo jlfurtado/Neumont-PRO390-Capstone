@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <d3dcompiler.h>
 #include "EditorWindow.h"
+#include "Utils.h"
 
 namespace Capstone
 {
@@ -147,6 +148,38 @@ namespace Capstone
 
 		m_context->OMSetRenderTargets(1, &m_backBufferTarget, m_depthStencilView);
 
+		D3D11_BLEND_DESC blendStateDescription;
+		MyUtils::MyClearFunc(&blendStateDescription);
+
+		// Create an alpha enabled blend state description.
+		blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
+		blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		blendStateDescription.RenderTarget[0].RenderTargetWriteMask = 0x0f;
+
+		// Create the blend state using the description.
+		result = m_device->CreateBlendState(&blendStateDescription, &m_alphaEnableBlendingState);
+		if (FAILED(result))
+		{
+			DebugConsole::Log("Failed to create the alpha enabled blend state!");
+			return false;
+		}
+
+		// Modify the description to create an alpha disabled blend state description.
+		blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
+
+		// Create the blend state using the description.
+		result = m_device->CreateBlendState(&blendStateDescription, &m_alphaDisableBlendingState);
+		if (FAILED(result))
+		{
+			DebugConsole::Log("Failed to create the alpha disabled blend state!");
+			return false;
+		}
+
 		D3D11_VIEWPORT viewport;
 		viewport.Width = static_cast<float>(width);
 		viewport.Height = static_cast<float>(height);
@@ -160,12 +193,32 @@ namespace Capstone
 		return LoadContent();
 	}
 
+
+	void DXBase::EnableBlend()
+	{
+		float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+
+		// Turn on the alpha blending.
+		m_context->OMSetBlendState(m_alphaEnableBlendingState, blendFactor, 0xffffffff);
+	}
+
+
+	void DXBase::DisableBlend()
+	{
+		float blendFactor[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
+
+		// Turn off the alpha blending.
+		m_context->OMSetBlendState(m_alphaDisableBlendingState, blendFactor, 0xffffffff);
+	}
+
 	void DXBase::Shutdown()
 	{
 		if (m_swapChain) { m_swapChain->SetFullscreenState(FALSE, NULL); }
 
 		UnloadContent();
 
+		if (m_alphaDisableBlendingState) m_alphaDisableBlendingState->Release();
+		if (m_alphaEnableBlendingState) m_alphaEnableBlendingState->Release();
 		if (m_depthTexture) m_depthTexture->Release();
 		if (m_depthStencilView) m_depthStencilView->Release();
 		if (m_backBufferTarget) m_backBufferTarget->Release();
@@ -173,6 +226,8 @@ namespace Capstone
 		if (m_context) m_context->Release();
 		if (m_device) m_device->Release();
 
+		m_alphaDisableBlendingState = 0;
+		m_alphaEnableBlendingState = 0;
 		m_depthTexture = 0;
 		m_depthStencilView = 0;
 		m_backBufferTarget = 0;

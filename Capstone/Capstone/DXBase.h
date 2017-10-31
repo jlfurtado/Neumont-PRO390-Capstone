@@ -21,6 +21,9 @@ namespace Capstone
 		virtual void Update(float dt) = 0;
 		virtual void Render() = 0;
 
+		void EnableBlend();
+		void DisableBlend();
+
 	protected:
 		HINSTANCE m_instanceHandle;
 		HWND m_windowHandle;
@@ -28,13 +31,16 @@ namespace Capstone
 		D3D_DRIVER_TYPE m_driverType;
 		D3D_FEATURE_LEVEL m_featureLevel;
 
-		ID3D11Device* m_device;
-		ID3D11DeviceContext* m_context;
-		IDXGISwapChain* m_swapChain;
-		ID3D11RenderTargetView* m_backBufferTarget;
+		ID3D11Device* m_device = 0;
+		ID3D11DeviceContext* m_context = 0;
+		IDXGISwapChain* m_swapChain = 0;
+		ID3D11RenderTargetView* m_backBufferTarget = 0;
 
-		ID3D11Texture2D* m_depthTexture;
-		ID3D11DepthStencilView* m_depthStencilView;
+		ID3D11Texture2D* m_depthTexture = 0;
+		ID3D11DepthStencilView* m_depthStencilView = 0;
 		EditorWindow *m_pMyWindow = 0;
+
+		ID3D11BlendState* m_alphaEnableBlendingState = 0;
+		ID3D11BlendState* m_alphaDisableBlendingState = 0;
 	};
 }

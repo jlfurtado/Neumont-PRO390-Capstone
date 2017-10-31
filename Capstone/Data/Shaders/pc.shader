@@ -1,14 +1,14 @@
-cbuffer cbChangesEveryFrame : register( b0 )
+cbuffer mtw : register( b0 )
 {
     matrix modelToWorldMatrix;
 };
 
-cbuffer cbChangesEveryFrame : register( b1 )
+cbuffer wtv : register( b1 )
 {
     matrix worldtoViewMatrix;
 };
 
-cbuffer cbChangeOnResize : register( b2 )
+cbuffer proj : register( b2 )
 {
     matrix projectionMatrix;
 };

@@ -19,11 +19,17 @@ namespace Capstone
 			HRESULT r = pDevice->CreateBuffer(&constDesc, 0, &m_uniforms[i].m_pBuffer);
 			if (FAILED(r))
 			{
-				DebugConsole::Log("Failed to Initialize Unfirom Manager! Uniform [%d] [%s] failed to make buffer!\n", i, m_uniforms[i].m_name);
+				DebugConsole::Log("Failed to Initialize Uniform Manager! Uniform [%d] [%s] failed to make buffer!\n", i, m_uniforms[i].m_name);
 				return false;
 			}
 
 			m_uniforms[i].m_location = GetLocation(m_uniforms[i].m_name, m_uniforms[i].m_pixelShader ? pPixelBuff : pVertBuff);
+
+			if (m_uniforms[i].m_location < 0)
+			{
+				DebugConsole::Log("ERROR: Failed to Initialize Uniform Manager! Uniform [%d] [%s] location not found!\n", i, m_uniforms[i].m_name);
+				return false;
+			}
 		}
 
 		return true;
