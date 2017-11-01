@@ -295,6 +295,18 @@ namespace Capstone
 		return true;
 	}
 
+	bool Editor::SetCameraSpeed(float speed)
+	{
+		m_camera.SetSpeed(speed);
+		return true;
+	}
+
+	bool Editor::SetCameraRotateSpeed(float speed)
+	{
+		m_camera.SetRotateSpeed(speed);
+		return true;
+	}
+
 	void Editor::ReSendUtilVerticesSameBuffer()
 	{
 		ReSendVerticesSameBuffer(&pUtilityVertexBuffer, UTIL_FLOATS * sizeof(float), &m_utilVerts[0], sizeof(float) * UTIL_FLOATS_PER_VERTEX);

@@ -83,4 +83,14 @@ namespace Capstone
 		DirectX::XMMATRIX viewMat = DirectX::XMMatrixLookAtLH(m_position, m_position + m_forward, m_up);
 		m_worldToViewMatrix = DirectX::XMMatrixTranspose(viewMat);
 	}
+
+	void Camera::SetSpeed(float speed)
+	{
+		m_speed = speed;
+	}
+
+	void Camera::SetRotateSpeed(float speed)
+	{
+		m_rotateSpeed = speed;
+	}
 }

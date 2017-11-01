@@ -33,6 +33,8 @@ namespace Capstone
 			bool SetVariationType(VariationType type);
 			bool WriteMeshToFile(const char *const filePath);
 			bool ReadMeshFromFile(const char *const filePath);
+			bool SetCameraSpeed(float speed);
+			bool SetCameraRotateSpeed(float speed);
 
 	private:
 		void ReSendUtilVerticesSameBuffer();

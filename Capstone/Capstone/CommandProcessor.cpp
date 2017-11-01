@@ -17,7 +17,10 @@ namespace Capstone
 		{"setVariationType", CommandProcessor::ProcessSetVariationTypeCommand, "sets the variation type for the current vertex group or the whole object. Args: 'componentUniform', 'vectorUniform', 'smoothUniform', 'componentBell', 'vectorBell', or 'smoothBell'." },
 		{"help", CommandProcessor::ProcessHelpCommand, "displays the help text for every command."},
 		{"save", CommandProcessor::ProcessSaveCommand, "saves the base vertices, object level variations, and vertex groups to a custom file format. Args: filePath."},
-		{"load", CommandProcessor::ProcessLoadCommand, "loads the base vertices, object level variations, and vertex groups from a custom file format. Args: filePath."}
+		{"load", CommandProcessor::ProcessLoadCommand, "loads the base vertices, object level variations, and vertex groups from a custom file format. Args: filePath."},
+		{"setCameraSpeed", CommandProcessor::ProcessSetCameraSpeedCommand, "sets the speed of the editor camera so you can move faster or slower, Args: speed"},
+		{"setCameraRotateSpeed", CommandProcessor::ProcessSetCameraRotateSpeedCommand, "sets the rotate speed of the editor camera so you can turn faster or slower, Args: speed" },
+		{"setVariationSpeed", CommandProcessor::ProcessSetVariationSpeedCommand, "sets the speed of all variation controllers so you can edit faster or slower, Args: speed" }
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -141,5 +144,47 @@ namespace Capstone
 	{
 		const char *const args = command + StringFuncs::StringLen("load ");
 		return s_pEditor->ReadMeshFromFile(args);
+	}
+
+	bool CommandProcessor::ProcessSetCameraSpeedCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("setCameraSpeed ");
+		
+		float speed;
+		if (!StringFuncs::GetSingleFloatFromString(args, speed))
+		{
+			DebugConsole::Log("Invalid args [%s] to SetCameraSpeed!\n", args);
+			return false;
+		}
+
+		return s_pEditor->SetCameraSpeed(speed);
+	}
+
+	bool CommandProcessor::ProcessSetCameraRotateSpeedCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("setCameraRotateSpeed ");
+
+		float speed;
+		if (!StringFuncs::GetSingleFloatFromString(args, speed))
+		{
+			DebugConsole::Log("Invalid args [%s] to SetCameraRotateSpeed!\n", args);
+			return false;
+		}
+
+		return s_pEditor->SetCameraRotateSpeed(speed);
+	}
+
+	bool CommandProcessor::ProcessSetVariationSpeedCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("setVariationSpeed ");
+
+		float speed;
+		if (!StringFuncs::GetSingleFloatFromString(args, speed))
+		{
+			DebugConsole::Log("Invalid args [%s] to SetVariationSpeed!\n", args);
+			return false;
+		}
+
+		return VariationController::SetVariationSpeed(speed);
 	}
 }

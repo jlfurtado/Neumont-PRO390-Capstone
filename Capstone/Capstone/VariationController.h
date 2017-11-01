@@ -16,6 +16,7 @@ namespace Capstone
 		void ClearVariations();
 		void Vary();
 		void SetVariationType(VariationType type);
+		static bool SetVariationSpeed(float speed);
 
 	private:
 		static void VaryVectorUniform(VariationController *pController);
@@ -55,6 +56,8 @@ namespace Capstone
 
 		static const int VARIATION_CALLBACKS = 6;
 		static VaryCallback s_varyFuncs[VARIATION_CALLBACKS];
+
+		static float s_variationSpeed;
 
 		friend class CustomIO;
 	};

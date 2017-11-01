@@ -8,6 +8,7 @@ namespace Capstone
 {
 	using namespace DirectX;
 
+	float VariationController::s_variationSpeed = 1.0f;
 	VariationController::VaryCallback VariationController::s_varyFuncs[VARIATION_CALLBACKS] = {
 		VariationController::VaryComponentUniform,
 		VariationController::VaryVectorUniform,
@@ -28,9 +29,10 @@ namespace Capstone
 
 	void VariationController::Update(float dt)
 	{
-		XMVECTOR f(dt * XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f));
-		XMVECTOR r(dt * XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f));
-		XMVECTOR u(dt * XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f));
+		float move = dt * s_variationSpeed;
+		XMVECTOR f(move * XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f));
+		XMVECTOR r(move * XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f));
+		XMVECTOR u(move * XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f));
 		
 		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('T')) { *m_pTranslation += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; CallChanged(); }
 		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('T')) { *m_pTranslation += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; CallChanged(); }
@@ -149,6 +151,14 @@ namespace Capstone
 	void VariationController::SetVariationType(VariationType type)
 	{
 		m_variationType = type;
+	}
+
+	bool VariationController::SetVariationSpeed(float speed)
+	{
+		if (speed < 0.0f) { return false; }
+
+		s_variationSpeed = speed;
+		return true;
 	}
 
 	void VariationController::VaryVectorUniform(VariationController * pController)

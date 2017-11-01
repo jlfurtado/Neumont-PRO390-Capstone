@@ -16,6 +16,8 @@ namespace Capstone
 		DirectX::XMVECTOR *GetUpPointer();
 
 		void Update(float dt);
+		void SetSpeed(float speed);
+		void SetRotateSpeed(float speed);
 
 	private:
 		float m_speed;
