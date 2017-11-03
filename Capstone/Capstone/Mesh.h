@@ -37,6 +37,7 @@ namespace Capstone
 		bool SetVariationType(VariationType type);
 		bool WriteToFile(const char *const filePath);
 		bool ReadFromFile(const char *const filePath);
+		DirectX::XMMATRIX GetPivotTranslation();
 
 	private:
 		DirectX::XMMATRIX m_modelToWorld;

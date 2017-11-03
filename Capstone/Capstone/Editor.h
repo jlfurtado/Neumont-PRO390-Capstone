@@ -41,13 +41,16 @@ namespace Capstone
 		void ReSendVerticesSameBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t stride);
 		void RenderMesh();
 		void RenderUtils();
+		void RenderPivot();
 		void ExitFullScreen();
 		void MakeMeshVertexBuffer();
 		void MakeUtilityVertexBuffer();
+		void MakePivotVertexBuffer();
 		void MakeBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t byteWidth);
 		void CalculatePerspectiveMatrix();
 		void LogFPS(float dt, float interval);
 		void UtilFromMousePercents(float lowX, float lowY, float highX, float highY);
+		void CalcNormalsFor(float *pVerts, int numVerts, int stride, int normalOffset);
 
 		float bgColorRGBA[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		float otherColorRGBA[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -58,6 +61,8 @@ namespace Capstone
 		ID3D11PixelShader *pPCPixelShader = 0;     // the pixel shader
 		ID3D11Buffer *pMeshVertexBuffer = 0;    // mesh vertex buffer
 		ID3D11Buffer *pUtilityVertexBuffer = 0;    // utility vertex buffer
+		ID3D11Buffer *pPivotVertexBuffer = 0;    // pivot vertex buffer
+
 		ID3D11InputLayout *pPCNLayout = 0;
 		ID3D11InputLayout *pPCLayout = 0; 
 
@@ -71,6 +76,7 @@ namespace Capstone
 
 		UniformManager m_meshUniformManager;
 		UniformManager m_utilUniformManager;
+		UniformManager m_pivotUniformManager;
 
 		Camera m_camera;
 		Mesh m_mesh;
@@ -84,6 +90,8 @@ namespace Capstone
 		DirectX::XMVECTOR m_specularIntensity{ 32.0f, 0.0f, 0.0f, 0.0f };
 		DirectX::XMVECTOR m_interp{ 0.75f };
 		DirectX::XMMATRIX m_identity;
+		DirectX::XMMATRIX m_pivotMTW;
+
 		bool m_initialized{ false };
 		float m_fovy{ DirectX::XM_PIDIV4 };
 		float m_nearClip{ 0.01f };
@@ -104,6 +112,31 @@ namespace Capstone
 			+1.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
 			+1.0f, -1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
 			-1.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f
+		};
+
+		static const int PIVOT_VERTS = 12;
+		static const int PIVOT_FLOATS_PER_VERTEX = 10;
+		static const int PIVOT_FLOATS = PIVOT_VERTS * PIVOT_FLOATS_PER_VERTEX;
+		float m_pivotVerts[PIVOT_FLOATS] = {
+			// 0 1 3
+			-1.0f, -1.0f, +1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Front left
+			+1.0f, -1.0f, +1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Front right
+			+0.0f, +1.0f, +0.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Top middle
+															 
+			// 1 2 3										 
+			+1.0f, -1.0f, +1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Front right
+			+0.0f, -1.0f, -1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Back middle
+			+0.0f, +1.0f, +0.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Top middle
+															
+			// 2 0 3										
+			+0.0f, -1.0f, -1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Back middle
+			-1.0f, -1.0f, +1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Front left
+			+0.0f, +1.0f, +0.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Top middle
+															
+			// 0 2 1										
+			-1.0f, -1.0f, +1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Front left
+			+0.0f, -1.0f, -1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Back middle
+			+1.0f, -1.0f, +1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f  // Front right
 		};
 	};
 }

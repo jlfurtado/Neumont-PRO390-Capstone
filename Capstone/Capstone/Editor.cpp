@@ -23,6 +23,8 @@ namespace Capstone
 	{
 		MakeMeshVertexBuffer();
 		MakeUtilityVertexBuffer();
+		CalcNormalsFor(m_pivotVerts, PIVOT_VERTS, PIVOT_FLOATS_PER_VERTEX, PIVOT_FLOATS_PER_VERTEX - 3);
+		MakePivotVertexBuffer();
 
 		// load and compile the two shaders
 		ID3DBlob* VS1 = nullptr;
@@ -79,6 +81,9 @@ namespace Capstone
 		m_device->CreateInputLayout(iedpc, 2, VS2->GetBufferPointer(), VS2->GetBufferSize(), &pPCLayout);
 
 
+		float t = 0.75f;
+		m_interp = XMVectorSet(t, t, t, t);
+
 		// send data to our shader!!!!
 		if (!m_meshUniformManager.AddUniform("mtw", sizeof(DirectX::XMFLOAT4X4), m_mesh.GetMTWMatrixPtr(), false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_meshUniformManager.AddUniform("wtv", sizeof(DirectX::XMFLOAT4X4), m_camera.GetWorldToViewMatrixPointer(), false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
@@ -94,9 +99,6 @@ namespace Capstone
 		if (!m_meshUniformManager.AddUniform("SpecularPower", sizeof(DirectX::XMFLOAT4), &m_specularIntensity, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_meshUniformManager.AddUniform("CameraPosition", sizeof(DirectX::XMFLOAT4), m_camera.GetPositionPointer(), true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_meshUniformManager.AddUniform("ITMTW", sizeof(DirectX::XMFLOAT4X4), &m_inverseTransposeModelToWorldMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
-		
-		float t = 0.75f;
-		m_interp = XMVectorSet(t, t, t, t);
 		if (!m_meshUniformManager.AddUniform("Interp", sizeof(DirectX::XMVECTOR), &m_interp, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 
 		if (!m_meshUniformManager.Initialize(m_device, VS1, PS1)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
@@ -108,6 +110,26 @@ namespace Capstone
 		if (!m_utilUniformManager.AddUniform("wtv", sizeof(DirectX::XMFLOAT4X4), &m_identity, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_utilUniformManager.AddUniform("proj", sizeof(DirectX::XMFLOAT4X4), &m_identity, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_utilUniformManager.Initialize(m_device, VS2, PS2)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
+
+
+		// send data to our shader!!!!
+		if (!m_pivotUniformManager.AddUniform("mtw", sizeof(DirectX::XMFLOAT4X4), &m_pivotMTW, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("wtv", sizeof(DirectX::XMFLOAT4X4), m_camera.GetWorldToViewMatrixPointer(), false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("proj", sizeof(DirectX::XMFLOAT4X4), &m_projectionMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("LightColor", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("LightPos", sizeof(DirectX::XMFLOAT4), &m_lightPos, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("DiffuseColor", sizeof(DirectX::XMFLOAT4), &m_diffuseColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("DiffuseIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("AmbientColor", sizeof(DirectX::XMFLOAT4), &m_ambientColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("AmbientIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("SpecularColor", sizeof(DirectX::XMFLOAT4), &m_specularColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("SpecularIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("SpecularPower", sizeof(DirectX::XMFLOAT4), &m_specularIntensity, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("CameraPosition", sizeof(DirectX::XMFLOAT4), m_camera.GetPositionPointer(), true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("ITMTW", sizeof(DirectX::XMFLOAT4X4), &m_inverseTransposeModelToWorldMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("Interp", sizeof(DirectX::XMVECTOR), &m_interp, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+
+		if (!m_pivotUniformManager.Initialize(m_device, VS1, PS1)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
 
 		CalculatePerspectiveMatrix();
 
@@ -124,6 +146,7 @@ namespace Capstone
 	{
 		m_meshUniformManager.Shutdown();
 		m_utilUniformManager.Shutdown();
+		m_pivotUniformManager.Shutdown();
 
 		if (pPCNVertShader) pPCNVertShader->Release();
 		if (pPCNPixelShader) pPCNPixelShader->Release();
@@ -131,6 +154,7 @@ namespace Capstone
 		if (pPCPixelShader) pPCPixelShader->Release();
 		if (pMeshVertexBuffer) pMeshVertexBuffer->Release();
 		if (pUtilityVertexBuffer) pUtilityVertexBuffer->Release();
+		if (pPivotVertexBuffer) pPivotVertexBuffer->Release();
 		if (pPCNLayout) pPCNLayout->Release();
 		if (pPCLayout) pPCLayout->Release();
 
@@ -140,6 +164,7 @@ namespace Capstone
 		pPCPixelShader = 0;
 		pMeshVertexBuffer = 0;
 		pUtilityVertexBuffer = 0;
+		pPivotVertexBuffer = 0;
 		pPCLayout = 0;
 		m_initialized = false;
 	}
@@ -213,6 +238,7 @@ namespace Capstone
 			}
 		}
 
+		m_pivotMTW = m_mesh.GetPivotTranslation() * XMMatrixScaling(0.25f, 0.25f, 0.25f);
 		m_inverseTransposeModelToWorldMatrix = XMMatrixTranspose(XMMatrixInverse(NULL, *m_mesh.GetMTWMatrixPtr()));
 		m_lightPos = *m_camera.GetPositionPointer();
 	}
@@ -231,6 +257,7 @@ namespace Capstone
 		m_context->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		RenderMesh();
+		RenderPivot();
 		if (m_clicked) { RenderUtils(); }
 
 		// switch the back buffer and the front buffer
@@ -374,6 +401,29 @@ namespace Capstone
 		m_context->Draw(UTIL_VERTS, 0);
 	}
 
+	void Editor::RenderPivot()
+	{
+		// set the shader objects
+		m_context->VSSetShader(pPCNVertShader, 0, 0);
+		m_context->PSSetShader(pPCNPixelShader, 0, 0);
+
+		m_context->IASetInputLayout(pPCNLayout);
+
+		// select which vertex buffer to display
+		UINT stride = PIVOT_FLOATS_PER_VERTEX * sizeof(float);
+		UINT offset = 0;
+		m_context->IASetVertexBuffers(0, 1, &pPivotVertexBuffer, &stride, &offset);
+
+		// select which primtive type we are using
+		m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// SEND data
+		m_pivotUniformManager.PassUniforms(m_context);
+
+		// draw the vertex buffer to the back buffer
+		m_context->Draw(PIVOT_VERTS, 0);
+	}
+
 	void Editor::ExitFullScreen()
 	{
 		if (m_swapChain)
@@ -392,6 +442,11 @@ namespace Capstone
 	void Editor::MakeUtilityVertexBuffer()
 	{
 		MakeBuffer(&pUtilityVertexBuffer, sizeof(float) * UTIL_FLOATS, &m_utilVerts[0], sizeof(float) * UTIL_FLOATS_PER_VERTEX);
+	}
+
+	void Editor::MakePivotVertexBuffer()
+	{
+		MakeBuffer(&pPivotVertexBuffer, sizeof(float) * PIVOT_FLOATS, &m_pivotVerts[0], sizeof(float) * PIVOT_FLOATS_PER_VERTEX);
 	}
 
 	void Editor::MakeBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float * pData, size_t byteWidth)
@@ -487,5 +542,41 @@ namespace Capstone
 		m_utilVerts[5 * UTIL_FLOATS_PER_VERTEX + 0] = ndclx;
 		m_utilVerts[5 * UTIL_FLOATS_PER_VERTEX + 1] = ndchy;
 		ReSendUtilVerticesSameBuffer();
+	}
+
+	const int VERTS_PER_TRIANGLE = 3;
+	void Editor::CalcNormalsFor(float * pVerts, int numVerts, int stride, int normalOffset)
+	{
+		for (int i = 0; i < numVerts; i += VERTS_PER_TRIANGLE)
+		{
+			float *pVert1 = pVerts + i * stride;
+			float *pNorm1 = pVert1 + normalOffset;
+			float *pVert2 = pVert1 + stride;
+			float *pNorm2 = pNorm1 + stride;
+			float *pVert3 = pVert2 + stride;
+			float *pNorm3 = pNorm2 + stride;
+
+			XMVECTOR p1 = XMVectorSet(pVert1[0], pVert1[1], pVert1[2], 0.0f);
+			XMVECTOR p2 = XMVectorSet(pVert2[0], pVert2[1], pVert2[2], 0.0f);
+			XMVECTOR p3 = XMVectorSet(pVert3[0], pVert3[1], pVert3[2], 0.0f);
+
+			XMVECTOR normal = XMVector3Normalize(XMVector3Cross(p2 - p1, p3 - p2));
+
+			float x = XMVectorGetX(normal);
+			float y = XMVectorGetY(normal);
+			float z = XMVectorGetZ(normal);
+
+			pNorm1[0] = x;
+			pNorm1[1] = y;
+			pNorm1[2] = z;
+
+			pNorm2[0] = x;
+			pNorm2[1] = y;
+			pNorm2[2] = z;
+
+			pNorm3[0] = x;
+			pNorm3[1] = y;
+			pNorm3[2] = z;
+		}
 	}
 }

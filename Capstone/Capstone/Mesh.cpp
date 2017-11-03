@@ -348,6 +348,11 @@ namespace Capstone
 		return true;
 	}
 
+	XMMATRIX Mesh::GetPivotTranslation()
+	{
+		return (m_currentVertexGroup >= 0 && (unsigned)m_currentVertexGroup < m_testGroups.size()) ? m_testGroups[m_currentVertexGroup].GetPivotMat() : XMMatrixIdentity();
+	}
+
 	bool Mesh::SetVariationTypeForCurrentGroup(VariationType type)
 	{
 		if (m_currentVertexGroup < 0 || (unsigned)m_currentVertexGroup >= m_testGroups.size()) { DebugConsole::Log("Cannot SetVariationType! No selected vertex group!\n"); return false; }
