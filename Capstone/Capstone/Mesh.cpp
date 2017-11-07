@@ -262,13 +262,7 @@ namespace Capstone
 
 		if (m_testGroups[m_currentVertexGroup].Count() > 0)
 		{
-			ColorAll(1.0f, 1.0f, 1.0f);
-
-			const int *pInd = m_testGroups[m_currentVertexGroup].GetIndices();
-			for (int i = 0; i < m_testGroups[m_currentVertexGroup].Count(); ++i)
-			{
-				SetColor(*(pInd + i), 1.0f, 0.0f, 0.0f);
-			}
+			ColorCurrentGroup();
 		}
 		else
 		{
@@ -300,9 +294,10 @@ namespace Capstone
 		{
 			int idx = pIndices[i];
 			int floatIdx = idx * m_floatsPerVertex;
-			center += XMVectorSet(m_pVerts[floatIdx + 0], m_pVerts[floatIdx + 1], m_pVerts[floatIdx + 2], 0.0f);
+			center += XMVector4Transform(XMVectorSet(m_pVerts[floatIdx + 0], m_pVerts[floatIdx + 1], m_pVerts[floatIdx + 2], 1.0f), XMMatrixTranspose(m_modelToWorld));
 		}
 
+		XMVectorSetW(center, 0.0f);
 		center /= (float)m_testGroups[m_currentVertexGroup].Count();
 		m_testGroups[m_currentVertexGroup].SetPivot(center);
 
@@ -350,7 +345,69 @@ namespace Capstone
 
 	XMMATRIX Mesh::GetPivotTranslation()
 	{
-		return (m_currentVertexGroup >= 0 && (unsigned)m_currentVertexGroup < m_testGroups.size()) ? m_testGroups[m_currentVertexGroup].GetPivotMat() : XMMatrixIdentity();
+		if (m_currentVertexGroup < 0 || (unsigned)m_currentVertexGroup >= m_testGroups.size()) { return XMMatrixIdentity(); }
+		return XMMatrixTranspose(XMMatrixTranslationFromVector(m_testGroups[m_currentVertexGroup].GetPivot()));
+	}
+
+	unsigned Mesh::GetNumVertexGroups()
+	{
+		return m_testGroups.size();
+	}
+
+	bool Mesh::SelectVertexGroup(int idx)
+	{
+		if (idx < 0 || (unsigned)idx > m_testGroups.size()) { return false; }
+
+		m_currentVertexGroup = idx;
+		ColorMesh();
+		m_pEditor->ReSendMeshVerticesSameBuffer();
+		return true;
+	}
+
+	bool Mesh::GetVertexGroupInfo(int group, unsigned & outNumVerts)
+	{
+		if (group < 0 || (unsigned)group >= m_testGroups.size()) { DebugConsole::Log("Cannot GetCurrentVertexGroupInfo! Invalid group [%d]!\n", group); return false; }
+
+		outNumVerts = m_testGroups[group].GetNumVertices();
+		return true;
+	}
+
+	bool Mesh::RemoveVertexGroup(int idx)
+	{
+		if (idx < 0 || (unsigned)idx >= m_testGroups.size()) { DebugConsole::Log("Cannot RemoveVertexGroup! Invalid group [%d]!\n", idx); return false; }
+
+		m_currentVertexGroup = idx; // HAX
+		m_testGroups[idx].Clear();
+		m_currentVertexGroup = -1;
+		m_testGroups.erase(m_testGroups.begin() + idx, m_testGroups.begin() + idx + 1);
+		// IN CASE RESIZED RE-HOOK UP POINTERS!!!!
+		InitVertexGroupVariations();
+		ColorMesh();
+		m_pEditor->ReSendMeshVerticesSameBuffer();
+
+		return true;
+	}
+
+	void Mesh::ColorCurrentGroup()
+	{
+		ColorAll(1.0f, 1.0f, 1.0f);
+
+		const int *pInd = m_testGroups[m_currentVertexGroup].GetIndices();
+		for (int i = 0; i < m_testGroups[m_currentVertexGroup].Count(); ++i)
+		{
+			SetColor(*(pInd + i), 1.0f, 0.0f, 0.0f);
+		}
+	}
+
+	void Mesh::ColorMesh()
+	{
+		if (m_currentVertexGroup >= 0) { ColorCurrentGroup(); }
+		else { ColorWholeMesh(); }
+	}
+
+	void Mesh::ColorWholeMesh()
+	{
+		ColorAll(0.0f, 0.0f, 1.0f);
 	}
 
 	bool Mesh::SetVariationTypeForCurrentGroup(VariationType type)

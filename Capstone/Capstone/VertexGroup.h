@@ -25,9 +25,9 @@ namespace Capstone
 		static void DoNothingOnPurpose(void *);
 		VariationController *GetVariationPointer();
 		DirectX::XMVECTOR GetPivot();
-		DirectX::XMMATRIX GetPivotMat();
 		void SetPivot(const DirectX::XMVECTOR& pivot);
 		void SetVariationType(VariationType type);
+		unsigned GetNumVertices();
 
 	private:
 		DirectX::XMVECTOR m_scale;

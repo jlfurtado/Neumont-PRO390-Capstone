@@ -38,8 +38,16 @@ namespace Capstone
 		bool WriteToFile(const char *const filePath);
 		bool ReadFromFile(const char *const filePath);
 		DirectX::XMMATRIX GetPivotTranslation();
+		unsigned GetNumVertexGroups();
+		bool SelectVertexGroup(int idx);
+		bool GetVertexGroupInfo(int group, unsigned &outNumVerts);
+		bool RemoveVertexGroup(int idx);
 
 	private:
+		void ColorCurrentGroup();
+		void ColorMesh();
+		void ColorWholeMesh();
+
 		DirectX::XMMATRIX m_modelToWorld;
 		DirectX::XMVECTOR m_scale;
 		DirectX::XMVECTOR m_translation;

@@ -26,8 +26,9 @@ namespace Capstone
 
 	void VertexGroup::Clear()
 	{
-		m_vertexIndices.clear(); // must come before!
 		m_variation.ClearVariations();
+		m_vertexIndices.clear(); // must come before! -- or does it??
+		//m_variation.ClearVariations();
 	}
 
 	int VertexGroup::Count()
@@ -72,11 +73,6 @@ namespace Capstone
 		return m_pivot;
 	}
 
-	DirectX::XMMATRIX VertexGroup::GetPivotMat()
-	{
-		return XMMatrixTranspose(XMMatrixTranslationFromVector(m_pivot));
-	}
-
 	void VertexGroup::SetPivot(const DirectX::XMVECTOR & pivot)
 	{
 		m_pivot = pivot;
@@ -85,6 +81,11 @@ namespace Capstone
 	void VertexGroup::SetVariationType(VariationType type)
 	{
 		m_variation.SetVariationType(type);
+	}
+
+	unsigned VertexGroup::GetNumVertices()
+	{
+		return m_vertexIndices.size();
 	}
 
 	bool VertexGroup::Contains(int idx)

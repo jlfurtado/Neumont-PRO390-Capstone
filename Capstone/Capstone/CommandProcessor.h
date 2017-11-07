@@ -16,6 +16,7 @@ namespace Capstone
 		struct Command
 		{
 			const char *const m_prefix;
+			const char *const m_args;
 			CommandProcessCallback m_callback;
 			const char *const m_helpText;
 		};
@@ -31,11 +32,13 @@ namespace Capstone
 		static bool ProcessSetCameraSpeedCommand(const char *const command);
 		static bool ProcessSetCameraRotateSpeedCommand(const char *const command);
 		static bool ProcessSetVariationSpeedCommand(const char *const command);
-
+		static bool ProcessDisplayVertexGroupsCommand(const char *const command);
+		static bool ProcessSelectVertexGroupCommand(const char *const command);
+		static bool ProcessRemoveVertexGroupCommand(const char *const command);
 		static EditorWindow *s_pMyWindow;
 		static Editor *s_pEditor;
 
-		static const int NUM_COMMANDS = 12;
+		static const int NUM_COMMANDS = 15;
 		static Command s_commands[NUM_COMMANDS];
 	};
 

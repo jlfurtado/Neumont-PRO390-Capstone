@@ -334,6 +334,26 @@ namespace Capstone
 		return true;
 	}
 
+	unsigned Editor::GetVertexGroupCount()
+	{
+		return m_mesh.GetNumVertexGroups();
+	}
+
+	bool Editor::SelectVertexGroup(int idx)
+	{
+		return m_mesh.SelectVertexGroup(idx);
+	}
+
+	bool Editor::GetVertexGroupInfo(int group, unsigned & outSize)
+	{
+		return m_mesh.GetVertexGroupInfo(group, outSize);
+	}
+
+	bool Editor::RemoveVertexGroup(int idx)
+	{
+		return m_mesh.RemoveVertexGroup(idx);
+	}
+
 	void Editor::ReSendUtilVerticesSameBuffer()
 	{
 		ReSendVerticesSameBuffer(&pUtilityVertexBuffer, UTIL_FLOATS * sizeof(float), &m_utilVerts[0], sizeof(float) * UTIL_FLOATS_PER_VERTEX);

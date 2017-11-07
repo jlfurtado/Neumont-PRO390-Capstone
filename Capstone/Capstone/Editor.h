@@ -35,7 +35,10 @@ namespace Capstone
 			bool ReadMeshFromFile(const char *const filePath);
 			bool SetCameraSpeed(float speed);
 			bool SetCameraRotateSpeed(float speed);
-
+			unsigned GetVertexGroupCount();
+			bool SelectVertexGroup(int idx);
+			bool GetVertexGroupInfo(int group, unsigned &outSize);
+			bool RemoveVertexGroup(int idx);
 	private:
 		void ReSendUtilVerticesSameBuffer();
 		void ReSendVerticesSameBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t stride);

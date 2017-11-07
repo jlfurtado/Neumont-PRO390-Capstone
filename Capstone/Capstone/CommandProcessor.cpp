@@ -9,18 +9,21 @@ namespace Capstone
 	EditorWindow *CommandProcessor::s_pMyWindow = nullptr;
 	Editor *CommandProcessor::s_pEditor = nullptr;
 	CommandProcessor::Command CommandProcessor::s_commands[NUM_COMMANDS] = {
-		{"exit", CommandProcessor::ProcessExitCommand, "shuts down and closes the application."},
-		{"loadObj", CommandProcessor::ProcessLoadObjCommand, "loads an .obj file, argument is file path to obj file."},
-		{"back", CommandProcessor::ProcessCancelCommand, "closes the console and returns to the editor."},
-		{"cancel", CommandProcessor::ProcessCancelCommand, "closes the console and returns to the editor." },
-		{"setPivot", CommandProcessor::ProcessSetPivotCommand, "sets the pivot for the current vertex group. Args: [x y z] xor 'center' xor 'camera'." },
-		{"setVariationType", CommandProcessor::ProcessSetVariationTypeCommand, "sets the variation type for the current vertex group or the whole object. Args: 'componentUniform', 'vectorUniform', 'smoothUniform', 'componentBell', 'vectorBell', or 'smoothBell'." },
-		{"help", CommandProcessor::ProcessHelpCommand, "displays the help text for every command."},
-		{"save", CommandProcessor::ProcessSaveCommand, "saves the base vertices, object level variations, and vertex groups to a custom file format. Args: filePath."},
-		{"load", CommandProcessor::ProcessLoadCommand, "loads the base vertices, object level variations, and vertex groups from a custom file format. Args: filePath."},
-		{"setCameraSpeed", CommandProcessor::ProcessSetCameraSpeedCommand, "sets the speed of the editor camera so you can move faster or slower, Args: speed"},
-		{"setCameraRotateSpeed", CommandProcessor::ProcessSetCameraRotateSpeedCommand, "sets the rotate speed of the editor camera so you can turn faster or slower, Args: speed" },
-		{"setVariationSpeed", CommandProcessor::ProcessSetVariationSpeedCommand, "sets the speed of all variation controllers so you can edit faster or slower, Args: speed" }
+		{"exit", nullptr, CommandProcessor::ProcessExitCommand, "shuts down and closes the application."},
+		{"loadObj", "(filePath)", CommandProcessor::ProcessLoadObjCommand, "loads the specified .obj file"},
+		{"back", nullptr, CommandProcessor::ProcessCancelCommand, "closes the console and returns to the editor."},
+		{"cancel", nullptr, CommandProcessor::ProcessCancelCommand, "closes the console and returns to the editor." },
+		{"setPivot", "((x y z) || 'center' || 'camera')", CommandProcessor::ProcessSetPivotCommand, "sets the pivot location for the current vertex group. Currently not availiable for object level variations." },
+		{"setVariationType", "('componentUniform' || 'vectorUniform' || 'smoothUniform' || 'componentBell' || 'vectorBell' || 'smoothBell')", CommandProcessor::ProcessSetVariationTypeCommand, "sets the variation type for the current vertex group or the whole object." },
+		{"help", nullptr, CommandProcessor::ProcessHelpCommand, "displays the help text for every command."},
+		{"save", "(filePath)", CommandProcessor::ProcessSaveCommand, "saves the base vertices, object level variations, and vertex groups to a custom file format."},
+		{"load", "(filePath)", CommandProcessor::ProcessLoadCommand, "loads the base vertices, object level variations, and vertex groups from a custom file format."},
+		{"setCameraSpeed", "(speed)", CommandProcessor::ProcessSetCameraSpeedCommand, "sets the speed of the editor camera so you can move faster or slower."},
+		{"setCameraRotateSpeed", "(speed)", CommandProcessor::ProcessSetCameraRotateSpeedCommand, "sets the rotate speed of the editor camera so you can turn faster or slower." },
+		{"setVariationSpeed", "(speed)", CommandProcessor::ProcessSetVariationSpeedCommand, "sets the speed of all variation controllers so you can edit faster or slower." },
+		{"displayVertexGroups", nullptr, CommandProcessor::ProcessDisplayVertexGroupsCommand, "displays information about all the vertex groups."},
+		{"selectVertexGroup", "(vertex group)", CommandProcessor::ProcessSelectVertexGroupCommand, "selects the specified vertex group, if it exists."},
+		{"removeVertexGroup", "(vertex group)", CommandProcessor::ProcessRemoveVertexGroupCommand, "removes the specified vertex group, if it exists."}
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -127,7 +130,14 @@ namespace Capstone
 
 		for (int i = 0; i < NUM_COMMANDS; ++i)
 		{
-			DebugConsole::Log(" - Command [%d][%s]: %s\n", i, s_commands[i].m_prefix, s_commands[i].m_helpText);
+			if (s_commands[i].m_args)
+			{
+				DebugConsole::Log(" - Command [%d][%s %s]: %s\n", i, s_commands[i].m_prefix, s_commands[i].m_args, s_commands[i].m_helpText);
+			}
+			else
+			{
+				DebugConsole::Log(" - Command [%d][%s]: %s\n", i, s_commands[i].m_prefix, s_commands[i].m_helpText);
+			}
 		}
 
 		DebugConsole::Log("End help for [%d] commands\n", NUM_COMMANDS);
@@ -186,5 +196,48 @@ namespace Capstone
 		}
 
 		return VariationController::SetVariationSpeed(speed);
+	}
+
+	bool CommandProcessor::ProcessDisplayVertexGroupsCommand(const char * const command)
+	{
+		unsigned numGroups = s_pEditor->GetVertexGroupCount();
+
+		DebugConsole::Log("Begin vertex group info for [%u] groups!\n", numGroups);
+		
+		unsigned size = -1;
+		for (unsigned i = 0; i < numGroups; ++i)
+		{
+			if (!s_pEditor->GetVertexGroupInfo(i, size)) { DebugConsole::Log("Unable to get vertex group info for vertex group [%u]!\n", i); return false; }
+			DebugConsole::Log("Vertex Group [%u]: Num Verts (%d)!\n", i, size);
+		}
+
+		DebugConsole::Log("End vertex group info for [%u] groups!\n", numGroups);
+		return false;
+	}
+
+	bool CommandProcessor::ProcessSelectVertexGroupCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("selectVertexGroup ");
+	
+		unsigned numGroups = s_pEditor->GetVertexGroupCount();
+		if (numGroups <= 0) { DebugConsole::Log("Cannot selectVertexGroup! No vertex groups exist for model!\n"); return false; }
+
+		int groupIdx = -1;
+		if (!StringFuncs::GetSingleIntFromString(args, groupIdx)) { DebugConsole::Log("Invalid args to SelectVertexGroup!\n"); return false; }
+		if (groupIdx < 0 || (unsigned)groupIdx >= numGroups) { DebugConsole::Log("Invalid vertex group [%d]! Must be in range [0, %u]!\n", groupIdx, numGroups-1); return false; }
+		return s_pEditor->SelectVertexGroup(groupIdx);
+	}
+
+	bool CommandProcessor::ProcessRemoveVertexGroupCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("removeVertexGroup ");
+
+		unsigned numGroups = s_pEditor->GetVertexGroupCount();
+		if (numGroups <= 0) { DebugConsole::Log("Cannot removeVertexGroup! No vertex groups exist for model!\n"); return false; }
+
+		int groupIdx = -1;
+		if (!StringFuncs::GetSingleIntFromString(args, groupIdx)) { DebugConsole::Log("Invalid args to RemoveVertexGroup!\n"); return false; }
+		if (groupIdx < 0 || (unsigned)groupIdx >= numGroups) { DebugConsole::Log("Invalid vertex group [%d]! Must be in range [0, %u]!\n", groupIdx, numGroups - 1); return false; }
+		return s_pEditor->RemoveVertexGroup(groupIdx);
 	}
 }
