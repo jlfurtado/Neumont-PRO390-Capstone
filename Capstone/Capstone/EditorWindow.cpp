@@ -12,7 +12,7 @@ namespace Capstone
 	bool EditorWindow::MakeWindow(HINSTANCE instanceHandle, int nCmdShow, const char *const windowName, int screenWidth, int screenHeight)
 	{
 		if (s_pFirst == nullptr) { s_pFirst = this; }
-		if (!m_console.Initialize(true)) { return false; }
+		if (!m_console.Initialize(true, this)) { return false; }
 		
 		m_width = screenWidth;
 		m_height = screenHeight;
@@ -94,9 +94,7 @@ namespace Capstone
 		}
 
 		// free resources
-		m_editor.Shutdown();
-		m_console.Shutdown();
-		CommandProcessor::Shutdown();
+		ShutdownAll();
 
 		// return this part of the WM_QUIT message to Windows
 		return static_cast<int>(msg.wParam);
@@ -115,6 +113,13 @@ namespace Capstone
 	void EditorWindow::CloseWindow()
 	{
 		PostMessage(m_windowHandle, WM_CLOSE, NULL, NULL);
+	}
+
+	void EditorWindow::ShutdownAll()
+	{
+		m_editor.Shutdown();
+		m_console.Shutdown();
+		CommandProcessor::Shutdown();
 	}
 
 	LRESULT CALLBACK EditorWindow::WindowProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)

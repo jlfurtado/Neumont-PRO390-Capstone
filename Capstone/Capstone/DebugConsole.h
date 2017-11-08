@@ -4,10 +4,11 @@
 
 namespace Capstone
 {
+	class EditorWindow;
 	class DebugConsole
 	{
 	public:
-		static bool Initialize(bool hide);
+		static bool Initialize(bool hide, EditorWindow *pWindow);
 		static bool Hide();
 		static bool Show();
 		static void GetCommand();
@@ -20,6 +21,7 @@ namespace Capstone
 		static bool Shutdown();
 		
 	private:
+		static BOOL WINAPI MyConsoleControlHandler(DWORD controlType);
 		static bool ShowBackground();
 		static void ProcessCommand();
 		static void WriteLog(const char *const str);
@@ -31,6 +33,7 @@ namespace Capstone
 		static HWND s_lastActive;
 		static bool s_hidden;
 		static bool s_outputOnly;
+		static EditorWindow *s_pWindow;
 	};
 
 	template <typename...Args>

@@ -198,13 +198,13 @@ namespace Capstone
 		return VariationController::SetVariationSpeed(speed);
 	}
 
-	bool CommandProcessor::ProcessDisplayVertexGroupsCommand(const char * const command)
+	bool CommandProcessor::ProcessDisplayVertexGroupsCommand(const char * const /*command*/)
 	{
 		unsigned numGroups = s_pEditor->GetVertexGroupCount();
 
 		DebugConsole::Log("Begin vertex group info for [%u] groups!\n", numGroups);
 		
-		unsigned size = -1;
+		unsigned size = 0;
 		for (unsigned i = 0; i < numGroups; ++i)
 		{
 			if (!s_pEditor->GetVertexGroupInfo(i, size)) { DebugConsole::Log("Unable to get vertex group info for vertex group [%u]!\n", i); return false; }
