@@ -62,6 +62,7 @@ namespace Capstone
 
 	int EditorWindow::Run()
 	{
+		m_shutdown = false;
 		if (!CommandProcessor::Initialize(this, &m_editor)) { CloseWindow(); }
 		if (!ElapsedTime::Initialize()) { CloseWindow(); }
 		if (!m_editor.Initialize(m_instanceHandle, m_windowHandle, this)) { CloseWindow(); }
@@ -84,13 +85,21 @@ namespace Capstone
 			}
 
 			// update 'n draw
-			Keyboard::Update();
-			POINT cursorPos;
-			GetCursorPos(&cursorPos);
-			ScreenToClient(m_windowHandle, &cursorPos);
-			Mouse::Update(cursorPos.x, cursorPos.y);
-			m_editor.Update(ElapsedTime::GetLastFrameTime());
-			m_editor.Render();
+			if (!m_shutdown) {Keyboard::Update();}
+			if (!m_shutdown) {
+				POINT cursorPos;
+				GetCursorPos(&cursorPos);
+				ScreenToClient(m_windowHandle, &cursorPos);
+				Mouse::Update(cursorPos.x, cursorPos.y);
+			}
+
+			if (!m_shutdown) {
+				m_editor.Update(ElapsedTime::GetLastFrameTime());
+			}
+
+			if (!m_shutdown) {
+				m_editor.Render();
+			}
 		}
 
 		// free resources
@@ -117,9 +126,13 @@ namespace Capstone
 
 	void EditorWindow::ShutdownAll()
 	{
-		m_editor.Shutdown();
-		m_console.Shutdown();
-		CommandProcessor::Shutdown();
+		if (!m_shutdown)
+		{
+			m_shutdown = true;
+			m_editor.Shutdown();
+			m_console.Shutdown();
+			CommandProcessor::Shutdown();
+		}
 	}
 
 	LRESULT CALLBACK EditorWindow::WindowProc(HWND windowHandle, UINT message, WPARAM wParam, LPARAM lParam)

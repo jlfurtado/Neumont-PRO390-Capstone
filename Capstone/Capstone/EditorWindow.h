@@ -18,7 +18,7 @@ namespace Capstone
 		int GetHeight();
 		void CloseWindow();
 		void ShutdownAll();
-
+		
 	private:
 		HWND m_windowHandle;
 		HINSTANCE m_instanceHandle;
@@ -26,6 +26,7 @@ namespace Capstone
 		DebugConsole m_console;
 		int m_width;
 		int m_height;
+		bool m_shutdown;
 
 		const char *const WINDOW_CLASS_NAME = "WindowClass2";
 		static EditorWindow *s_pFirst;

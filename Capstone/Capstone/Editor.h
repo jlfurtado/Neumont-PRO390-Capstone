@@ -59,7 +59,7 @@ namespace Capstone
 		void CalcNormalsFor(float *pVerts, int numVerts, int stride, int normalOffset);
 		void HandleVertexSelection();
 
-		float bgColorRGBA[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float bgColorRGBA[4] = { 0.8f, 0.8f, 1.0f, 1.0f };
 
 		ID3D11VertexShader *pPCNVertShader = 0;    // the vertex shader
 		ID3D11PixelShader *pPCNPixelShader = 0;     // the pixel shader

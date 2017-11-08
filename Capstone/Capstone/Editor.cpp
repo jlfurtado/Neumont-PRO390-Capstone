@@ -205,7 +205,6 @@ namespace Capstone
 
 	void Editor::Render()
 	{
-		// clear the back buffer to a deep blue
 		m_context->ClearRenderTargetView(m_backBufferTarget, &bgColorRGBA[0]);
 		m_context->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
@@ -213,7 +212,6 @@ namespace Capstone
 		RenderPivot();
 		if (m_clicked) { RenderUtils(); }
 
-		// switch the back buffer and the front buffer
 		m_swapChain->Present(0, 0);
 	}
 
