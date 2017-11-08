@@ -23,7 +23,9 @@ namespace Capstone
 		{"setVariationSpeed", "(speed)", CommandProcessor::ProcessSetVariationSpeedCommand, "sets the speed of all variation controllers so you can edit faster or slower." },
 		{"displayVertexGroups", nullptr, CommandProcessor::ProcessDisplayVertexGroupsCommand, "displays information about all the vertex groups."},
 		{"selectVertexGroup", "(vertex group)", CommandProcessor::ProcessSelectVertexGroupCommand, "selects the specified vertex group, if it exists."},
-		{"removeVertexGroup", "(vertex group)", CommandProcessor::ProcessRemoveVertexGroupCommand, "removes the specified vertex group, if it exists."}
+		{"removeVertexGroup", "(vertex group)", CommandProcessor::ProcessRemoveVertexGroupCommand, "removes the specified vertex group, if it exists."},
+		{"displayVariants", "(numVariants) offset:(x y z)", CommandProcessor::ProcessSetNumVariantsCommand, "sets the number of variants of the model to display and displays them."},
+		{"resumeEdit", nullptr, CommandProcessor::ProcessResumeEditCommand, "resumes editing of the model variations, exits display only mode."}
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -239,5 +241,17 @@ namespace Capstone
 		if (!StringFuncs::GetSingleIntFromString(args, groupIdx)) { DebugConsole::Log("Invalid args to RemoveVertexGroup!\n"); return false; }
 		if (groupIdx < 0 || (unsigned)groupIdx >= numGroups) { DebugConsole::Log("Invalid vertex group [%d]! Must be in range [0, %u]!\n", groupIdx, numGroups - 1); return false; }
 		return s_pEditor->RemoveVertexGroup(groupIdx);
+	}
+
+	bool CommandProcessor::ProcessSetNumVariantsCommand(const char * const command)
+	{
+		DebugConsole::Log("COMMAND NOT YET IMPLEMENTED!\n");
+		return false;
+	}
+
+	bool CommandProcessor::ProcessResumeEditCommand(const char * const command)
+	{
+		DebugConsole::Log("COMMAND NOT YET IMPLEMENTED!\n");
+		return false;
 	}
 }

@@ -46,9 +46,6 @@ namespace Capstone
 		return s_writeHandle != NULL && s_console != NULL && s_readHandle != NULL;
 	}
 
-	
-
-
 	bool DebugConsole::Hide()
 	{
 		if (!s_hidden)
@@ -93,6 +90,8 @@ namespace Capstone
 	bool DebugConsole::Shutdown()
 	{
 		s_writeHandle = NULL;
+		s_readHandle = NULL;
+		s_console = NULL;
 		return true;
 	}
 

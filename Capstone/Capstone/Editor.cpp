@@ -173,18 +173,13 @@ namespace Capstone
 	{
 		m_camera.Update(dt);
 
-		//int w, h;
-		//m_pMyWindow->GetWindowSize(w, h);
-		//DebugConsole::Log("Frame [%d]\n", ct);
 		LogFPS(dt, 1.0f);
-		m_timer += dt; if (m_timer > m_loopTime) { m_timer -= m_loopTime; }
 
-		//if (Keyboard::IsKeyPressed('W')) { DebugConsole::Log("W pressed\n"); }
-		//if (Keyboard::IsKeyReleased('W')) { DebugConsole::Log("W released\n"); }
-
-		m_mesh.Update(dt);
-
-		m_t = m_timer <= m_halfLoopTime ? m_timer / m_halfLoopTime : (m_loopTime - m_timer) / m_halfLoopTime;
+		if (!m_displayMode)
+		{
+			m_mesh.Update(dt);
+			HandleVertexSelection();
+		}
 
 		if (Keyboard::IsKeyPressed(VK_RETURN))
 		{
@@ -198,44 +193,9 @@ namespace Capstone
 			DebugConsole::ToggleKeep();
 		}
 
-
 		if (Keyboard::IsKeyPressed(VK_ESCAPE))
 		{
 			m_pMyWindow->CloseWindow();
-		}
-
-		if (Mouse::LeftMouseClicked())
-		{
-			m_clicked = true;
-			m_lastMouseX = Mouse::GetMouseX();
-			m_lastMouseY = Mouse::GetMouseY();
-		}
-		else if (m_clicked)
-		{
-			int mouseX = Mouse::GetMouseX();
-			int mouseY = Mouse::GetMouseY();
-
-			float lastXPercent = m_lastMouseX / (float)m_pMyWindow->GetWidth();
-			float currentXPercent = mouseX / (float)m_pMyWindow->GetWidth();
-			float lastYPercent = m_lastMouseY / (float)m_pMyWindow->GetHeight();
-			float currentYPercent = mouseY / (float)m_pMyWindow->GetHeight();
-
-			float lowXPerc = MathUtility::Min(lastXPercent, currentXPercent);
-			float highXPerc = MathUtility::Max(lastXPercent, currentXPercent);
-			float lowYPerc = MathUtility::Min(lastYPercent, currentYPercent);
-			float highYPerc = MathUtility::Max(lastYPercent, currentYPercent);
-
-			UtilFromMousePercents(lowXPerc, lowYPerc, highXPerc, highYPerc);
-
-			if (Mouse::LeftMouseReleased())
-			{
-				m_clicked = false;
-				Frustum cameraFrustum = Frustum(*m_camera.GetPositionPointer(), *m_camera.GetViewDirPointer(), *m_camera.GetUpPointer(),
-												 m_fovy, m_nearClip, (float)m_pMyWindow->GetWidth(), (float)m_pMyWindow->GetHeight(), m_farClip);
-
-				Frustum mouseFrustum = Frustum::GetSubFrustum(cameraFrustum, lowXPerc, lowYPerc, highXPerc, highYPerc);
-				m_mesh.SelectVerticesInFrustum(mouseFrustum);
-			}
 		}
 
 		m_pivotMTW = m_mesh.GetPivotTranslation() * XMMatrixScaling(0.25f, 0.25f, 0.25f);
@@ -245,15 +205,8 @@ namespace Capstone
 
 	void Editor::Render()
 	{
-		float nc[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
-
-		for (int i = 0; i < 4; ++i)
-		{
-			nc[i] = bgColorRGBA[i] * m_t + (1.0f - m_t) * otherColorRGBA[i];
-		}
-
 		// clear the back buffer to a deep blue
-		m_context->ClearRenderTargetView(m_backBufferTarget, &nc[0]);
+		m_context->ClearRenderTargetView(m_backBufferTarget, &bgColorRGBA[0]);
 		m_context->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		RenderMesh();
@@ -352,6 +305,19 @@ namespace Capstone
 	bool Editor::RemoveVertexGroup(int idx)
 	{
 		return m_mesh.RemoveVertexGroup(idx);
+	}
+
+	bool Editor::EnterDisplayMode()
+	{
+		m_clicked = false;
+		m_displayMode = true;
+		return true;
+	}
+
+	bool Editor::ExitDisplayMode()
+	{
+		m_displayMode = false;
+		return true;
 	}
 
 	void Editor::ReSendUtilVerticesSameBuffer()
@@ -597,6 +563,44 @@ namespace Capstone
 			pNorm3[0] = x;
 			pNorm3[1] = y;
 			pNorm3[2] = z;
+		
+		}
+	}
+
+	void Editor::HandleVertexSelection()
+	{
+		if (Mouse::LeftMouseClicked())
+		{
+			m_clicked = true;
+			m_lastMouseX = Mouse::GetMouseX();
+			m_lastMouseY = Mouse::GetMouseY();
+		}
+		else if (m_clicked)
+		{
+			int mouseX = Mouse::GetMouseX();
+			int mouseY = Mouse::GetMouseY();
+
+			float lastXPercent = m_lastMouseX / (float)m_pMyWindow->GetWidth();
+			float currentXPercent = mouseX / (float)m_pMyWindow->GetWidth();
+			float lastYPercent = m_lastMouseY / (float)m_pMyWindow->GetHeight();
+			float currentYPercent = mouseY / (float)m_pMyWindow->GetHeight();
+
+			float lowXPerc = MathUtility::Min(lastXPercent, currentXPercent);
+			float highXPerc = MathUtility::Max(lastXPercent, currentXPercent);
+			float lowYPerc = MathUtility::Min(lastYPercent, currentYPercent);
+			float highYPerc = MathUtility::Max(lastYPercent, currentYPercent);
+
+			UtilFromMousePercents(lowXPerc, lowYPerc, highXPerc, highYPerc);
+
+			if (Mouse::LeftMouseReleased())
+			{
+				m_clicked = false;
+				Frustum cameraFrustum = Frustum(*m_camera.GetPositionPointer(), *m_camera.GetViewDirPointer(), *m_camera.GetUpPointer(),
+					m_fovy, m_nearClip, (float)m_pMyWindow->GetWidth(), (float)m_pMyWindow->GetHeight(), m_farClip);
+
+				Frustum mouseFrustum = Frustum::GetSubFrustum(cameraFrustum, lowXPerc, lowYPerc, highXPerc, highYPerc);
+				m_mesh.SelectVerticesInFrustum(mouseFrustum);
+			}
 		}
 	}
 }

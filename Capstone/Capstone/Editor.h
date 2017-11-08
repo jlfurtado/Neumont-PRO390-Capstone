@@ -39,6 +39,9 @@ namespace Capstone
 			bool SelectVertexGroup(int idx);
 			bool GetVertexGroupInfo(int group, unsigned &outSize);
 			bool RemoveVertexGroup(int idx);
+			bool EnterDisplayMode();
+			bool ExitDisplayMode();
+
 	private:
 		void ReSendUtilVerticesSameBuffer();
 		void ReSendVerticesSameBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t stride);
@@ -54,9 +57,9 @@ namespace Capstone
 		void LogFPS(float dt, float interval);
 		void UtilFromMousePercents(float lowX, float lowY, float highX, float highY);
 		void CalcNormalsFor(float *pVerts, int numVerts, int stride, int normalOffset);
+		void HandleVertexSelection();
 
-		float bgColorRGBA[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		float otherColorRGBA[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float bgColorRGBA[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 		ID3D11VertexShader *pPCNVertShader = 0;    // the vertex shader
 		ID3D11PixelShader *pPCNPixelShader = 0;     // the pixel shader
@@ -71,11 +74,6 @@ namespace Capstone
 
 		const char *const VERTEX_SHADER_STR = "vs_5_0";
 		const char *const PIXEL_SHADER_STR = "ps_5_0";
-
-		float m_t = 0.0f;
-		float m_timer = 0.0f;
-		const float m_loopTime = 10.0f;
-		const float m_halfLoopTime = m_loopTime / 2.0f;
 
 		UniformManager m_meshUniformManager;
 		UniformManager m_utilUniformManager;
@@ -102,7 +100,8 @@ namespace Capstone
 
 		int m_lastMouseX;
 		int m_lastMouseY;
-		bool m_clicked;
+		bool m_clicked{ false };
+		bool m_displayMode{ false };
 
 		static const int UTIL_VERTS = 6;
 		static const int UTIL_FLOATS_PER_VERTEX = 10;
