@@ -25,6 +25,7 @@ namespace Capstone
 		MakeUtilityVertexBuffer();
 		CalcNormalsFor(m_pivotVerts, PIVOT_VERTS, PIVOT_FLOATS_PER_VERTEX, PIVOT_FLOATS_PER_VERTEX - 3);
 		MakePivotVertexBuffer();
+		MakeFrustumVertexBuffer();
 
 		// load and compile the two shaders
 		ID3DBlob* VS1 = nullptr;
@@ -126,10 +127,30 @@ namespace Capstone
 		if (!m_pivotUniformManager.AddUniform("SpecularIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_pivotUniformManager.AddUniform("SpecularPower", sizeof(DirectX::XMFLOAT4), &m_specularIntensity, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_pivotUniformManager.AddUniform("CameraPosition", sizeof(DirectX::XMFLOAT4), m_camera.GetPositionPointer(), true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
-		if (!m_pivotUniformManager.AddUniform("ITMTW", sizeof(DirectX::XMFLOAT4X4), &m_inverseTransposeModelToWorldMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_pivotUniformManager.AddUniform("ITMTW", sizeof(DirectX::XMFLOAT4X4), &m_itmtwPivot, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_pivotUniformManager.AddUniform("Interp", sizeof(DirectX::XMVECTOR), &m_interp, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 
 		if (!m_pivotUniformManager.Initialize(m_device, VS1, PS1)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
+
+		// send data to our shader!!!!
+		if (!m_frustumUniformManager.AddUniform("mtw", sizeof(DirectX::XMFLOAT4X4), &m_identity, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("wtv", sizeof(DirectX::XMFLOAT4X4), m_camera.GetWorldToViewMatrixPointer(), false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("proj", sizeof(DirectX::XMFLOAT4X4), &m_projectionMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("LightColor", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("LightPos", sizeof(DirectX::XMFLOAT4), &m_lightPos, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("DiffuseColor", sizeof(DirectX::XMFLOAT4), &m_diffuseColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("DiffuseIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("AmbientColor", sizeof(DirectX::XMFLOAT4), &m_ambientColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("AmbientIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("SpecularColor", sizeof(DirectX::XMFLOAT4), &m_specularColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("SpecularIntensity", sizeof(DirectX::XMFLOAT4), &m_lightColor, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("SpecularPower", sizeof(DirectX::XMFLOAT4), &m_specularIntensity, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("CameraPosition", sizeof(DirectX::XMFLOAT4), m_camera.GetPositionPointer(), true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("ITMTW", sizeof(DirectX::XMFLOAT4X4), &m_identity, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+		if (!m_frustumUniformManager.AddUniform("Interp", sizeof(DirectX::XMVECTOR), &m_interp, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
+
+		if (!m_frustumUniformManager.Initialize(m_device, VS1, PS1)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
+
 
 		CalculatePerspectiveMatrix();
 
@@ -144,6 +165,7 @@ namespace Capstone
 
 	void Editor::UnloadContent()
 	{
+		m_frustumUniformManager.Shutdown();
 		m_meshUniformManager.Shutdown();
 		m_utilUniformManager.Shutdown();
 		m_pivotUniformManager.Shutdown();
@@ -152,12 +174,14 @@ namespace Capstone
 		if (pPCNPixelShader) pPCNPixelShader->Release();
 		if (pPCVertShader) pPCVertShader->Release();
 		if (pPCPixelShader) pPCPixelShader->Release();
+		if (pFrustumVertexBuffer) pFrustumVertexBuffer->Release();
 		if (pMeshVertexBuffer) pMeshVertexBuffer->Release();
 		if (pUtilityVertexBuffer) pUtilityVertexBuffer->Release();
 		if (pPivotVertexBuffer) pPivotVertexBuffer->Release();
 		if (pPCNLayout) pPCNLayout->Release();
 		if (pPCLayout) pPCLayout->Release();
 
+		pFrustumVertexBuffer = 0;
 		pPCNVertShader = 0;
 		pPCNPixelShader = 0;
 		pPCVertShader = 0;
@@ -200,6 +224,7 @@ namespace Capstone
 
 		m_pivotMTW = m_mesh.GetPivotTranslation() * XMMatrixScaling(0.25f, 0.25f, 0.25f);
 		m_inverseTransposeModelToWorldMatrix = XMMatrixTranspose(XMMatrixInverse(NULL, *m_mesh.GetMTWMatrixPtr()));
+		m_itmtwPivot = XMMatrixTranspose(XMMatrixInverse(NULL, m_pivotMTW));
 		m_lightPos = *m_camera.GetPositionPointer();
 	}
 
@@ -211,6 +236,7 @@ namespace Capstone
 		RenderMesh();
 		RenderPivot();
 		if (m_clicked) { RenderUtils(); }
+		//RenderFrustum();
 
 		m_swapChain->Present(0, 0);
 	}
@@ -341,9 +367,23 @@ namespace Capstone
 		return true;
 	}
 
+	bool Editor::ClearVertexGroups()
+	{
+		if (m_mesh.GetNumVertexGroups() <= 0) { DebugConsole::Log("Cannot ClearVertexGroups! No vertex groups exist to clear!\n"); return false; }
+		m_mesh.ClearVertexGroups();
+		m_mesh.ColorAll(0.0f, 0.0f, 1.0f);
+		ReSendMeshVerticesSameBuffer();
+		return true;
+	}
+
 	void Editor::ReSendUtilVerticesSameBuffer()
 	{
 		ReSendVerticesSameBuffer(&pUtilityVertexBuffer, UTIL_FLOATS * sizeof(float), &m_utilVerts[0], sizeof(float) * UTIL_FLOATS_PER_VERTEX);
+	}
+
+	void Editor::ReSendFrustumVerticesSameBuffer()
+	{
+		ReSendVerticesSameBuffer(&pFrustumVertexBuffer, FRUSTUM_FLOATS * sizeof(float), &m_frustumVerts[0], FRUSTUM_FLOATS_PER_VERTEX * sizeof(float));
 	}
 
 	void Editor::ReSendVerticesSameBuffer(ID3D11Buffer ** pBuffer, size_t bufferSize, float * pData, size_t inStride)
@@ -429,6 +469,34 @@ namespace Capstone
 
 		// draw the vertex buffer to the back buffer
 		m_context->Draw(PIVOT_VERTS, 0);
+	}
+
+	void Editor::RenderFrustum()
+	{
+		// set the shader objects
+		m_context->VSSetShader(pPCNVertShader, 0, 0);
+		m_context->PSSetShader(pPCNPixelShader, 0, 0);
+
+		m_context->IASetInputLayout(pPCNLayout);
+
+		// select which vertex buffer to display
+		UINT stride = sizeof(float) * FRUSTUM_FLOATS_PER_VERTEX;
+		UINT offset = 0;
+		m_context->IASetVertexBuffers(0, 1, &pFrustumVertexBuffer, &stride, &offset);
+
+		// select which primtive type we are using
+		m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// SEND data
+		m_frustumUniformManager.PassUniforms(m_context);
+
+		// draw the vertex buffer to the back buffer
+		m_context->Draw(FRUSTUM_VERTS, 0);
+	}
+
+	void Editor::MakeFrustumVertexBuffer()
+	{
+		MakeBuffer(&pFrustumVertexBuffer, FRUSTUM_FLOATS * sizeof(float), &m_frustumVerts[0], FRUSTUM_FLOATS_PER_VERTEX * sizeof(float));
 	}
 
 	void Editor::ExitFullScreen()
@@ -527,6 +595,141 @@ namespace Capstone
 		}
 	}
 
+	void Editor::FrustumVertsFromFrustum(const Frustum & frustum)
+	{
+		XMVECTOR ntl = frustum.GetPoint(Frustum::NEAR_TOP_LEFT);
+		XMVECTOR ntr = frustum.GetPoint(Frustum::NEAR_TOP_RIGHT);
+		XMVECTOR nbr = frustum.GetPoint(Frustum::NEAR_BOTTOM_RIGHT);
+		XMVECTOR nbl = frustum.GetPoint(Frustum::NEAR_BOTTOM_LEFT);
+		XMVECTOR ftl = frustum.GetPoint(Frustum::FAR_TOP_LEFT);
+		XMVECTOR ftr = frustum.GetPoint(Frustum::FAR_TOP_RIGHT);
+		XMVECTOR fbr = frustum.GetPoint(Frustum::FAR_BOTTOM_RIGHT);
+		XMVECTOR fbl = frustum.GetPoint(Frustum::FAR_BOTTOM_LEFT);
+
+		// near
+		m_frustumVerts[0 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntl);
+		m_frustumVerts[0 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntl);
+		m_frustumVerts[0 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntl);
+		m_frustumVerts[1 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbr);
+		m_frustumVerts[1 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbr);
+		m_frustumVerts[1 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbr);
+		m_frustumVerts[2 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbl);
+		m_frustumVerts[2 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbl);
+		m_frustumVerts[2 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbl);
+		m_frustumVerts[3 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntl);
+		m_frustumVerts[3 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntl);
+		m_frustumVerts[3 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntl);
+		m_frustumVerts[4 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntr);
+		m_frustumVerts[4 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntr);
+		m_frustumVerts[4 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntr);
+		m_frustumVerts[5 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbr);
+		m_frustumVerts[5 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbr);
+		m_frustumVerts[5 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbr);
+
+		// far
+		m_frustumVerts[6 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftl);
+		m_frustumVerts[6 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftl);
+		m_frustumVerts[6 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftl);
+		m_frustumVerts[7 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbl);
+		m_frustumVerts[7 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbl);
+		m_frustumVerts[7 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbl);
+		m_frustumVerts[8 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbr);
+		m_frustumVerts[8 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbr);
+		m_frustumVerts[8 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbr);
+		m_frustumVerts[9 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftl);
+		m_frustumVerts[9 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftl);
+		m_frustumVerts[9 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftl);
+		m_frustumVerts[10 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbr);
+		m_frustumVerts[10 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbr);
+		m_frustumVerts[10 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbr);
+		m_frustumVerts[11 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftr);
+		m_frustumVerts[11 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftr);
+		m_frustumVerts[11 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftr);
+
+		// top
+		m_frustumVerts[12 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftl);
+		m_frustumVerts[12 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftl);
+		m_frustumVerts[12 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftl);
+		m_frustumVerts[13 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntr);
+		m_frustumVerts[13 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntr);
+		m_frustumVerts[13 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntr);
+		m_frustumVerts[14 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntl);
+		m_frustumVerts[14 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntl);
+		m_frustumVerts[14 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntl);
+		m_frustumVerts[15 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftl);
+		m_frustumVerts[15 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftl);
+		m_frustumVerts[15 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftl);
+		m_frustumVerts[16 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftr);
+		m_frustumVerts[16 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftr);
+		m_frustumVerts[16 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftr);
+		m_frustumVerts[17 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntr);
+		m_frustumVerts[17 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntr);
+		m_frustumVerts[17 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntr);
+
+		// bottom
+		m_frustumVerts[18 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbl);
+		m_frustumVerts[18 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbl);
+		m_frustumVerts[18 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbl);
+		m_frustumVerts[19 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbl);
+		m_frustumVerts[19 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbl);
+		m_frustumVerts[19 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbl);
+		m_frustumVerts[20 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbr);
+		m_frustumVerts[20 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbr);
+		m_frustumVerts[20 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbr);
+		m_frustumVerts[21 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbl);
+		m_frustumVerts[21 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbl);
+		m_frustumVerts[21 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbl);
+		m_frustumVerts[22 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbr);
+		m_frustumVerts[22 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbr);
+		m_frustumVerts[22 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbr);
+		m_frustumVerts[23 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbr);
+		m_frustumVerts[23 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbr);
+		m_frustumVerts[23 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbr);
+
+		// left
+		m_frustumVerts[24 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftl);
+		m_frustumVerts[24 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftl);
+		m_frustumVerts[24 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftl);
+		m_frustumVerts[25 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbl);
+		m_frustumVerts[25 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbl);
+		m_frustumVerts[25 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbl);
+		m_frustumVerts[26 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbl);
+		m_frustumVerts[26 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbl);
+		m_frustumVerts[26 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbl);
+		m_frustumVerts[27 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftl);
+		m_frustumVerts[27 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftl);
+		m_frustumVerts[27 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftl);
+		m_frustumVerts[28 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntl);
+		m_frustumVerts[28 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntl);
+		m_frustumVerts[28 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntl);
+		m_frustumVerts[29 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbl);
+		m_frustumVerts[29 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbl);
+		m_frustumVerts[29 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbl);
+
+		// right
+		m_frustumVerts[30 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntr);
+		m_frustumVerts[30 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntr);
+		m_frustumVerts[30 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntr);
+		m_frustumVerts[31 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbr);
+		m_frustumVerts[31 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbr);
+		m_frustumVerts[31 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbr);
+		m_frustumVerts[32 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(nbr);
+		m_frustumVerts[32 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(nbr);
+		m_frustumVerts[32 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(nbr);
+		m_frustumVerts[33 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ntr);
+		m_frustumVerts[33 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ntr);
+		m_frustumVerts[33 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ntr);
+		m_frustumVerts[34 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(ftr);
+		m_frustumVerts[34 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(ftr);
+		m_frustumVerts[34 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(ftr);
+		m_frustumVerts[35 * FRUSTUM_FLOATS_PER_VERTEX + 0] = XMVectorGetX(fbr);
+		m_frustumVerts[35 * FRUSTUM_FLOATS_PER_VERTEX + 1] = XMVectorGetY(fbr);
+		m_frustumVerts[35 * FRUSTUM_FLOATS_PER_VERTEX + 2] = XMVectorGetZ(fbr);
+
+		CalcNormalsFor(&m_frustumVerts[0], FRUSTUM_VERTS, FRUSTUM_FLOATS_PER_VERTEX, FRUSTUM_FLOATS_PER_VERTEX - 3);
+		ReSendFrustumVerticesSameBuffer();
+	}
+
 	void Editor::UtilFromMousePercents(float lowX, float lowY, float highX, float highY)
 	{
 		// lerp -1 to 1 simplified
@@ -621,6 +824,7 @@ namespace Capstone
 
 				Frustum mouseFrustum = Frustum::GetSubFrustum(cameraFrustum, lowXPerc, lowYPerc, highXPerc, highYPerc);
 				m_mesh.SelectVerticesInFrustum(mouseFrustum);
+				//FrustumVertsFromFrustum(mouseFrustum);
 			}
 		}
 	}

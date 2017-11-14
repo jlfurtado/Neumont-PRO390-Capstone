@@ -35,12 +35,13 @@ namespace Capstone
 		static bool ProcessDisplayVertexGroupsCommand(const char *const command);
 		static bool ProcessSelectVertexGroupCommand(const char *const command);
 		static bool ProcessRemoveVertexGroupCommand(const char *const command);
+		static bool ProcessClearVertexGroupsCommand(const char *const command);
 		static bool ProcessSetNumVariantsCommand(const char *const command);
 		static bool ProcessResumeEditCommand(const char *const command);
 		static EditorWindow *s_pMyWindow;
 		static Editor *s_pEditor;
 
-		static const int NUM_COMMANDS = 17;
+		static const int NUM_COMMANDS = 18;
 		static Command s_commands[NUM_COMMANDS];
 	};
 

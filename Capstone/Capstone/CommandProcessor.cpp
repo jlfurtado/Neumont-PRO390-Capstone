@@ -24,6 +24,7 @@ namespace Capstone
 		{"displayVertexGroups", nullptr, CommandProcessor::ProcessDisplayVertexGroupsCommand, "displays information about all the vertex groups."},
 		{"selectVertexGroup", "(vertex group)", CommandProcessor::ProcessSelectVertexGroupCommand, "selects the specified vertex group, if it exists."},
 		{"removeVertexGroup", "(vertex group)", CommandProcessor::ProcessRemoveVertexGroupCommand, "removes the specified vertex group, if it exists."},
+		{"clearVertexGroups", nullptr, CommandProcessor::ProcessClearVertexGroupsCommand, "removes all vertex groups."},
 		{"displayVariants", "(numVariants) offset:(x y z)", CommandProcessor::ProcessSetNumVariantsCommand, "sets the number of variants of the model to display and displays them."},
 		{"resumeEdit", nullptr, CommandProcessor::ProcessResumeEditCommand, "resumes editing of the model variations, exits display only mode."}
 	};
@@ -241,6 +242,11 @@ namespace Capstone
 		if (!StringFuncs::GetSingleIntFromString(args, groupIdx)) { DebugConsole::Log("Invalid args to RemoveVertexGroup!\n"); return false; }
 		if (groupIdx < 0 || (unsigned)groupIdx >= numGroups) { DebugConsole::Log("Invalid vertex group [%d]! Must be in range [0, %u]!\n", groupIdx, numGroups - 1); return false; }
 		return s_pEditor->RemoveVertexGroup(groupIdx);
+	}
+
+	bool CommandProcessor::ProcessClearVertexGroupsCommand(const char * const /*command*/)
+	{
+		return s_pEditor->ClearVertexGroups();
 	}
 
 	bool CommandProcessor::ProcessSetNumVariantsCommand(const char * const command)

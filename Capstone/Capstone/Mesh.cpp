@@ -113,7 +113,6 @@ namespace Capstone
 			UpdateAllVertexGroups(this, instanceIndex);
 
 			// offset the verts -- ugly would do better with fancy render engine
-
 			for (int i = 0; i < m_vertexCount; ++i)
 			{
 				int floatIdx = m_floatsPerVertex * i;
@@ -127,7 +126,6 @@ namespace Capstone
 
 		m_modelToWorld = XMMatrixIdentity();
 		m_pEditor->ReSendMeshVerticesSameBuffer();
-
 		return true;
 	}
 

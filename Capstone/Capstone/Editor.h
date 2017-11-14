@@ -42,20 +42,25 @@ namespace Capstone
 			bool EnterDisplayMode(int displayCount, DirectX::XMVECTOR offset);
 			bool ExitDisplayMode();
 			bool CheckValidMode(const char * const action);
+			bool ClearVertexGroups();
 
 	private:
 		void ReSendUtilVerticesSameBuffer();
+		void ReSendFrustumVerticesSameBuffer();
 		void ReSendVerticesSameBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t stride);
+		void ExitFullScreen();
 		void RenderMesh();
 		void RenderUtils();
 		void RenderPivot();
-		void ExitFullScreen();
+		void RenderFrustum();
+		void MakeFrustumVertexBuffer();
 		void MakeMeshVertexBuffer(int count);
 		void MakeUtilityVertexBuffer();
 		void MakePivotVertexBuffer();
 		void MakeBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t byteWidth);
 		void CalculatePerspectiveMatrix();
 		void LogFPS(float dt, float interval);
+		void FrustumVertsFromFrustum(const Frustum& frustum);
 		void UtilFromMousePercents(float lowX, float lowY, float highX, float highY);
 		void CalcNormalsFor(float *pVerts, int numVerts, int stride, int normalOffset);
 		void HandleVertexSelection();
@@ -69,6 +74,7 @@ namespace Capstone
 		ID3D11Buffer *pMeshVertexBuffer = 0;    // mesh vertex buffer
 		ID3D11Buffer *pUtilityVertexBuffer = 0;    // utility vertex buffer
 		ID3D11Buffer *pPivotVertexBuffer = 0;    // pivot vertex buffer
+		ID3D11Buffer *pFrustumVertexBuffer = 0;
 
 		ID3D11InputLayout *pPCNLayout = 0;
 		ID3D11InputLayout *pPCLayout = 0; 
@@ -76,6 +82,7 @@ namespace Capstone
 		const char *const VERTEX_SHADER_STR = "vs_5_0";
 		const char *const PIXEL_SHADER_STR = "ps_5_0";
 
+		UniformManager m_frustumUniformManager;
 		UniformManager m_meshUniformManager;
 		UniformManager m_utilUniformManager;
 		UniformManager m_pivotUniformManager;
@@ -93,6 +100,7 @@ namespace Capstone
 		DirectX::XMVECTOR m_interp{ 0.75f };
 		DirectX::XMMATRIX m_identity;
 		DirectX::XMMATRIX m_pivotMTW;
+		DirectX::XMMATRIX m_itmtwPivot;
 
 		bool m_initialized{ false };
 		float m_fovy{ DirectX::XM_PIDIV4 };
@@ -115,6 +123,50 @@ namespace Capstone
 			+1.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
 			+1.0f, -1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
 			-1.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f
+		};
+
+
+		static const int FRUSTUM_VERTS = 36;
+		static const int FRUSTUM_FLOATS_PER_VERTEX = 10;
+		static const int FRUSTUM_FLOATS = FRUSTUM_VERTS * FRUSTUM_FLOATS_PER_VERTEX;
+		float m_frustumVerts[FRUSTUM_FLOATS] = {
+			/* X      Y      Z      R      G      B      A      X      Y      Z*/
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			+0.0f, -0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
+			-0.0f, +0.0f, +0.0f, +1.0f, +1.0f, +0.0f, +0.3f, +0.0f, +0.0f, -1.0f,
 		};
 
 		static const int PIVOT_VERTS = 12;

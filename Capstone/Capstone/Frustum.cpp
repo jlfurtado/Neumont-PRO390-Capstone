@@ -76,6 +76,12 @@ namespace Capstone
 		return true;
 	}
 
+	DirectX::XMVECTOR Frustum::GetPoint(int idx) const
+	{
+		if (idx < 0 || idx >= POINTS_PER_FRUSTUM) { DebugConsole::Log("Index out of bounds in frustum get point!\n"); return XMVectorZero(); }
+		return m_points[idx];
+	}
+
 	Frustum::Frustum(const DirectX::XMVECTOR * points)
 	{
 		for (int i = 0; i < POINTS_PER_FRUSTUM; ++i)
@@ -91,7 +97,7 @@ namespace Capstone
 		m_planes[NEAR_PLANE] = XMPlaneFromPoints(m_points[NEAR_TOP_RIGHT], m_points[NEAR_BOTTOM_LEFT], m_points[NEAR_BOTTOM_RIGHT]);
 		m_planes[FAR_PLANE] = XMPlaneFromPoints(m_points[FAR_TOP_LEFT], m_points[FAR_BOTTOM_RIGHT], m_points[FAR_BOTTOM_LEFT]);
 		m_planes[TOP_PLANE] = XMPlaneFromPoints(m_points[NEAR_TOP_LEFT], m_points[FAR_TOP_RIGHT], m_points[FAR_TOP_LEFT]);
-		m_planes[BOTTOM_PLANE] = XMPlaneFromPoints(m_points[FAR_BOTTOM_LEFT], m_points[NEAR_BOTTOM_RIGHT], m_points[NEAR_BOTTOM_LEFT]);
+		m_planes[BOTTOM_PLANE] = XMPlaneFromPoints(m_points[NEAR_BOTTOM_LEFT], m_points[FAR_BOTTOM_LEFT], m_points[FAR_BOTTOM_RIGHT]);
 		m_planes[LEFT_PLANE] = XMPlaneFromPoints(m_points[NEAR_TOP_LEFT], m_points[FAR_BOTTOM_LEFT], m_points[NEAR_BOTTOM_LEFT]);
 		m_planes[RIGHT_PLANE] = XMPlaneFromPoints(m_points[FAR_TOP_RIGHT], m_points[NEAR_BOTTOM_RIGHT], m_points[FAR_BOTTOM_RIGHT]);
 	}
