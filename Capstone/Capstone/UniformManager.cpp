@@ -3,6 +3,7 @@
 #include "Utils.h"
 #include <D3D11Shader.h>
 #include <d3dcompiler.h>
+#include "DXBase.h"
 
 namespace Capstone
 {
@@ -39,8 +40,7 @@ namespace Capstone
 	{
 		for (int i = 0; i < m_nextUniform; ++i)
 		{
-			if (m_uniforms[i].m_pBuffer) { m_uniforms[i].m_pBuffer->Release(); }
-			m_uniforms[i].m_pBuffer = nullptr;
+			DXBase::SafeRelease(m_uniforms[i].m_pBuffer);
 		}
 
 		return true;

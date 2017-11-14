@@ -98,7 +98,7 @@ namespace Capstone
 		m_planes[FAR_PLANE] = XMPlaneFromPoints(m_points[FAR_TOP_LEFT], m_points[FAR_BOTTOM_RIGHT], m_points[FAR_BOTTOM_LEFT]);
 		m_planes[TOP_PLANE] = XMPlaneFromPoints(m_points[NEAR_TOP_LEFT], m_points[FAR_TOP_RIGHT], m_points[FAR_TOP_LEFT]);
 		m_planes[BOTTOM_PLANE] = XMPlaneFromPoints(m_points[NEAR_BOTTOM_LEFT], m_points[FAR_BOTTOM_LEFT], m_points[FAR_BOTTOM_RIGHT]);
-		m_planes[LEFT_PLANE] = XMPlaneFromPoints(m_points[NEAR_TOP_LEFT], m_points[FAR_BOTTOM_LEFT], m_points[NEAR_BOTTOM_LEFT]);
+		m_planes[LEFT_PLANE] = XMPlaneFromPoints(m_points[NEAR_TOP_LEFT], m_points[FAR_TOP_LEFT], m_points[FAR_BOTTOM_LEFT]);
 		m_planes[RIGHT_PLANE] = XMPlaneFromPoints(m_points[FAR_TOP_RIGHT], m_points[NEAR_BOTTOM_RIGHT], m_points[FAR_BOTTOM_RIGHT]);
 	}
 }

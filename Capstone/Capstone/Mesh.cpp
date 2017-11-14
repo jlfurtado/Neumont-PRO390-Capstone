@@ -201,20 +201,12 @@ namespace Capstone
 
 	void Mesh::ReleaseCurrentVerts()
 	{
-		if (m_pVerts)
-		{
-			delete[] m_pVerts;
-			m_pVerts = nullptr;
-		}
+		MyUtils::SafeDeleteArray(m_pVerts);
 	}
 
 	void Mesh::ReleaseBaseVerts()
 	{
-		if (m_pBaseVerts) 
-		{
-			delete[] m_pBaseVerts;
-			m_pBaseVerts = nullptr;
-		}
+		MyUtils::SafeDeleteArray(m_pBaseVerts);
 	}
 
 	const int POSITION_FLOATS = 3;

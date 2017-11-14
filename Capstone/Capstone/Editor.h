@@ -105,7 +105,7 @@ namespace Capstone
 		bool m_initialized{ false };
 		float m_fovy{ DirectX::XM_PIDIV4 };
 		float m_nearClip{ 0.01f };
-		float m_farClip{ 5000.0f };
+		float m_farClip{ 2500.0f };
 
 		int m_lastMouseX;
 		int m_lastMouseY;

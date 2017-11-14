@@ -1,6 +1,7 @@
 #include "CustomIO.h"
 #include "DebugConsole.h"
 #include "StringFuncs.h"
+#include "Utils.h"
 
 namespace Capstone
 {
@@ -228,8 +229,7 @@ namespace Capstone
 
 	void CustomIO::ClearVertexData(float ** outAllocatedVerts)
 	{
-		if (*outAllocatedVerts) { delete[] (*outAllocatedVerts); }
-		*outAllocatedVerts = nullptr;
+		MyUtils::SafeDeleteArray(*outAllocatedVerts);
 	}
 
 	void CustomIO::ClearVertexGroups(std::vector<VertexGroup>* pVertexGroups)

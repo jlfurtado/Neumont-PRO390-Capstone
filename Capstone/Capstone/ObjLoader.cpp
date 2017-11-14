@@ -1,6 +1,7 @@
 #include "ObjLoader.h"
 #include "DebugConsole.h"
 #include "StringFuncs.h"
+#include "Utils.h"
 #include <sstream>
 #include <istream>
 
@@ -470,9 +471,30 @@ namespace Capstone
 		ioffsets[0] = 0;
 		bytes[0] = POSITION_BYTES;
 		pArray[0] = s_pMeshVertexPositions;
-		if (s_hasColor) { offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1]; ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1]; bytes[idx] = COLOR_BYTES; pArray[idx] = s_pMeshVertexColors; ++idx; }
-		if (s_hasTexture) { offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1]; ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1]; bytes[idx] = TEXTURE_BYTES; pArray[idx] = s_pMeshVertexTextureCoords; ++idx; }
-		if (s_hasNormal) { offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1]; ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1]; bytes[idx] = NORMAL_BYTES; pArray[idx] = s_pMeshVertexNormals; ++idx; }
+
+		if (s_hasColor)
+		{ 
+			offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1];
+			ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1];
+			bytes[idx] = COLOR_BYTES; pArray[idx] = s_pMeshVertexColors;
+			++idx;
+		}
+
+		if (s_hasTexture) 
+		{
+			offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1];
+			ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1];
+			bytes[idx] = TEXTURE_BYTES; pArray[idx] = s_pMeshVertexTextureCoords;
+			++idx;
+		}
+
+		if (s_hasNormal) 
+		{ 
+			offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1];
+			ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1];
+			bytes[idx] = NORMAL_BYTES; pArray[idx] = s_pMeshVertexNormals;
+			++idx; 
+		}
 
 		for (int i = 0; i < s_numVertices; ++i)
 		{
@@ -490,19 +512,11 @@ namespace Capstone
 
 	bool ObjLoader::CleanUp()
 	{
-		// clean up after new'd vertices and indices
-		if (s_pMeshVertexPositions) { delete[] s_pMeshVertexPositions; }
-		if (s_pMeshVertexColors) { delete[] s_pMeshVertexColors; }
-		if (s_pMeshVertexTextureCoords) { delete[] s_pMeshVertexTextureCoords; }
-		if (s_pMeshVertexNormals) { delete[] s_pMeshVertexNormals; }
-		if (s_pTempIndices) { delete[] s_pTempIndices; }
-
-		// safe clean - only delete if they exist and mark as no longer existing after death
-		s_pMeshVertexPositions = nullptr;
-		s_pMeshVertexColors = nullptr;
-		s_pMeshVertexTextureCoords = nullptr;
-		s_pMeshVertexNormals = nullptr;
-		s_pTempIndices = nullptr;
+		MyUtils::SafeDeleteArray(s_pMeshVertexPositions);
+		MyUtils::SafeDeleteArray(s_pMeshVertexColors);
+		MyUtils::SafeDeleteArray(s_pMeshVertexTextureCoords);
+		MyUtils::SafeDeleteArray(s_pMeshVertexNormals);
+		MyUtils::SafeDeleteArray(s_pTempIndices);
 
 		DebugConsole::Log("ObjLoader successfully cleaned up!\n");
 		return true;

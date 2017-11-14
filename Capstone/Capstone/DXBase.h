@@ -24,6 +24,17 @@ namespace Capstone
 		void EnableBlend();
 		void DisableBlend();
 
+		template<typename T>
+		static void SafeRelease(T *&pUnknown)
+		{
+			static_assert(std::is_base_of<IUnknown, T>::value, "CUSTOM ERROR: Can't safe release anything that is not IUnknown.");
+			if (pUnknown)
+			{
+				pUnknown->Release();
+				pUnknown = nullptr;
+			}
+		}
+
 	protected:
 		HINSTANCE m_instanceHandle;
 		HWND m_windowHandle;

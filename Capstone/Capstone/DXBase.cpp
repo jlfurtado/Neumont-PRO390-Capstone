@@ -217,23 +217,13 @@ namespace Capstone
 
 		UnloadContent();
 
-		if (m_alphaDisableBlendingState) m_alphaDisableBlendingState->Release();
-		if (m_alphaEnableBlendingState) m_alphaEnableBlendingState->Release();
-		if (m_depthTexture) m_depthTexture->Release();
-		if (m_depthStencilView) m_depthStencilView->Release();
-		if (m_backBufferTarget) m_backBufferTarget->Release();
-		if (m_swapChain) m_swapChain->Release();
-		if (m_context) m_context->Release();
-		if (m_device) m_device->Release();
-
-		m_alphaDisableBlendingState = 0;
-		m_alphaEnableBlendingState = 0;
-		m_depthTexture = 0;
-		m_depthStencilView = 0;
-		m_backBufferTarget = 0;
-		m_swapChain = 0;
-		m_context = 0;
-		m_device = 0;
+		SafeRelease(m_alphaDisableBlendingState);
+		SafeRelease(m_depthTexture);
+		SafeRelease(m_depthStencilView);
+		SafeRelease(m_backBufferTarget);
+		SafeRelease(m_swapChain);
+		SafeRelease(m_context);
+		SafeRelease(m_device);
 	}
 
 	bool DXBase::CompileD3DShader(LPCWSTR filePath, const char *const entry, const char *const shaderModel, ID3DBlob ** buffer)

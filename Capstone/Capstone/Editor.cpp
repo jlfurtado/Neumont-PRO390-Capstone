@@ -170,26 +170,17 @@ namespace Capstone
 		m_utilUniformManager.Shutdown();
 		m_pivotUniformManager.Shutdown();
 
-		if (pPCNVertShader) pPCNVertShader->Release();
-		if (pPCNPixelShader) pPCNPixelShader->Release();
-		if (pPCVertShader) pPCVertShader->Release();
-		if (pPCPixelShader) pPCPixelShader->Release();
-		if (pFrustumVertexBuffer) pFrustumVertexBuffer->Release();
-		if (pMeshVertexBuffer) pMeshVertexBuffer->Release();
-		if (pUtilityVertexBuffer) pUtilityVertexBuffer->Release();
-		if (pPivotVertexBuffer) pPivotVertexBuffer->Release();
-		if (pPCNLayout) pPCNLayout->Release();
-		if (pPCLayout) pPCLayout->Release();
+		SafeRelease(pPCNVertShader);
+		SafeRelease(pPCNPixelShader);
+		SafeRelease(pPCVertShader);
+		SafeRelease(pPCPixelShader);
+		SafeRelease(pFrustumVertexBuffer);
+		SafeRelease(pMeshVertexBuffer);
+		SafeRelease(pUtilityVertexBuffer);
+		SafeRelease(pPivotVertexBuffer);
+		SafeRelease(pPCNLayout);
+		SafeRelease(pPCLayout);
 
-		pFrustumVertexBuffer = 0;
-		pPCNVertShader = 0;
-		pPCNPixelShader = 0;
-		pPCVertShader = 0;
-		pPCPixelShader = 0;
-		pMeshVertexBuffer = 0;
-		pUtilityVertexBuffer = 0;
-		pPivotVertexBuffer = 0;
-		pPCLayout = 0;
 		m_initialized = false;
 	}
 
@@ -535,11 +526,7 @@ namespace Capstone
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
 		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
 
-		if (*pBuffer)
-		{
-			(*pBuffer)->Release();
-			*pBuffer = nullptr;
-		}
+		SafeRelease(*pBuffer);
 
 		// TODO ERROR CHECK HERE!!!
 		m_device->CreateBuffer(&bd, NULL, pBuffer);       // create the buffer
