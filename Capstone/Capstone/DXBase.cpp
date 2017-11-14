@@ -218,6 +218,7 @@ namespace Capstone
 		UnloadContent();
 
 		SafeRelease(m_alphaDisableBlendingState);
+		SafeRelease(m_alphaEnableBlendingState);
 		SafeRelease(m_depthTexture);
 		SafeRelease(m_depthStencilView);
 		SafeRelease(m_backBufferTarget);
