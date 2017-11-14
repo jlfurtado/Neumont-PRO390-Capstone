@@ -245,13 +245,21 @@ namespace Capstone
 
 	bool CommandProcessor::ProcessSetNumVariantsCommand(const char * const command)
 	{
-		DebugConsole::Log("COMMAND NOT YET IMPLEMENTED!\n");
-		return false;
+		static const int EXPECTED_FLOATS = 3;
+		const char *const args = command + StringFuncs::StringLen("displayVariants ");
+
+		int numInstances = 1;
+		float offset[EXPECTED_FLOATS]{ 0.0f };
+		if (!StringFuncs::GetSingleIntFromString(args, numInstances)) { DebugConsole::Log("Invalid args to DisplayVariants!\n"); return false; }
+
+		const char *const arg2 = args + StringFuncs::FindSubString(args, " ") + 1;
+		if (!StringFuncs::GetFloatsFromString(arg2, EXPECTED_FLOATS, &offset[0])) { DebugConsole::Log("Invalid args to DisplayVariants!\n"); return false; }
+
+		return s_pEditor->EnterDisplayMode(numInstances, DirectX::XMVectorSet(offset[0], offset[1], offset[2], 0.0f));
 	}
 
-	bool CommandProcessor::ProcessResumeEditCommand(const char * const command)
+	bool CommandProcessor::ProcessResumeEditCommand(const char * const /*command*/)
 	{
-		DebugConsole::Log("COMMAND NOT YET IMPLEMENTED!\n");
-		return false;
+		return s_pEditor->ExitDisplayMode();
 	}
 }

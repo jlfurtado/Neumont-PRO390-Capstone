@@ -39,8 +39,9 @@ namespace Capstone
 			bool SelectVertexGroup(int idx);
 			bool GetVertexGroupInfo(int group, unsigned &outSize);
 			bool RemoveVertexGroup(int idx);
-			bool EnterDisplayMode();
+			bool EnterDisplayMode(int displayCount, DirectX::XMVECTOR offset);
 			bool ExitDisplayMode();
+			bool CheckValidMode(const char * const action);
 
 	private:
 		void ReSendUtilVerticesSameBuffer();
@@ -49,7 +50,7 @@ namespace Capstone
 		void RenderUtils();
 		void RenderPivot();
 		void ExitFullScreen();
-		void MakeMeshVertexBuffer();
+		void MakeMeshVertexBuffer(int count);
 		void MakeUtilityVertexBuffer();
 		void MakePivotVertexBuffer();
 		void MakeBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t byteWidth);
@@ -96,7 +97,7 @@ namespace Capstone
 		bool m_initialized{ false };
 		float m_fovy{ DirectX::XM_PIDIV4 };
 		float m_nearClip{ 0.01f };
-		float m_farClip{ 100.0f };
+		float m_farClip{ 5000.0f };
 
 		int m_lastMouseX;
 		int m_lastMouseY;

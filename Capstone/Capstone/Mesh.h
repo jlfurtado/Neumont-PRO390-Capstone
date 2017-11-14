@@ -24,7 +24,11 @@ namespace Capstone
 		void CalcMatrix();
 		int GetVertexBufferSize();
 		void Update(float dt);
-		
+		bool PreMultiply(int count);
+		bool Multiply(const DirectX::XMVECTOR& offset);
+		bool Singularify();
+		int GetNumMeshes();
+
 		bool LoadMesh(const char *const filePath);
 		void ClearObjectLevelVariations();
 		void ColorAll(float r, float g, float b);
@@ -56,20 +60,23 @@ namespace Capstone
 
 		float *m_pVerts;
 		float *m_pBaseVerts;
+		int m_numMeshes{ 1 };
 		int m_stride;
 		int m_vertexCount;
 		int m_floatsPerVertex;
 		const char *const m_format;
 
 		void ReleaseVerts();
+		void ReleaseCurrentVerts();
+		void ReleaseBaseVerts();
 		void SetColor(int idx, float r, float g, float b);
 
 		bool SetVariationTypeForCurrentGroup(VariationType type);
 		bool SetObjectLevelVariationType(VariationType type);
 
-		static void UpdateCurrentVertexGroup(void *pMesh);
-		static void UpdateAllVertexGroups(void *pMesh);
-		static void UpdateVertexGroup(void *pMesh, int groupIdx);
+		static void UpdateCurrentVertexGroup(void *pMesh, int instanceIdx);
+		static void UpdateAllVertexGroups(void *pMesh, int instanceIdx);
+		static void UpdateVertexGroup(void *pMesh, int groupIdx, int instanceIndex);
 
 		bool InitVariations();
 		bool InitObjectLevelVariaitions();

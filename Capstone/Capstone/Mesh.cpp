@@ -76,9 +76,75 @@ namespace Capstone
 					m_testGroups[i].GetVariationPointer()->Vary();
 				}
 
-				UpdateAllVertexGroups(this);
+				UpdateAllVertexGroups(this, 0);
 			}
 		}
+	}
+
+	bool Mesh::PreMultiply(int count)
+	{
+		m_numMeshes = count;
+		ReleaseCurrentVerts();
+		m_pVerts = new float[m_floatsPerVertex * m_vertexCount * count]{ 0.0f };
+		return m_pVerts != nullptr;
+	}
+
+	bool Mesh::Multiply(const XMVECTOR& offset)
+	{
+		float xOffset = XMVectorGetX(offset);
+		float yOffset = XMVectorGetY(offset);
+		float zOffset = XMVectorGetZ(offset);
+
+		for (int instanceIndex = 0; instanceIndex < m_numMeshes; ++instanceIndex)
+		{
+			int instanceOffset = m_floatsPerVertex * m_vertexCount * instanceIndex;
+
+			// do the varying -- this no work?
+			m_objectLevelVariation.Vary();
+			CalcMatrix();
+			XMMATRIX mtw = m_modelToWorld;
+			for (size_t i = 0; i < m_testGroups.size(); ++i)
+			{
+				m_testGroups[i].GetVariationPointer()->Vary();
+			}
+
+			std::memcpy(m_pVerts + instanceOffset, m_pBaseVerts, m_stride * m_vertexCount);
+
+			UpdateAllVertexGroups(this, instanceIndex);
+
+			// offset the verts -- ugly would do better with fancy render engine
+
+			for (int i = 0; i < m_vertexCount; ++i)
+			{
+				int floatIdx = m_floatsPerVertex * i;
+				XMVECTOR v = XMVector4Transform(XMVectorSet(m_pVerts[instanceOffset + floatIdx + 0], m_pVerts[instanceOffset + floatIdx + 1], m_pVerts[instanceOffset + floatIdx + 2], 1.0f), mtw);
+				m_pVerts[instanceOffset + floatIdx + 0] = XMVectorGetX(v) + instanceIndex * xOffset;
+				m_pVerts[instanceOffset + floatIdx + 1] = XMVectorGetY(v) + instanceIndex * yOffset;
+				m_pVerts[instanceOffset + floatIdx + 2] = XMVectorGetZ(v) + instanceIndex * zOffset;
+			}
+
+		}
+
+		m_modelToWorld = XMMatrixIdentity();
+		m_pEditor->ReSendMeshVerticesSameBuffer();
+
+		return true;
+	}
+
+	bool Mesh::Singularify()
+	{
+		m_numMeshes = 1;
+		ReleaseCurrentVerts();
+		m_pVerts = new float[m_floatsPerVertex * m_vertexCount]{ 0.0f };
+		std::memcpy(m_pVerts, m_pBaseVerts, m_stride * m_vertexCount);
+		UpdateAllVertexGroups(this, 0);
+		ColorAll(0.0f, 0.0f, 1.0f);
+		return true;
+	}
+
+	int Mesh::GetNumMeshes()
+	{
+		return m_numMeshes;
 	}
 
 	bool Mesh::LoadMesh(const char *const filePath)
@@ -131,10 +197,26 @@ namespace Capstone
 
 	void Mesh::ReleaseVerts()
 	{
-		if (m_pVerts) { delete[] m_pVerts; }
-		if (m_pBaseVerts) { delete[] m_pBaseVerts; }
-		m_pVerts = nullptr;
-		m_pBaseVerts = nullptr;
+		ReleaseCurrentVerts();
+		ReleaseBaseVerts();
+	}
+
+	void Mesh::ReleaseCurrentVerts()
+	{
+		if (m_pVerts)
+		{
+			delete[] m_pVerts;
+			m_pVerts = nullptr;
+		}
+	}
+
+	void Mesh::ReleaseBaseVerts()
+	{
+		if (m_pBaseVerts) 
+		{
+			delete[] m_pBaseVerts;
+			m_pBaseVerts = nullptr;
+		}
 	}
 
 	const int POSITION_FLOATS = 3;
@@ -146,13 +228,13 @@ namespace Capstone
 		pColor[2] = b;
 	}
 
-	void Mesh::UpdateCurrentVertexGroup(void * pMesh)
+	void Mesh::UpdateCurrentVertexGroup(void * pMesh, int instanceIdx)
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
-		if (pM->m_currentVertexGroup >= 0) { UpdateVertexGroup(pMesh, pM->m_currentVertexGroup); }
+		if (pM->m_currentVertexGroup >= 0) { UpdateVertexGroup(pMesh, pM->m_currentVertexGroup, instanceIdx); } // TODO CHECK MAGIC #!!!
 	}
 
-	void Mesh::UpdateAllVertexGroups(void * pMesh)
+	void Mesh::UpdateAllVertexGroups(void * pMesh, int instanceIdx)
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
 
@@ -160,7 +242,7 @@ namespace Capstone
 		{
 			for (size_t currentVertexGroup = 0; currentVertexGroup < pM->m_testGroups.size(); ++currentVertexGroup)
 			{
-				UpdateVertexGroup(pMesh, currentVertexGroup);
+				UpdateVertexGroup(pMesh, currentVertexGroup, instanceIdx);
 			}
 			
 			pM->m_pEditor->ReSendMeshVerticesSameBuffer();
@@ -169,23 +251,28 @@ namespace Capstone
 
 	const int COLOR_FLOATS = 4;
 	const int TEXTURE_FLOATS = 2;
-	void Mesh::UpdateVertexGroup(void * pMesh, int groupIdx)
+	void Mesh::UpdateVertexGroup(void * pMesh, int groupIdx, int instanceIndex)
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
 
 		if (pM && pM->m_pEditor && pM->m_pBaseVerts && pM->m_pVerts)
 		{
+			if (instanceIndex < 0 || instanceIndex >= pM->m_numMeshes) { DebugConsole::Log("ERROR: Cannot UpdateVertexGroup! Invalid instanceIndex"); return; }
 			const int *pIndices = pM->m_testGroups[groupIdx].GetIndices();
 
 			// same matrix per group
+			DirectX::XMMATRIX objMTW = pM->m_modelToWorld;
+			//DirectX::XMMATRIX invObjMTW = XMMatrixInverse(nullptr, pM->m_modelToWorld);
 			DirectX::XMMATRIX MTW = pM->m_testGroups[groupIdx].CalcMTW();
 			DirectX::XMVECTOR pivot = pM->m_testGroups[groupIdx].GetPivot();
+			//DirectX::XMVECTOR modelSpacePivot = XMVector4Transform(pivot, invObjMTW);
+			int floatOffset = instanceIndex * pM->m_floatsPerVertex * pM->m_vertexCount;
 			for (int i = 0; i < pM->m_testGroups[groupIdx].Count(); ++i)
 			{
 				int vertIdx = *(pIndices + i);
 				int floatIdx = vertIdx * pM->m_floatsPerVertex;
 				float *pBase = pM->m_pBaseVerts + floatIdx;
-				float *pVert = pM->m_pVerts + floatIdx;
+				float *pVert = pM->m_pVerts + floatIdx + floatOffset;
 
 				XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 1.0f) - pivot, MTW) + pivot;
 				pVert[0] = XMVectorGetX(newVertPos);
@@ -204,7 +291,7 @@ namespace Capstone
 					int vertIdx = *(pIndices + i);
 					int floatIdx = vertIdx * pM->m_floatsPerVertex + normalIdx;
 					float *pBase = pM->m_pBaseVerts + floatIdx;
-					float *pVert = pM->m_pVerts + floatIdx;
+					float *pVert = pM->m_pVerts + floatIdx + floatOffset;
 
 					XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 0.0f), inverseTranspose);
 					pVert[0] = XMVectorGetX(newVertPos);
@@ -294,11 +381,11 @@ namespace Capstone
 		{
 			int idx = pIndices[i];
 			int floatIdx = idx * m_floatsPerVertex;
-			center += XMVector4Transform(XMVectorSet(m_pVerts[floatIdx + 0], m_pVerts[floatIdx + 1], m_pVerts[floatIdx + 2], 1.0f), XMMatrixTranspose(m_modelToWorld));
+			center += XMVectorSet(m_pVerts[floatIdx + 0], m_pVerts[floatIdx + 1], m_pVerts[floatIdx + 2], 1.0f);
 		}
 
-		XMVectorSetW(center, 0.0f);
 		center /= (float)m_testGroups[m_currentVertexGroup].Count();
+		center = XMVectorSetW(center, 0.0f);
 		m_testGroups[m_currentVertexGroup].SetPivot(center);
 
 		return true;
@@ -346,7 +433,7 @@ namespace Capstone
 	XMMATRIX Mesh::GetPivotTranslation()
 	{
 		if (m_currentVertexGroup < 0 || (unsigned)m_currentVertexGroup >= m_testGroups.size()) { return XMMatrixIdentity(); }
-		return XMMatrixTranspose(XMMatrixTranslationFromVector(m_testGroups[m_currentVertexGroup].GetPivot()));
+		return XMMatrixTranspose(XMMatrixTranslationFromVector(XMVector4Transform(m_testGroups[m_currentVertexGroup].GetPivot(), XMMatrixTranspose(m_modelToWorld))));
 	}
 
 	unsigned Mesh::GetNumVertexGroups()

@@ -59,7 +59,7 @@ namespace Capstone
 		return MyUtils::MTWFromSRT(&m_scale, &m_rotation, &m_translation);
 	}
 
-	void VertexGroup::DoNothingOnPurpose(void *)
+	void VertexGroup::DoNothingOnPurpose(void *, int)
 	{
 	}
 

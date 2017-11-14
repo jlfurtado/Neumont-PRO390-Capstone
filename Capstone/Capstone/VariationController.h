@@ -10,7 +10,7 @@ namespace Capstone
 		typedef void(*VaryCallback)(VariationController *pController);
 
 	public:
-		typedef void(*VariationChangedCallback)(void *pInstance);
+		typedef void(*VariationChangedCallback)(void *pInstance, int instanceIdx);
 		void Initialize(VariationChangedCallback onModified, void *pInstance, DirectX::XMVECTOR *pScale, DirectX::XMVECTOR *pRotation, DirectX::XMVECTOR *pTranslation);
 		void Update(float dt);
 		void ClearVariations();
@@ -38,7 +38,7 @@ namespace Capstone
 
 		void RestoreLow();
 		void RestoreHigh();
-		void CallChanged();
+		void CallChanged(int instanceIdx);
 
 		DirectX::XMVECTOR m_lowScale;
 		DirectX::XMVECTOR m_lowTranslation;

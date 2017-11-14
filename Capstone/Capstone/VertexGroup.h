@@ -22,7 +22,7 @@ namespace Capstone
 		void Add(int idx);
 		const int *GetIndices();
 		DirectX::XMMATRIX CalcMTW();
-		static void DoNothingOnPurpose(void *);
+		static void DoNothingOnPurpose(void *, int);
 		VariationController *GetVariationPointer();
 		DirectX::XMVECTOR GetPivot();
 		void SetPivot(const DirectX::XMVECTOR& pivot);

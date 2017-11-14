@@ -21,7 +21,7 @@ namespace Capstone
 
 	bool Editor::LoadContent()
 	{
-		MakeMeshVertexBuffer();
+		MakeMeshVertexBuffer(1);
 		MakeUtilityVertexBuffer();
 		CalcNormalsFor(m_pivotVerts, PIVOT_VERTS, PIVOT_FLOATS_PER_VERTEX, PIVOT_FLOATS_PER_VERTEX - 3);
 		MakePivotVertexBuffer();
@@ -227,35 +227,39 @@ namespace Capstone
 
 	bool Editor::LoadObj(const char * const filePath)
 	{
+		if (!CheckValidMode("LoadObj")) { return false; }
 		if (!m_mesh.LoadMesh(filePath)) { return false; }
 		
-		MakeMeshVertexBuffer();
-
+		MakeMeshVertexBuffer(1);	
 		return true;
 	}
 
 	void Editor::ReSendMeshVerticesSameBuffer()
 	{
-		ReSendVerticesSameBuffer(&pMeshVertexBuffer, m_mesh.GetVertexBufferSize(), m_mesh.GetVertexPointer(), m_mesh.GetStride());
+		ReSendVerticesSameBuffer(&pMeshVertexBuffer, m_mesh.GetVertexBufferSize() * m_mesh.GetNumMeshes(), m_mesh.GetVertexPointer(), m_mesh.GetStride());
 	}
 
 	bool Editor::SetPivotCamera()
 	{
+		if (!CheckValidMode("SetPivotCamera")) { return false; }
 		return m_mesh.SetPivotCoords(XMVectorGetX(*m_camera.GetPositionPointer()), XMVectorGetY(*m_camera.GetPositionPointer()), XMVectorGetZ(*m_camera.GetPositionPointer()));
 	}
 
 	bool Editor::SetPivotXYZ(float x, float y, float z)
 	{
+		if (!CheckValidMode("SetPivotXYZ")) { return false; }
 		return m_mesh.SetPivotCoords(x, y, z);
 	}
 
 	bool Editor::SetPivotCenter()
 	{
+		if (!CheckValidMode("SetPivotCenter")) { return false; }
 		return m_mesh.SetPivotCenter();
 	}
 
 	bool Editor::SetVariationType(VariationType type)
 	{
+		if (!CheckValidMode("SetVariationType")) { return false; }
 		return m_mesh.SetVariationType(type);
 	}
 
@@ -266,9 +270,10 @@ namespace Capstone
 
 	bool Editor::ReadMeshFromFile(const char * const filePath)
 	{
+		if (!CheckValidMode("ReadMeshFromFile")) { return false; }
 		if (!m_mesh.ReadFromFile(filePath)) { return false; }
 
-		MakeMeshVertexBuffer();
+		MakeMeshVertexBuffer(1);
 
 		return true;
 	}
@@ -292,6 +297,7 @@ namespace Capstone
 
 	bool Editor::SelectVertexGroup(int idx)
 	{
+		if (!CheckValidMode("SelectVertexGroup")) { return false; }
 		return m_mesh.SelectVertexGroup(idx);
 	}
 
@@ -302,19 +308,36 @@ namespace Capstone
 
 	bool Editor::RemoveVertexGroup(int idx)
 	{
+		if (!CheckValidMode("RemoveVertexGroup")) { return false; }
 		return m_mesh.RemoveVertexGroup(idx);
 	}
 
-	bool Editor::EnterDisplayMode()
+	bool Editor::EnterDisplayMode(int displayCount, DirectX::XMVECTOR offset)
 	{
+		if (displayCount < 1) { DebugConsole::Log("MINIMUM OF 1 DISPLAY VARIANT!!!\n"); return false; }
 		m_clicked = false;
 		m_displayMode = true;
+
+		m_mesh.PreMultiply(displayCount);
+		MakeMeshVertexBuffer(displayCount);
+		m_mesh.Multiply(offset);
 		return true;
 	}
 
 	bool Editor::ExitDisplayMode()
 	{
+		if (!m_displayMode) { DebugConsole::Log("Cannot ExitDisplayMode! Not in display mode!\n"); return false; }
+
 		m_displayMode = false;
+		if (!m_mesh.Singularify()) { return false; }
+		MakeMeshVertexBuffer(1);
+		
+		return true;
+	}
+
+	bool Editor::CheckValidMode(const char *const action)
+	{
+		if (m_displayMode && !ExitDisplayMode()) { DebugConsole::Log("Cannot [%s]! Failed to exit display mode first!\n", action); return false; }
 		return true;
 	}
 
@@ -359,7 +382,7 @@ namespace Capstone
 		m_meshUniformManager.PassUniforms(m_context);
 
 		// draw the vertex buffer to the back buffer
-		m_context->Draw(m_mesh.GetVertexCount(), 0);
+		m_context->Draw(m_mesh.GetVertexCount() * m_mesh.GetNumMeshes(), 0);
 	}
 
 	void Editor::RenderUtils()
@@ -418,9 +441,9 @@ namespace Capstone
 		}
 	}
 
-	void Editor::MakeMeshVertexBuffer()
+	void Editor::MakeMeshVertexBuffer(int count)
 	{
-		MakeBuffer(&pMeshVertexBuffer, m_mesh.GetVertexBufferSize(), m_mesh.GetVertexPointer(), m_mesh.GetStride());
+		MakeBuffer(&pMeshVertexBuffer, m_mesh.GetVertexBufferSize() * count, m_mesh.GetVertexPointer(), m_mesh.GetStride());
 	}
 
 	void Editor::MakeUtilityVertexBuffer()

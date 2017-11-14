@@ -7,6 +7,8 @@
 namespace Capstone
 {
 	using namespace DirectX;
+	
+	const int ASSUME_SINGLE_INSTANCE = 0;
 
 	float VariationController::s_variationSpeed = 1.0f;
 	VariationController::VaryCallback VariationController::s_varyFuncs[VARIATION_CALLBACKS] = {
@@ -34,24 +36,24 @@ namespace Capstone
 		XMVECTOR r(move * XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f));
 		XMVECTOR u(move * XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f));
 		
-		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('T')) { *m_pTranslation += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; CallChanged(); }
-		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('T')) { *m_pTranslation += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; CallChanged(); }
-		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('T')) { *m_pTranslation += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; CallChanged(); }
+		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('T')) { *m_pTranslation += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; CallChanged(ASSUME_SINGLE_INSTANCE); }
+		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('T')) { *m_pTranslation += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; CallChanged(ASSUME_SINGLE_INSTANCE); }
+		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('T')) { *m_pTranslation += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; CallChanged(ASSUME_SINGLE_INSTANCE); }
 
-		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('R')) { *m_pRotation += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; CallChanged(); }
-		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('R')) { *m_pRotation += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; CallChanged(); }
-		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('R')) { *m_pRotation += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; CallChanged(); }
+		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('R')) { *m_pRotation += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; CallChanged(ASSUME_SINGLE_INSTANCE); }
+		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('R')) { *m_pRotation += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; CallChanged(ASSUME_SINGLE_INSTANCE); }
+		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('R')) { *m_pRotation += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; CallChanged(ASSUME_SINGLE_INSTANCE); }
 
-		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('E')) { *m_pScale += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; CallChanged(); }
-		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('E')) { *m_pScale += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; CallChanged(); }
-		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('E')) { *m_pScale += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; CallChanged(); }
+		if (Keyboard::IsKeyDown('X') && Keyboard::IsKeyDown('E')) { *m_pScale += Keyboard::IsKeyUp(VK_SHIFT) ? r : -r; CallChanged(ASSUME_SINGLE_INSTANCE); }
+		if (Keyboard::IsKeyDown('Y') && Keyboard::IsKeyDown('E')) { *m_pScale += Keyboard::IsKeyUp(VK_SHIFT) ? u : -u; CallChanged(ASSUME_SINGLE_INSTANCE); }
+		if (Keyboard::IsKeyDown('Z') && Keyboard::IsKeyDown('E')) { *m_pScale += Keyboard::IsKeyUp(VK_SHIFT) ? f : -f; CallChanged(ASSUME_SINGLE_INSTANCE); }
 
 		if (Keyboard::IsKeyPressed('L')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveLow(); } else { RestoreLow(); } }
 		if (Keyboard::IsKeyPressed('H')) { if (Keyboard::IsKeyUp(VK_SHIFT)) { SaveHigh(); } else { RestoreHigh(); } }
 		
 		if (Keyboard::IsKeyUp(VK_SHIFT))
 		{
-			if (Keyboard::IsKeyPressed('V')) { Vary(); CallChanged(); }
+			if (Keyboard::IsKeyPressed('V')) { Vary();  }
 		}
 	}
 
@@ -117,7 +119,7 @@ namespace Capstone
 		*m_pScale = m_lowScale;
 		*m_pRotation = m_lowRotation;
 		*m_pTranslation = m_lowTranslation;
-		CallChanged();
+		CallChanged(ASSUME_SINGLE_INSTANCE);
 	}
 
 	void VariationController::RestoreHigh()
@@ -125,12 +127,12 @@ namespace Capstone
 		*m_pScale = m_highScale;
 		*m_pRotation = m_highRotation;
 		*m_pTranslation = m_highTranslation;
-		CallChanged();
+		CallChanged(ASSUME_SINGLE_INSTANCE);
 	}
 
-	void VariationController::CallChanged()
+	void VariationController::CallChanged(int instanceIdx)
 	{
-		m_onVariationChanged(m_pInstance);
+		m_onVariationChanged(m_pInstance, instanceIdx);
 	}
 
 	void VariationController::ClearVariations()
@@ -140,7 +142,7 @@ namespace Capstone
 		*m_pTranslation = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 		SaveLow();
 		SaveHigh();
-		CallChanged();
+		CallChanged(ASSUME_SINGLE_INSTANCE);
 	}
 
 	void VariationController::Vary()
