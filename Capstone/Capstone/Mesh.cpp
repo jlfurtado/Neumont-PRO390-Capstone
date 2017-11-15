@@ -77,6 +77,7 @@ namespace Capstone
 				}
 
 				UpdateAllVertexGroups(this, 0);
+				m_pEditor->ReSendMeshVerticesSameBuffer();
 			}
 		}
 	}
@@ -88,6 +89,7 @@ namespace Capstone
 		m_pVerts = new float[m_floatsPerVertex * m_vertexCount * count]{ 0.0f };
 		return m_pVerts != nullptr;
 	}
+
 
 	bool Mesh::Multiply(const XMVECTOR& offset)
 	{
@@ -221,7 +223,11 @@ namespace Capstone
 	void Mesh::UpdateCurrentVertexGroup(void * pMesh, int instanceIdx)
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
-		if (pM->m_currentVertexGroup >= 0) { UpdateVertexGroup(pMesh, pM->m_currentVertexGroup, instanceIdx); } // TODO CHECK MAGIC #!!!
+		if (pM->m_currentVertexGroup >= 0)
+		{
+			UpdateVertexGroup(pMesh, pM->m_currentVertexGroup, instanceIdx);
+			pM->m_pEditor->ReSendMeshVerticesSameBuffer();
+		}
 	}
 
 	void Mesh::UpdateAllVertexGroups(void * pMesh, int instanceIdx)
@@ -234,8 +240,6 @@ namespace Capstone
 			{
 				UpdateVertexGroup(pMesh, currentVertexGroup, instanceIdx);
 			}
-			
-			pM->m_pEditor->ReSendMeshVerticesSameBuffer();
 		}
 	}
 
@@ -248,16 +252,18 @@ namespace Capstone
 		if (pM && pM->m_pEditor && pM->m_pBaseVerts && pM->m_pVerts)
 		{
 			if (instanceIndex < 0 || instanceIndex >= pM->m_numMeshes) { DebugConsole::Log("ERROR: Cannot UpdateVertexGroup! Invalid instanceIndex"); return; }
-			const int *pIndices = pM->m_testGroups[groupIdx].GetIndices();
+			VertexGroup& vertexGroup = pM->m_testGroups[groupIdx];
+			const int *pIndices = vertexGroup.GetIndices();
 
 			// same matrix per group
 			DirectX::XMMATRIX objMTW = pM->m_modelToWorld;
 			//DirectX::XMMATRIX invObjMTW = XMMatrixInverse(nullptr, pM->m_modelToWorld);
-			DirectX::XMMATRIX MTW = pM->m_testGroups[groupIdx].CalcMTW();
-			DirectX::XMVECTOR pivot = pM->m_testGroups[groupIdx].GetPivot();
+			DirectX::XMMATRIX MTW = vertexGroup.CalcMTW();
+			DirectX::XMVECTOR pivot = vertexGroup.GetPivot();
 			//DirectX::XMVECTOR modelSpacePivot = XMVector4Transform(pivot, invObjMTW);
 			int floatOffset = instanceIndex * pM->m_floatsPerVertex * pM->m_vertexCount;
-			for (int i = 0; i < pM->m_testGroups[groupIdx].Count(); ++i)
+			int numIndices = vertexGroup.Count();
+			for (int i = 0; i < numIndices; ++i)
 			{
 				int vertIdx = *(pIndices + i);
 				int floatIdx = vertIdx * pM->m_floatsPerVertex;
@@ -276,7 +282,7 @@ namespace Capstone
 				// handle all fomats
 				int normalIdx = normalPos == 1 ? POSITION_FLOATS : (normalPos == 2 ? (POSITION_FLOATS + COLOR_FLOATS) : (POSITION_FLOATS + COLOR_FLOATS + TEXTURE_FLOATS));
 				DirectX::XMMATRIX inverseTranspose = XMMatrixInverse(nullptr, XMMatrixTranspose(MTW));
-				for (int i = 0; i < pM->m_testGroups[groupIdx].Count(); ++i)
+				for (int i = 0; i < numIndices; ++i)
 				{
 					int vertIdx = *(pIndices + i);
 					int floatIdx = vertIdx * pM->m_floatsPerVertex + normalIdx;
@@ -289,8 +295,6 @@ namespace Capstone
 					pVert[2] = XMVectorGetZ(newVertPos);
 				}
 			}
-
-			pM->m_pEditor->ReSendMeshVerticesSameBuffer();
 		}
 	}
 
