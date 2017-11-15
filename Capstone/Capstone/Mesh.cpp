@@ -82,10 +82,10 @@ namespace Capstone
 		}
 	}
 
-	const int TOO_BIG = 256 * 1024 * 1024;
+	const int TOO_BIG = 128 * 1024 * 1024;
 	bool Mesh::PreMultiply(int count)
 	{
-		int expectedBytes = sizeof(float) * m_floatsPerVertex * m_vertexCount * count;
+		int expectedBytes = GetVertexBufferSize() * count;
 		if (expectedBytes > TOO_BIG) { DebugConsole::Log("Cannot Pre-Multiply mesh! expected bytes of [%d] exceeds maximum allocation of [%d]\n", expectedBytes, TOO_BIG); return false; }
 
 		m_numMeshes = count;

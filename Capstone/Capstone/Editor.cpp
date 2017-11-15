@@ -21,11 +21,11 @@ namespace Capstone
 
 	bool Editor::LoadContent()
 	{
-		MakeMeshVertexBuffer(1);
-		MakeUtilityVertexBuffer();
+		if (!MakeMeshVertexBuffer(1)) { return false; }
+		if (!MakeUtilityVertexBuffer()) { return false; }
 		CalcNormalsFor(m_pivotVerts, PIVOT_VERTS, PIVOT_FLOATS_PER_VERTEX, PIVOT_FLOATS_PER_VERTEX - 3);
-		MakePivotVertexBuffer();
-		MakeFrustumVertexBuffer();
+		if (!MakePivotVertexBuffer()) { return false; }
+		if (!MakeFrustumVertexBuffer()) { return false; }
 
 		// load and compile the two shaders
 		ID3DBlob* VS1 = nullptr;
@@ -246,8 +246,7 @@ namespace Capstone
 	{
 		if (!CheckValidMode("LoadObj")) { return false; }
 		if (!m_mesh.LoadMesh(filePath)) { return false; }
-		
-		MakeMeshVertexBuffer(1);	
+		if (!MakeMeshVertexBuffer(1)) { DebugConsole::Log("Failed to LoadObj! Failed to MakeMeshVertexBuffer!\n"); return false; }
 		return true;
 	}
 
@@ -289,9 +288,7 @@ namespace Capstone
 	{
 		if (!CheckValidMode("ReadMeshFromFile")) { return false; }
 		if (!m_mesh.ReadFromFile(filePath)) { return false; }
-
-		MakeMeshVertexBuffer(1);
-
+		if (!MakeMeshVertexBuffer(1)) { DebugConsole::Log("Failed to ReadMeshFromFile! Failed to MakeMeshVertexBuffer!\n"); return false; }
 		return true;
 	}
 
@@ -338,7 +335,7 @@ namespace Capstone
 		m_displayMode = true;
 
 		if (!m_mesh.PreMultiply(displayCount1 * displayCount2)) { DebugConsole::Log("Failed to Pre-Multiply Mesh!"); return false; }
-		MakeMeshVertexBuffer(displayCount1 *displayCount2);
+		if (!MakeMeshVertexBuffer(displayCount1 *displayCount2)) { DebugConsole::Log("Failed to EnterDisplayMode2D! Failed to MakeMeshVertexBuffer!\n"); return false; }
 		if (!m_mesh.Multiply2D(displayCount1, displayCount2, offset1, offset2))
 		{
 			DebugConsole::Log("Failed to multiply2D mesh!\n");
@@ -356,7 +353,7 @@ namespace Capstone
 		m_displayMode = true;
 
 		if (!m_mesh.PreMultiply(displayCount)) { DebugConsole::Log("Failed to Pre-Multiply Mesh!"); return false; }
-		MakeMeshVertexBuffer(displayCount);
+		if (!MakeMeshVertexBuffer(displayCount)) { DebugConsole::Log("Failed to EnterDisplayMode! Failed to MakeMeshVertexBuffer!\n"); return false; }
 		if (!m_mesh.Multiply(offset))
 		{
 			DebugConsole::Log("Failed to multiply mesh!\n");
@@ -373,8 +370,8 @@ namespace Capstone
 
 		m_displayMode = false;
 		if (!m_mesh.Singularify()) { DebugConsole::Log("Failed to Singularify mesh!\n"); return false; }
-		MakeMeshVertexBuffer(1);
-		
+		if (!MakeMeshVertexBuffer(1)) { DebugConsole::Log("Failed to ExitDisplayMode! Failed to MakeMeshVertexBuffer!\n"); return false; }
+
 		return true;
 	}
 
@@ -511,9 +508,9 @@ namespace Capstone
 		m_context->Draw(FRUSTUM_VERTS, 0);
 	}
 
-	void Editor::MakeFrustumVertexBuffer()
+	bool Editor::MakeFrustumVertexBuffer()
 	{
-		MakeBuffer(&pFrustumVertexBuffer, FRUSTUM_FLOATS * sizeof(float), &m_frustumVerts[0], FRUSTUM_FLOATS_PER_VERTEX * sizeof(float));
+		return MakeBuffer(&pFrustumVertexBuffer, FRUSTUM_FLOATS * sizeof(float), &m_frustumVerts[0], FRUSTUM_FLOATS_PER_VERTEX * sizeof(float));
 	}
 
 	void Editor::ExitFullScreen()
@@ -526,22 +523,22 @@ namespace Capstone
 		}
 	}
 
-	void Editor::MakeMeshVertexBuffer(int count)
+	bool Editor::MakeMeshVertexBuffer(int count)
 	{
-		MakeBuffer(&pMeshVertexBuffer, m_mesh.GetVertexBufferSize() * count, m_mesh.GetVertexPointer(), m_mesh.GetStride());
+		return MakeBuffer(&pMeshVertexBuffer, m_mesh.GetVertexBufferSize() * count, m_mesh.GetVertexPointer(), m_mesh.GetStride());
 	}
 
-	void Editor::MakeUtilityVertexBuffer()
+	bool Editor::MakeUtilityVertexBuffer()
 	{
-		MakeBuffer(&pUtilityVertexBuffer, sizeof(float) * UTIL_FLOATS, &m_utilVerts[0], sizeof(float) * UTIL_FLOATS_PER_VERTEX);
+		return MakeBuffer(&pUtilityVertexBuffer, sizeof(float) * UTIL_FLOATS, &m_utilVerts[0], sizeof(float) * UTIL_FLOATS_PER_VERTEX);
 	}
 
-	void Editor::MakePivotVertexBuffer()
+	bool Editor::MakePivotVertexBuffer()
 	{
-		MakeBuffer(&pPivotVertexBuffer, sizeof(float) * PIVOT_FLOATS, &m_pivotVerts[0], sizeof(float) * PIVOT_FLOATS_PER_VERTEX);
+		return MakeBuffer(&pPivotVertexBuffer, sizeof(float) * PIVOT_FLOATS, &m_pivotVerts[0], sizeof(float) * PIVOT_FLOATS_PER_VERTEX);
 	}
 
-	void Editor::MakeBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float * pData, size_t byteWidth)
+	bool Editor::MakeBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float * pData, size_t byteWidth)
 	{
 		// create the vertex buffer
 		D3D11_BUFFER_DESC bd;
@@ -552,11 +549,17 @@ namespace Capstone
 		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
 		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
 
-		SafeRelease(*pBuffer);
-
-		// TODO ERROR CHECK HERE!!!
-		m_device->CreateBuffer(&bd, NULL, pBuffer);       // create the buffer
-		//HRESULT r2 = m_device->GetDeviceRemovedReason();
+		// create the buffer
+		ID3D11Buffer *pOld = *pBuffer;
+		if (FAILED(m_device->CreateBuffer(&bd, NULL, pBuffer)))
+		{
+			HRESULT r2 = m_device->GetDeviceRemovedReason();
+			DebugConsole::Log("Failed to CreateBuffer! Cannot MakeBuffer!\n");
+			return false;
+		}
+		
+		// release the old if creating the new did not fail!
+		SafeRelease(pOld);
 
 		// bind our buffer?? NEEDED or NOT?!?!
 		UINT stride = byteWidth;
@@ -568,6 +571,7 @@ namespace Capstone
 		m_context->Map(*pBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms); // map the buffer
 		memcpy(ms.pData, pData, bufferSize); // copy the data
 		m_context->Unmap(*pBuffer, NULL); // unmap the buffer
+		return true;
 	}
 
 	void Editor::OnMouseScroll(int degrees, void * pInstance)

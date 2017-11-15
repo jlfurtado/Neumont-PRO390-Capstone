@@ -55,11 +55,11 @@ namespace Capstone
 		void RenderUtils();
 		void RenderPivot();
 		void RenderFrustum();
-		void MakeFrustumVertexBuffer();
-		void MakeMeshVertexBuffer(int count);
-		void MakeUtilityVertexBuffer();
-		void MakePivotVertexBuffer();
-		void MakeBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t byteWidth);
+		bool MakeFrustumVertexBuffer();
+		bool MakeMeshVertexBuffer(int count);
+		bool MakeUtilityVertexBuffer();
+		bool MakePivotVertexBuffer();
+		bool MakeBuffer(ID3D11Buffer **pBuffer, size_t bufferSize, float *pData, size_t byteWidth);
 		void CalculatePerspectiveMatrix();
 		void LogFPS(float dt, float interval);
 		void FrustumVertsFromFrustum(const Frustum& frustum);
