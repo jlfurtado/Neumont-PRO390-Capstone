@@ -292,7 +292,7 @@ namespace Capstone
 					return false;
 				}
 
-				if (outOffset >= numFloats) { DebugConsole::Log("GetFloatsForString expected to find [%d] floats but found extra! Aborting!\n", numFloats); return false; }
+				if (outOffset >= numFloats) { return true; }
 
 				*(outValues + outOffset) = value;
 				outOffset++;
@@ -323,7 +323,7 @@ namespace Capstone
 					return false;
 				}
 
-				if (outOffset >= numInts) { DebugConsole::Log("GetIntsForKey expected to find [%d] ints but found extra! Aborting!\n", numInts); return false; }
+				if (outOffset >= numInts) { return true; }
 
 				*(outValues + outOffset) = value;
 				outOffset++;

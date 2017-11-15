@@ -329,15 +329,41 @@ namespace Capstone
 		return m_mesh.RemoveVertexGroup(idx);
 	}
 
-	bool Editor::EnterDisplayMode(int displayCount, DirectX::XMVECTOR offset)
+	bool Editor::EnterDisplayMode2D(int displayCount1, int displayCount2, const DirectX::XMVECTOR & offset1, const DirectX::XMVECTOR & offset2)
+	{
+		if (displayCount1 < 1) { DebugConsole::Log("MINIMUM OF 1 DISPLAY VARIANT!!!\n"); return false; }
+		if (displayCount2 < 1) { DebugConsole::Log("MINIMUM OF 1 DISPLAY VARIANT!!!\n"); return false; }
+
+		m_clicked = false;
+		m_displayMode = true;
+
+		if (!m_mesh.PreMultiply(displayCount1 * displayCount2)) { DebugConsole::Log("Failed to Pre-Multiply Mesh!"); return false; }
+		MakeMeshVertexBuffer(displayCount1 *displayCount2);
+		if (!m_mesh.Multiply2D(displayCount1, displayCount2, offset1, offset2))
+		{
+			DebugConsole::Log("Failed to multiply2D mesh!\n");
+			ExitDisplayMode();
+			return false;
+		}
+
+		return true;
+	}
+
+	bool Editor::EnterDisplayMode(int displayCount, const DirectX::XMVECTOR& offset)
 	{
 		if (displayCount < 1) { DebugConsole::Log("MINIMUM OF 1 DISPLAY VARIANT!!!\n"); return false; }
 		m_clicked = false;
 		m_displayMode = true;
 
-		m_mesh.PreMultiply(displayCount);
+		if (!m_mesh.PreMultiply(displayCount)) { DebugConsole::Log("Failed to Pre-Multiply Mesh!"); return false; }
 		MakeMeshVertexBuffer(displayCount);
-		m_mesh.Multiply(offset);
+		if (!m_mesh.Multiply(offset))
+		{
+			DebugConsole::Log("Failed to multiply mesh!\n");
+			ExitDisplayMode();
+			return false;
+		}
+
 		return true;
 	}
 
@@ -346,7 +372,7 @@ namespace Capstone
 		if (!m_displayMode) { DebugConsole::Log("Cannot ExitDisplayMode! Not in display mode!\n"); return false; }
 
 		m_displayMode = false;
-		if (!m_mesh.Singularify()) { return false; }
+		if (!m_mesh.Singularify()) { DebugConsole::Log("Failed to Singularify mesh!\n"); return false; }
 		MakeMeshVertexBuffer(1);
 		
 		return true;

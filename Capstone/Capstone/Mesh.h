@@ -26,6 +26,7 @@ namespace Capstone
 		void Update(float dt);
 		bool PreMultiply(int count);
 		bool Multiply(const DirectX::XMVECTOR& offset);
+		bool Multiply2D(int count1, int count2, const DirectX::XMVECTOR& offset1, const DirectX::XMVECTOR& offset2);
 		bool Singularify();
 		int GetNumMeshes();
 

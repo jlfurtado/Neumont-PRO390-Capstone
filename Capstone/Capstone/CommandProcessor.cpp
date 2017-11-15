@@ -25,7 +25,8 @@ namespace Capstone
 		{"selectVertexGroup", "(vertex group)", CommandProcessor::ProcessSelectVertexGroupCommand, "selects the specified vertex group, if it exists."},
 		{"removeVertexGroup", "(vertex group)", CommandProcessor::ProcessRemoveVertexGroupCommand, "removes the specified vertex group, if it exists."},
 		{"clearVertexGroups", nullptr, CommandProcessor::ProcessClearVertexGroupsCommand, "removes all vertex groups."},
-		{"displayVariants", "(numVariants) offset:(x y z)", CommandProcessor::ProcessSetNumVariantsCommand, "sets the number of variants of the model to display and displays them."},
+		{"displayVariants", "(numVariants) offset:(x y z)", CommandProcessor::ProcessDisplayVariantsCommand, "sets the number of variants of the model to display and displays them."},
+		{ "display2DVariants", "(numVariants1) (numVariants2) offset1:(x y z) offset2:(x y z)", CommandProcessor::ProcessDisplayVariants2DCommand, "sets the number of variants of the model to display and displays them in a 2 dimmensional manner." },
 		{"resumeEdit", nullptr, CommandProcessor::ProcessResumeEditCommand, "resumes editing of the model variations, exits display only mode."}
 	};
 
@@ -249,7 +250,7 @@ namespace Capstone
 		return s_pEditor->ClearVertexGroups();
 	}
 
-	bool CommandProcessor::ProcessSetNumVariantsCommand(const char * const command)
+	bool CommandProcessor::ProcessDisplayVariantsCommand(const char * const command)
 	{
 		static const int EXPECTED_FLOATS = 3;
 		const char *const args = command + StringFuncs::StringLen("displayVariants ");
@@ -262,6 +263,31 @@ namespace Capstone
 		if (!StringFuncs::GetFloatsFromString(arg2, EXPECTED_FLOATS, &offset[0])) { DebugConsole::Log("Invalid args to DisplayVariants!\n"); return false; }
 
 		return s_pEditor->EnterDisplayMode(numInstances, DirectX::XMVectorSet(offset[0], offset[1], offset[2], 0.0f));
+	}
+
+	bool CommandProcessor::ProcessDisplayVariants2DCommand(const char * const command)
+	{
+		static const int EXPECTED_FLOATS = 3;
+		const char *const args = command + StringFuncs::StringLen("display2DVariants ");
+
+		int numInstances1 = 1;
+		if (!StringFuncs::GetSingleIntFromString(args, numInstances1)) { DebugConsole::Log("Invalid args to DisplayVariants!\n"); return false; }
+
+		int numInstances2 = 1;
+		const char *const arg2 = args + StringFuncs::FindSubString(args, " ") + 1;
+		if (!StringFuncs::GetSingleIntFromString(arg2, numInstances2)) { DebugConsole::Log("Invalid args to DisplayVariants!\n"); return false; }
+
+		float offset1[EXPECTED_FLOATS]{ 0.0f };
+		const char *const arg3 = arg2 + StringFuncs::FindSubString(arg2, " ") + 1;
+		if (!StringFuncs::GetFloatsFromString(arg3, EXPECTED_FLOATS, &offset1[0])) { DebugConsole::Log("Invalid args to DisplayVariants!\n"); return false; }
+
+		float offset2[EXPECTED_FLOATS]{ 0.0f };
+		const char *arg4 = arg3 + StringFuncs::FindSubString(arg3, " ") + 1;
+		arg4 = arg4 + StringFuncs::FindSubString(arg4, " ") + 1;
+		arg4 = arg4 + StringFuncs::FindSubString(arg4, " ") + 1;
+		if (!StringFuncs::GetFloatsFromString(arg4, EXPECTED_FLOATS, &offset2[0])) { DebugConsole::Log("Invalid args to DisplayVariants!\n"); return false; }
+
+		return s_pEditor->EnterDisplayMode2D(numInstances1, numInstances2, DirectX::XMVectorSet(offset1[0], offset1[1], offset1[2], 0.0f), DirectX::XMVectorSet(offset2[0], offset2[1], offset2[2], 0.0f));
 	}
 
 	bool CommandProcessor::ProcessResumeEditCommand(const char * const /*command*/)

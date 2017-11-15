@@ -82,21 +82,26 @@ namespace Capstone
 		}
 	}
 
+	const int TOO_BIG = 256 * 1024 * 1024;
 	bool Mesh::PreMultiply(int count)
 	{
+		int expectedBytes = sizeof(float) * m_floatsPerVertex * m_vertexCount * count;
+		if (expectedBytes > TOO_BIG) { DebugConsole::Log("Cannot Pre-Multiply mesh! expected bytes of [%d] exceeds maximum allocation of [%d]\n", expectedBytes, TOO_BIG); return false; }
+
 		m_numMeshes = count;
 		ReleaseCurrentVerts();
 		m_pVerts = new float[m_floatsPerVertex * m_vertexCount * count]{ 0.0f };
-		return m_pVerts != nullptr;
+		return true;
 	}
 
 
 	bool Mesh::Multiply(const XMVECTOR& offset)
 	{
-		float xOffset = XMVectorGetX(offset);
-		float yOffset = XMVectorGetY(offset);
-		float zOffset = XMVectorGetZ(offset);
+		return Multiply2D(m_numMeshes, 1, offset, XMVectorZero());
+	}
 
+	bool Mesh::Multiply2D(int count1, int count2, const DirectX::XMVECTOR & offset1, const DirectX::XMVECTOR& offset2)
+	{
 		for (int instanceIndex = 0; instanceIndex < m_numMeshes; ++instanceIndex)
 		{
 			int instanceOffset = m_floatsPerVertex * m_vertexCount * instanceIndex;
@@ -114,14 +119,17 @@ namespace Capstone
 
 			UpdateAllVertexGroups(this, instanceIndex);
 
+			float m1 = (float)(instanceIndex % count1);
+			float m2 = (float)(instanceIndex / count2);
+			DirectX::XMVECTOR finalOffset = (m1 * offset1) + (m2 * offset2);
 			// offset the verts -- ugly would do better with fancy render engine
 			for (int i = 0; i < m_vertexCount; ++i)
 			{
 				int floatIdx = m_floatsPerVertex * i;
-				XMVECTOR v = XMVector4Transform(XMVectorSet(m_pVerts[instanceOffset + floatIdx + 0], m_pVerts[instanceOffset + floatIdx + 1], m_pVerts[instanceOffset + floatIdx + 2], 1.0f), mtw);
-				m_pVerts[instanceOffset + floatIdx + 0] = XMVectorGetX(v) + instanceIndex * xOffset;
-				m_pVerts[instanceOffset + floatIdx + 1] = XMVectorGetY(v) + instanceIndex * yOffset;
-				m_pVerts[instanceOffset + floatIdx + 2] = XMVectorGetZ(v) + instanceIndex * zOffset;
+				XMVECTOR v = finalOffset + XMVector4Transform(XMVectorSet(m_pVerts[instanceOffset + floatIdx + 0], m_pVerts[instanceOffset + floatIdx + 1], m_pVerts[instanceOffset + floatIdx + 2], 1.0f), mtw);
+				m_pVerts[instanceOffset + floatIdx + 0] = XMVectorGetX(v);
+				m_pVerts[instanceOffset + floatIdx + 1] = XMVectorGetY(v);
+				m_pVerts[instanceOffset + floatIdx + 2] = XMVectorGetZ(v);
 			}
 
 		}
