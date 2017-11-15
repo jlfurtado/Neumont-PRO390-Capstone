@@ -30,7 +30,8 @@ namespace Capstone
 		bool Singularify();
 		int GetNumMeshes();
 
-		bool LoadMesh(const char *const filePath);
+		bool LoadMeshOBJ(const char *const filePath);
+		bool ExportCurrentMeshOBJ(const char *const filePath) const;
 		void ClearObjectLevelVariations();
 		void ColorAll(float r, float g, float b);
 		void ClearVertexGroups();

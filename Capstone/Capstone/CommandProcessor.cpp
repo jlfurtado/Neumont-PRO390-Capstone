@@ -26,8 +26,9 @@ namespace Capstone
 		{"removeVertexGroup", "(vertex group)", CommandProcessor::ProcessRemoveVertexGroupCommand, "removes the specified vertex group, if it exists."},
 		{"clearVertexGroups", nullptr, CommandProcessor::ProcessClearVertexGroupsCommand, "removes all vertex groups."},
 		{"displayVariants", "(numVariants) offset:(x y z)", CommandProcessor::ProcessDisplayVariantsCommand, "sets the number of variants of the model to display and displays them."},
-		{ "display2DVariants", "(numVariants1) (numVariants2) offset1:(x y z) offset2:(x y z)", CommandProcessor::ProcessDisplayVariants2DCommand, "sets the number of variants of the model to display and displays them in a 2 dimmensional manner." },
-		{"resumeEdit", nullptr, CommandProcessor::ProcessResumeEditCommand, "resumes editing of the model variations, exits display only mode."}
+		{"display2DVariants", "(numVariants1) (numVariants2) offset1:(x y z) offset2:(x y z)", CommandProcessor::ProcessDisplayVariants2DCommand, "sets the number of variants of the model to display and displays them in a 2 dimmensional manner." },
+		{"resumeEdit", nullptr, CommandProcessor::ProcessResumeEditCommand, "resumes editing of the model variations, exits display only mode."},
+		{"exportCurrentMeshObj", "(filePath)", CommandProcessor::ProcessExportCurrentMeshObjCommand, "exports the current mesh vertices as-is (no object level variations applied) to a .obj file."}
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -293,5 +294,11 @@ namespace Capstone
 	bool CommandProcessor::ProcessResumeEditCommand(const char * const /*command*/)
 	{
 		return s_pEditor->ExitDisplayMode();
+	}
+
+	bool CommandProcessor::ProcessExportCurrentMeshObjCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("exportCurrentMeshObj ");
+		return s_pEditor->ExportCurrentMeshObj(args);
 	}
 }

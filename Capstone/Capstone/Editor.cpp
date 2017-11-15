@@ -245,7 +245,7 @@ namespace Capstone
 	bool Editor::LoadObj(const char * const filePath)
 	{
 		if (!CheckValidMode("LoadObj")) { return false; }
-		if (!m_mesh.LoadMesh(filePath)) { return false; }
+		if (!m_mesh.LoadMeshOBJ(filePath)) { return false; }
 		if (!MakeMeshVertexBuffer(1)) { DebugConsole::Log("Failed to LoadObj! Failed to MakeMeshVertexBuffer!\n"); return false; }
 		return true;
 	}
@@ -388,6 +388,11 @@ namespace Capstone
 		m_mesh.ColorAll(0.0f, 0.0f, 1.0f);
 		ReSendMeshVerticesSameBuffer();
 		return true;
+	}
+
+	bool Editor::ExportCurrentMeshObj(const char * const filePath)
+	{
+		return m_mesh.ExportCurrentMeshOBJ(filePath);
 	}
 
 	void Editor::ReSendUtilVerticesSameBuffer()
@@ -553,7 +558,7 @@ namespace Capstone
 		ID3D11Buffer *pOld = *pBuffer;
 		if (FAILED(m_device->CreateBuffer(&bd, NULL, pBuffer)))
 		{
-			HRESULT r2 = m_device->GetDeviceRemovedReason();
+			//m_device->GetDeviceRemovedReason();
 			DebugConsole::Log("Failed to CreateBuffer! Cannot MakeBuffer!\n");
 			return false;
 		}

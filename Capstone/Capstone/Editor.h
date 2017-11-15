@@ -41,10 +41,10 @@ namespace Capstone
 			bool RemoveVertexGroup(int idx);
 			bool EnterDisplayMode(int displayCount, const DirectX::XMVECTOR& offset);
 			bool EnterDisplayMode2D(int displayCount1, int displayCount2, const DirectX::XMVECTOR& offset1, const DirectX::XMVECTOR& offset2);
-
 			bool ExitDisplayMode();
 			bool CheckValidMode(const char * const action);
 			bool ClearVertexGroups();
+			bool ExportCurrentMeshObj(const char *const filePath);
 
 	private:
 		void ReSendUtilVerticesSameBuffer();

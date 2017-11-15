@@ -132,6 +132,7 @@
     <ClCompile Include="MathUtility.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="ObjExporter.cpp" />
     <ClCompile Include="ObjLoader.cpp" />
     <ClCompile Include="StringFuncs.cpp" />
     <ClCompile Include="UniformManager.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="MathUtility.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="ObjExporter.h" />
     <ClInclude Include="ObjLoader.h" />
     <ClInclude Include="StringFuncs.h" />
     <ClInclude Include="UniformManager.h" />

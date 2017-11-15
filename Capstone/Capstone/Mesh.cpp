@@ -8,6 +8,7 @@
 #include "Editor.h"
 #include "StringFuncs.h"
 #include "CustomIO.h"
+#include "ObjExporter.h"
 
 namespace Capstone
 {
@@ -18,7 +19,7 @@ namespace Capstone
 	{
 		InitObjectLevelVariaitions(); // must come before 
 		m_objectLevelVariation.ClearVariations();
-		LoadMesh("..\\Data\\OBJS\\Sphere.obj");
+		LoadMeshOBJ("..\\Data\\OBJS\\Sphere.obj");
 	}
 
 	Mesh::~Mesh()
@@ -155,7 +156,7 @@ namespace Capstone
 		return m_numMeshes;
 	}
 
-	bool Mesh::LoadMesh(const char *const filePath)
+	bool Mesh::LoadMeshOBJ(const char *const filePath)
 	{
 		float *pVerts = nullptr;
 		int vertexCount = 0, stride = 0;
@@ -177,6 +178,11 @@ namespace Capstone
 		ColorAll(0.0f, 0.0f, 1.0f);
 
 		return true;
+	}
+
+	bool Mesh::ExportCurrentMeshOBJ(const char * const filePath) const
+	{
+		return ObjExporter::WriteObj(filePath, m_format, m_pVerts, m_vertexCount);
 	}
 
 	void Mesh::ClearObjectLevelVariations()
@@ -231,7 +237,7 @@ namespace Capstone
 	void Mesh::UpdateCurrentVertexGroup(void * pMesh, int instanceIdx)
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
-		if (pM->m_currentVertexGroup >= 0)
+		if (pM && pM->m_pEditor && pM->m_currentVertexGroup >= 0 && pM->m_pBaseVerts && pM->m_pVerts)
 		{
 			UpdateVertexGroup(pMesh, pM->m_currentVertexGroup, instanceIdx);
 			pM->m_pEditor->ReSendMeshVerticesSameBuffer();
@@ -242,7 +248,7 @@ namespace Capstone
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
 
-		if (pM && pM->m_pEditor)
+		if (pM && pM->m_pEditor && pM->m_pBaseVerts && pM->m_pVerts)
 		{
 			for (size_t currentVertexGroup = 0; currentVertexGroup < pM->m_testGroups.size(); ++currentVertexGroup)
 			{
@@ -257,51 +263,48 @@ namespace Capstone
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
 
-		if (pM && pM->m_pEditor && pM->m_pBaseVerts && pM->m_pVerts)
-		{
-			if (instanceIndex < 0 || instanceIndex >= pM->m_numMeshes) { DebugConsole::Log("ERROR: Cannot UpdateVertexGroup! Invalid instanceIndex"); return; }
-			VertexGroup& vertexGroup = pM->m_testGroups[groupIdx];
-			const int *pIndices = vertexGroup.GetIndices();
+		if (instanceIndex < 0 || instanceIndex >= pM->m_numMeshes) { DebugConsole::Log("ERROR: Cannot UpdateVertexGroup! Invalid instanceIndex"); return; }
+		VertexGroup& vertexGroup = pM->m_testGroups[groupIdx];
+		const int *pIndices = vertexGroup.GetIndices();
 
-			// same matrix per group
-			DirectX::XMMATRIX objMTW = pM->m_modelToWorld;
-			//DirectX::XMMATRIX invObjMTW = XMMatrixInverse(nullptr, pM->m_modelToWorld);
-			DirectX::XMMATRIX MTW = vertexGroup.CalcMTW();
-			DirectX::XMVECTOR pivot = vertexGroup.GetPivot();
-			//DirectX::XMVECTOR modelSpacePivot = XMVector4Transform(pivot, invObjMTW);
-			int floatOffset = instanceIndex * pM->m_floatsPerVertex * pM->m_vertexCount;
-			int numIndices = vertexGroup.Count();
+		// same matrix per group
+		DirectX::XMMATRIX objMTW = pM->m_modelToWorld;
+		//DirectX::XMMATRIX invObjMTW = XMMatrixInverse(nullptr, pM->m_modelToWorld);
+		DirectX::XMMATRIX MTW = vertexGroup.CalcMTW();
+		DirectX::XMVECTOR pivot = vertexGroup.GetPivot();
+		//DirectX::XMVECTOR modelSpacePivot = XMVector4Transform(pivot, invObjMTW);
+		int floatOffset = instanceIndex * pM->m_floatsPerVertex * pM->m_vertexCount;
+		int numIndices = vertexGroup.Count();
+		for (int i = 0; i < numIndices; ++i)
+		{
+			int vertIdx = *(pIndices + i);
+			int floatIdx = vertIdx * pM->m_floatsPerVertex;
+			float *pBase = pM->m_pBaseVerts + floatIdx;
+			float *pVert = pM->m_pVerts + floatIdx + floatOffset;
+
+			XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 1.0f) - pivot, MTW) + pivot;
+			pVert[0] = XMVectorGetX(newVertPos);
+			pVert[1] = XMVectorGetY(newVertPos);
+			pVert[2] = XMVectorGetZ(newVertPos);
+		}
+
+		int normalPos = StringFuncs::FindSubString(pM->m_format, "N");
+		if (normalPos >= 0)
+		{
+			// handle all fomats
+			int normalIdx = normalPos == 1 ? POSITION_FLOATS : (normalPos == 2 ? (POSITION_FLOATS + COLOR_FLOATS) : (POSITION_FLOATS + COLOR_FLOATS + TEXTURE_FLOATS));
+			DirectX::XMMATRIX inverseTranspose = XMMatrixInverse(nullptr, XMMatrixTranspose(MTW));
 			for (int i = 0; i < numIndices; ++i)
 			{
 				int vertIdx = *(pIndices + i);
-				int floatIdx = vertIdx * pM->m_floatsPerVertex;
+				int floatIdx = vertIdx * pM->m_floatsPerVertex + normalIdx;
 				float *pBase = pM->m_pBaseVerts + floatIdx;
 				float *pVert = pM->m_pVerts + floatIdx + floatOffset;
 
-				XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 1.0f) - pivot, MTW) + pivot;
+				XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 0.0f), inverseTranspose);
 				pVert[0] = XMVectorGetX(newVertPos);
-				pVert[1] = XMVectorGetY(newVertPos);
+				pVert[1] = XMVectorGetY(newVertPos);	
 				pVert[2] = XMVectorGetZ(newVertPos);
-			}
-
-			int normalPos = StringFuncs::FindSubString(pM->m_format, "N");
-			if (normalPos >= 0)
-			{
-				// handle all fomats
-				int normalIdx = normalPos == 1 ? POSITION_FLOATS : (normalPos == 2 ? (POSITION_FLOATS + COLOR_FLOATS) : (POSITION_FLOATS + COLOR_FLOATS + TEXTURE_FLOATS));
-				DirectX::XMMATRIX inverseTranspose = XMMatrixInverse(nullptr, XMMatrixTranspose(MTW));
-				for (int i = 0; i < numIndices; ++i)
-				{
-					int vertIdx = *(pIndices + i);
-					int floatIdx = vertIdx * pM->m_floatsPerVertex + normalIdx;
-					float *pBase = pM->m_pBaseVerts + floatIdx;
-					float *pVert = pM->m_pVerts + floatIdx + floatOffset;
-
-					XMVECTOR newVertPos = XMVector4Transform(XMVectorSet(pBase[0], pBase[1], pBase[2], 0.0f), inverseTranspose);
-					pVert[0] = XMVectorGetX(newVertPos);
-					pVert[1] = XMVectorGetY(newVertPos);	
-					pVert[2] = XMVectorGetZ(newVertPos);
-				}
 			}
 		}
 	}
