@@ -12,6 +12,7 @@ namespace Capstone
 		static int StringCompare(const char *const str1, const char *const str2);
 		static int StringLen(const char *const str);
 		static int FindSubString(const char *const source, const char *const target);
+		static int FindLastSubString(const char *const source, const char *const target);
 		static bool StringEndsWith(const char *const source, const char *const target);
 		static bool StringBeginsWith(const char *const source, const char *const target);
 

@@ -45,6 +45,7 @@ namespace Capstone
 			bool CheckValidMode(const char * const action);
 			bool ClearVertexGroups();
 			bool ExportCurrentMeshObj(const char *const filePath);
+			bool ExportVariedMeshesObj(int count, const char *const filePath);
 
 	private:
 		void ReSendUtilVerticesSameBuffer();
@@ -176,6 +177,7 @@ namespace Capstone
 		static const int PIVOT_FLOATS = PIVOT_VERTS * PIVOT_FLOATS_PER_VERTEX;
 		float m_pivotVerts[PIVOT_FLOATS] = {
 			// 0 1 3
+			/*X      Y      Z      R      G      B      A      X      Y      Z*/
 			-1.0f, -1.0f, +1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Front left
 			+1.0f, -1.0f, +1.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Front right
 			+0.0f, +1.0f, +0.0f, +1.0f, +1.0f, +0.0f, +1.0f, +0.0f, +0.0f, +0.0f, // Top middle

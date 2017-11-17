@@ -28,7 +28,8 @@ namespace Capstone
 		{"displayVariants", "(numVariants) offset:(x y z)", CommandProcessor::ProcessDisplayVariantsCommand, "sets the number of variants of the model to display and displays them."},
 		{"display2DVariants", "(numVariants1) (numVariants2) offset1:(x y z) offset2:(x y z)", CommandProcessor::ProcessDisplayVariants2DCommand, "sets the number of variants of the model to display and displays them in a 2 dimmensional manner." },
 		{"resumeEdit", nullptr, CommandProcessor::ProcessResumeEditCommand, "resumes editing of the model variations, exits display only mode."},
-		{"exportCurrentMeshObj", "(filePath)", CommandProcessor::ProcessExportCurrentMeshObjCommand, "exports the current mesh vertices as-is (no object level variations applied) to a .obj file."}
+		{"exportCurrentMeshObj", "(filePath)", CommandProcessor::ProcessExportCurrentMeshObjCommand, "exports the current mesh vertices as-is to a .obj file."},
+		{"exportVariedMeshesObj", "(count) (filePath)", CommandProcessor::ProcessExportVariedMeshesObjCommand, "exports the specified number of varied instances of the mesh."}
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -300,5 +301,17 @@ namespace Capstone
 	{
 		const char *const args = command + StringFuncs::StringLen("exportCurrentMeshObj ");
 		return s_pEditor->ExportCurrentMeshObj(args);
+	}
+
+	bool CommandProcessor::ProcessExportVariedMeshesObjCommand(const char * const command)
+	{
+		const char *const args = command + StringFuncs::StringLen("exportVariedMeshesObj ");
+
+		int numInstances = 1;
+		if (!StringFuncs::GetSingleIntFromString(args, numInstances)) { DebugConsole::Log("Invalid args to ExportVariedMeshObjCommand!\n"); return false; }
+
+		const char *const arg2 = args + StringFuncs::FindSubString(args, " ") + 1;
+
+		return s_pEditor->ExportVariedMeshesObj(numInstances, arg2);
 	}
 }

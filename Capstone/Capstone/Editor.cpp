@@ -395,6 +395,14 @@ namespace Capstone
 		return m_mesh.ExportCurrentMeshOBJ(filePath);
 	}
 
+	const int MAX_EXPORT = 100;
+	bool Editor::ExportVariedMeshesObj(int count, const char * const filePath)
+	{
+		if (count < 1) { DebugConsole::Log("Cannot ExportVariedMeshesObj! Minimum of one mesh to export!"); return false; }
+		if (count > MAX_EXPORT) { DebugConsole::Log("Cannot ExportVariedMeshesObj! Maximum of [%d] meshes can be exported!\n", MAX_EXPORT); return false; }
+		return m_mesh.ExportVariedMeshesOBJ(count, filePath);
+	}
+
 	void Editor::ReSendUtilVerticesSameBuffer()
 	{
 		ReSendVerticesSameBuffer(&pUtilityVertexBuffer, UTIL_FLOATS * sizeof(float), &m_utilVerts[0], sizeof(float) * UTIL_FLOATS_PER_VERTEX);

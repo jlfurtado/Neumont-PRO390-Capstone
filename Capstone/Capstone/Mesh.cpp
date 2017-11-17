@@ -13,6 +13,9 @@
 namespace Capstone
 {
 	using namespace DirectX;
+	const int POSITION_FLOATS = 3;
+	const int COLOR_FLOATS = 4;
+	const int TEXTURE_FLOATS = 2;
 
 	Mesh::Mesh(Editor * pEditor)
 		: m_format("PCN"), m_pEditor(pEditor), m_testGroups(1 << 4)
@@ -71,14 +74,7 @@ namespace Capstone
 		{
 			if (Keyboard::IsKeyPressed('V'))
 			{ 
-				m_objectLevelVariation.Vary();
-				for (size_t i = 0; i < m_testGroups.size(); ++i)
-				{
-					m_testGroups[i].GetVariationPointer()->Vary();
-				}
-
-				UpdateAllVertexGroups(this, 0);
-				m_pEditor->ReSendMeshVerticesSameBuffer();
+				Vary();
 			}
 		}
 	}
@@ -110,7 +106,6 @@ namespace Capstone
 			// do the varying -- this no work?
 			m_objectLevelVariation.Vary();
 			CalcMatrix();
-			XMMATRIX mtw = m_modelToWorld;
 			for (size_t i = 0; i < m_testGroups.size(); ++i)
 			{
 				m_testGroups[i].GetVariationPointer()->Vary();
@@ -123,16 +118,7 @@ namespace Capstone
 			float m1 = (float)(instanceIndex % count1);
 			float m2 = (float)(instanceIndex / count2);
 			DirectX::XMVECTOR finalOffset = (m1 * offset1) + (m2 * offset2);
-			// offset the verts -- ugly would do better with fancy render engine
-			for (int i = 0; i < m_vertexCount; ++i)
-			{
-				int floatIdx = m_floatsPerVertex * i;
-				XMVECTOR v = finalOffset + XMVector4Transform(XMVectorSet(m_pVerts[instanceOffset + floatIdx + 0], m_pVerts[instanceOffset + floatIdx + 1], m_pVerts[instanceOffset + floatIdx + 2], 1.0f), mtw);
-				m_pVerts[instanceOffset + floatIdx + 0] = XMVectorGetX(v);
-				m_pVerts[instanceOffset + floatIdx + 1] = XMVectorGetY(v);
-				m_pVerts[instanceOffset + floatIdx + 2] = XMVectorGetZ(v);
-			}
-
+			OffsetTransformVertsIntoArray(finalOffset, m_modelToWorld, m_pVerts, instanceIndex);
 		}
 
 		m_modelToWorld = XMMatrixIdentity();
@@ -182,7 +168,49 @@ namespace Capstone
 
 	bool Mesh::ExportCurrentMeshOBJ(const char * const filePath) const
 	{
-		return ObjExporter::WriteObj(filePath, m_format, m_pVerts, m_vertexCount);
+		bool result;
+		float *pVertCpy = new float[m_vertexCount * m_floatsPerVertex]{ 0.0f };
+
+		if (!OffsetTransformVertsIntoArray(XMVectorZero(), m_modelToWorld, pVertCpy, 0))
+		{
+			DebugConsole::Log("Failed to ExportCurrentMeshOBJ! Failed to apply object level variations!\n");
+			delete[] pVertCpy;
+			return false;
+		}
+
+		result = ObjExporter::WriteObj(filePath, m_format, pVertCpy, m_vertexCount);
+		delete[] pVertCpy;
+
+		return result;
+	}
+
+	const int MAX_PATH_LEN = 256;
+	const int MAX_DIGITS = 2;
+	bool Mesh::ExportVariedMeshesOBJ(int count, const char * const filePath)
+	{
+		float *pVertCpy = new float[m_vertexCount * m_floatsPerVertex]{ 0.0f };
+		char filePathBuffer[MAX_PATH_LEN]{ '\0' };
+		memcpy(&filePathBuffer[0], filePath, StringFuncs::StringLen(filePath));
+		int idx = StringFuncs::FindLastSubString(filePathBuffer, ".");
+		memmove(&filePathBuffer[idx + MAX_DIGITS], &filePathBuffer[idx], MAX_PATH_LEN - (idx + MAX_DIGITS + 1));
+		memset(&filePathBuffer[idx], '0', MAX_DIGITS);
+		
+		for (int i = 0; i < count; ++i)
+		{
+			StringFuncs::CountUp(&filePathBuffer[idx], MAX_DIGITS);
+			
+			if (!OffsetTransformVertsIntoArray(XMVectorZero(), m_modelToWorld, pVertCpy, 0)
+				|| !Vary()
+				|| !ObjExporter::WriteObj(&filePathBuffer[0], m_format, pVertCpy, m_vertexCount))
+			{
+				DebugConsole::Log("Failed to ExportVariedMeshOBJ [%d]!\n", i);
+				delete[] pVertCpy;
+				return false;
+			}
+		}
+
+		delete[] pVertCpy;
+		return true;
 	}
 
 	void Mesh::ClearObjectLevelVariations()
@@ -225,7 +253,6 @@ namespace Capstone
 		MyUtils::SafeDeleteArray(m_pBaseVerts);
 	}
 
-	const int POSITION_FLOATS = 3;
 	void Mesh::SetColor(int idx, float r, float g, float b)
 	{
 		float *pColor = m_pVerts + (idx * m_floatsPerVertex) + POSITION_FLOATS;
@@ -257,8 +284,6 @@ namespace Capstone
 		}
 	}
 
-	const int COLOR_FLOATS = 4;
-	const int TEXTURE_FLOATS = 2;
 	void Mesh::UpdateVertexGroup(void * pMesh, int groupIdx, int instanceIndex)
 	{
 		Mesh *pM = reinterpret_cast<Mesh *>(pMesh);
@@ -476,6 +501,63 @@ namespace Capstone
 		InitVertexGroupVariations();
 		ColorMesh();
 		m_pEditor->ReSendMeshVerticesSameBuffer();
+
+		return true;
+	}
+
+	bool Mesh::Vary()
+	{
+		m_objectLevelVariation.Vary();
+		for (size_t i = 0; i < m_testGroups.size(); ++i)
+		{
+			m_testGroups[i].GetVariationPointer()->Vary();
+		}
+
+		UpdateAllVertexGroups(this, 0);
+		m_pEditor->ReSendMeshVerticesSameBuffer();
+		return true;
+	}
+
+	bool Mesh::CopyVerticesTo(float * pArray)
+	{
+		memcpy(pArray, m_pVerts, GetVertexBufferSize());
+		return true;
+	}
+
+	bool Mesh::OffsetTransformVertsIntoArray(const DirectX::XMVECTOR& offset, const DirectX::XMMATRIX& transform, float *pArray, int instanceIndex) const
+	{
+		if (instanceIndex >= m_numMeshes) { DebugConsole::Log("Failed to OffsetTransformVertsIntoArray! Invalid InstanceIndex!\n"); return false; }
+
+		int instanceOffset = m_floatsPerVertex * m_vertexCount * instanceIndex;
+
+		// offset the verts -- ugly would do better with fancy render engine
+		for (int i = 0; i < m_vertexCount; ++i)
+		{
+			int floatIdx = m_floatsPerVertex * i;
+			int idx = instanceOffset + floatIdx;
+			XMVECTOR v = offset + XMVector4Transform(XMVectorSet(m_pVerts[idx + 0], m_pVerts[idx + 1], m_pVerts[idx + 2], 1.0f), transform);
+			pArray[idx + 0] = XMVectorGetX(v);
+			pArray[idx + 1] = XMVectorGetY(v);
+			pArray[idx + 2] = XMVectorGetZ(v);
+		}
+
+		int normalPos = StringFuncs::FindSubString(m_format, "N");
+		if (normalPos >= 0)
+		{
+			// handle all fomats
+			int normalIdx = normalPos == 1 ? POSITION_FLOATS : (normalPos == 2 ? (POSITION_FLOATS + COLOR_FLOATS) : (POSITION_FLOATS + COLOR_FLOATS + TEXTURE_FLOATS));
+			DirectX::XMMATRIX inverseTranspose = XMMatrixInverse(nullptr, XMMatrixTranspose(transform));
+			for (int i = 0; i < m_vertexCount; ++i)
+			{
+				int floatIdx = m_floatsPerVertex * i + normalIdx;
+				int idx = instanceOffset + floatIdx;
+
+				XMVECTOR v = XMVector4Transform(XMVectorSet(m_pVerts[idx + 0], m_pVerts[idx + 1], m_pVerts[idx + 2], 1.0f), inverseTranspose);
+				pArray[idx + 0] = XMVectorGetX(v);
+				pArray[idx + 1] = XMVectorGetY(v);
+				pArray[idx + 2] = XMVectorGetZ(v);
+			}
+		}
 
 		return true;
 	}

@@ -32,6 +32,7 @@ namespace Capstone
 
 		bool LoadMeshOBJ(const char *const filePath);
 		bool ExportCurrentMeshOBJ(const char *const filePath) const;
+		bool ExportVariedMeshesOBJ(int count, const char *const filePath);
 		void ClearObjectLevelVariations();
 		void ColorAll(float r, float g, float b);
 		void ClearVertexGroups();
@@ -48,6 +49,9 @@ namespace Capstone
 		bool SelectVertexGroup(int idx);
 		bool GetVertexGroupInfo(int group, unsigned &outNumVerts);
 		bool RemoveVertexGroup(int idx);
+		bool Vary();
+		bool CopyVerticesTo(float *pArray);
+		bool OffsetTransformVertsIntoArray(const DirectX::XMVECTOR& offset, const DirectX::XMMATRIX& transform, float *pArray, int instanceIndex) const;
 
 	private:
 		void ColorCurrentGroup();

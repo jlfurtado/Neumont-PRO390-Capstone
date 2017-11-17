@@ -40,10 +40,11 @@ namespace Capstone
 		static bool ProcessDisplayVariants2DCommand(const char *const command);
 		static bool ProcessResumeEditCommand(const char *const command);
 		static bool ProcessExportCurrentMeshObjCommand(const char *const command);
+		static bool ProcessExportVariedMeshesObjCommand(const char *const command);
 		static EditorWindow *s_pMyWindow;
 		static Editor *s_pEditor;
 
-		static const int NUM_COMMANDS = 20;
+		static const int NUM_COMMANDS = 21;
 		static Command s_commands[NUM_COMMANDS];
 	};
 

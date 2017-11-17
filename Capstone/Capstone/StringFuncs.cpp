@@ -108,6 +108,35 @@ namespace Capstone
 		return -1;
 	}
 
+	int StringFuncs::FindLastSubString(const char * const source, const char * const target)
+	{
+		if (StringLen(source) < StringLen(target)) return -1; // definitely not a substring
+		if (StringLen(target) == 0) return 0; // empty string is always found
+
+		int idx = -1;
+		for (int sPos = 0, tPos = 0; *(source + sPos); ++sPos)
+		{
+			if (*(source + sPos) == *(target + tPos))
+			{
+				tPos++;
+				if (!(*(target + tPos)))  idx = sPos - tPos + 1;
+			}
+			else
+			{
+				tPos = 0;
+
+				if (*(source + sPos) == *(target + tPos))
+				{
+					tPos++;
+					if (!(*(target + tPos))) idx = sPos - tPos + 1;
+				}
+			}
+		}
+
+		// end of string reached
+		return idx;
+	}
+
 	// reads the end of a string to determine if it ends with the target string
 	bool StringFuncs::StringEndsWith(const char *const source, const char *const target)
 	{
