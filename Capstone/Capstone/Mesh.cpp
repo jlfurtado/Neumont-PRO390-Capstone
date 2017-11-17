@@ -371,7 +371,7 @@ namespace Capstone
 			int idx = i * m_floatsPerVertex;
 			XMVECTOR modelSpacePoint = XMVectorSet(m_pVerts[idx], m_pVerts[idx + 1], m_pVerts[idx + 2], 1.0f);
 			XMVECTOR worldSpacePoint = XMVector4Transform(modelSpacePoint, mtwT);
-			if (frustum.PointInFrustum(worldSpacePoint))
+			if (frustum.PointInFrustum(worldSpacePoint))	
 			{
 				m_testGroups[m_currentVertexGroup].Add(i);
 			}
@@ -552,7 +552,7 @@ namespace Capstone
 				int floatIdx = m_floatsPerVertex * i + normalIdx;
 				int idx = instanceOffset + floatIdx;
 
-				XMVECTOR v = XMVector4Transform(XMVectorSet(m_pVerts[idx + 0], m_pVerts[idx + 1], m_pVerts[idx + 2], 1.0f), inverseTranspose);
+				XMVECTOR v = XMVector4Transform(XMVectorSet(m_pVerts[idx + 0], m_pVerts[idx + 1], m_pVerts[idx + 2], 0.0f), inverseTranspose);
 				pArray[idx + 0] = XMVectorGetX(v);
 				pArray[idx + 1] = XMVectorGetY(v);
 				pArray[idx + 2] = XMVectorGetZ(v);
