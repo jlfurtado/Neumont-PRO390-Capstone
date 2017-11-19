@@ -360,7 +360,8 @@ namespace Capstone
 		// add the test group, select it, and make sure its empty
 		m_testGroups.push_back(VertexGroup());
 		m_currentVertexGroup = m_testGroups.size() - 1;
-		m_testGroups[m_currentVertexGroup].Clear();
+		VertexGroup& currentVertexGroup = m_testGroups[m_currentVertexGroup];
+		currentVertexGroup.Clear();
 		
 		// IN CASE RESIZED RE-HOOK UP POINTERS!!!!
 		InitVertexGroupVariations();
@@ -373,21 +374,67 @@ namespace Capstone
 			XMVECTOR worldSpacePoint = XMVector4Transform(modelSpacePoint, mtwT);
 			if (frustum.PointInFrustum(worldSpacePoint))	
 			{
-				m_testGroups[m_currentVertexGroup].Add(i);
+				currentVertexGroup.Add(i);
 			}
 		}
 
-		if (m_testGroups[m_currentVertexGroup].Count() > 0)
+		if (currentVertexGroup.Count() <= 0)
 		{
-			ColorCurrentGroup();
-		}
-		else
-		{
-			m_testGroups.pop_back();
-			m_currentVertexGroup = -1;
-			ColorAll(0.0f, 0.0f, 1.0f);
+			RemoveVertexGroup(m_currentVertexGroup);
 		}
 
+		ColorMesh();
+		m_pEditor->ReSendMeshVerticesSameBuffer();
+	}
+
+	void Mesh::AddVerticesInFrustum(const Frustum & frustum)
+	{
+		if (m_currentVertexGroup < 0 || (unsigned)m_currentVertexGroup >= m_testGroups.size()) { DebugConsole::Log("Cannot AddVerticesInFrustum! No selected vertex group!\n"); return; }
+		VertexGroup& currentVertexGroup = m_testGroups[m_currentVertexGroup];
+
+		XMMATRIX mtwT = XMMatrixTranspose(m_modelToWorld);
+		for (int i = 0; i < m_vertexCount; ++i)
+		{
+			int idx = i * m_floatsPerVertex;
+			XMVECTOR modelSpacePoint = XMVectorSet(m_pVerts[idx], m_pVerts[idx + 1], m_pVerts[idx + 2], 1.0f);
+			XMVECTOR worldSpacePoint = XMVector4Transform(modelSpacePoint, mtwT);
+			if (frustum.PointInFrustum(worldSpacePoint) && !currentVertexGroup.Contains(i))
+			{
+				currentVertexGroup.Add(i);
+			}
+		}
+
+		ColorMesh();
+		m_pEditor->ReSendMeshVerticesSameBuffer();
+	}
+
+	void Mesh::RemoveVerticesInFrustum(const Frustum & frustum)
+	{
+		if (m_currentVertexGroup < 0 || (unsigned)m_currentVertexGroup >= m_testGroups.size()) { DebugConsole::Log("Cannot RemoveVerticesInFrustum! No selected vertex group!\n"); return; }
+		VertexGroup& currentVertexGroup = m_testGroups[m_currentVertexGroup];
+
+		const int *pIndices = currentVertexGroup.GetIndices();
+		XMMATRIX mtwT = XMMatrixTranspose(m_modelToWorld);
+		for (int i = 0; i < currentVertexGroup.Count(); ++i)
+		{
+			int vertIdx = pIndices[i];
+			int floatIdx = vertIdx * m_floatsPerVertex;
+			XMVECTOR modelSpacePoint = XMVectorSet(m_pVerts[floatIdx], m_pVerts[floatIdx + 1], m_pVerts[floatIdx + 2], 1.0f);
+			XMVECTOR worldSpacePoint = XMVector4Transform(modelSpacePoint, mtwT);
+			if (frustum.PointInFrustum(worldSpacePoint) && currentVertexGroup.Contains(vertIdx))
+			{
+				currentVertexGroup.RemoveFirst(vertIdx);
+				memcpy(m_pVerts + floatIdx, m_pBaseVerts + floatIdx, 3 * sizeof(float));
+				--i; // we removed a thingy, next one is in current slot
+			}
+		}
+
+		if (m_testGroups[m_currentVertexGroup].Count() <= 0)
+		{
+			RemoveVertexGroup(m_currentVertexGroup);
+		}
+
+		ColorMesh();
 		m_pEditor->ReSendMeshVerticesSameBuffer();
 	}
 	

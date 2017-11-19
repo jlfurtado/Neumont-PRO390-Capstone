@@ -38,6 +38,9 @@ namespace Capstone
 		void ClearVertexGroups();
 
 		void SelectVerticesInFrustum(const Frustum& frustum);
+		void AddVerticesInFrustum(const Frustum& frustum);
+		void RemoveVerticesInFrustum(const Frustum& frustum);
+
 		bool SetPivotCoords(float x, float y, float z);
 		bool SetPivotCenter();
 

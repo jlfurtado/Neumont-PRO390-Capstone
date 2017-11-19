@@ -20,6 +20,7 @@ namespace Capstone
 		int Count();
 		void Update(float dt);
 		void Add(int idx);
+		void RemoveFirst(int idx);
 		const int *GetIndices();
 		DirectX::XMMATRIX CalcMTW();
 		static void DoNothingOnPurpose(void *, int);
@@ -28,7 +29,8 @@ namespace Capstone
 		void SetPivot(const DirectX::XMVECTOR& pivot);
 		void SetVariationType(VariationType type);
 		unsigned GetNumVertices();
-
+		bool Contains(int idx);
+		
 	private:
 		DirectX::XMVECTOR m_scale;
 		DirectX::XMVECTOR m_translation;
@@ -37,7 +39,6 @@ namespace Capstone
 		VariationController m_variation;
 		std::vector<int> m_vertexIndices;
 
-		bool Contains(int idx);
 
 		static void LogNotSet(void *);
 

@@ -53,7 +53,7 @@ namespace Capstone
 		
 		if (Keyboard::IsKeyUp(VK_SHIFT))
 		{
-			if (Keyboard::IsKeyPressed('V')) { Vary();  }
+			if (Keyboard::IsKeyPressed('V')) { Vary(); CallChanged(ASSUME_SINGLE_INSTANCE); }
 		}
 	}
 

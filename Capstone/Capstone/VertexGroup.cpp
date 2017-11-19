@@ -49,6 +49,17 @@ namespace Capstone
 		//}
 	}
 
+	void VertexGroup::RemoveFirst(int idx)
+	{
+		for (size_t i = 0; i < m_vertexIndices.size(); ++i)
+		{
+			if (m_vertexIndices[i] == idx) 
+			{
+				m_vertexIndices.erase(m_vertexIndices.begin() + i, m_vertexIndices.begin() + i + 1);
+			}
+		}
+	}
+
 	const int * VertexGroup::GetIndices()
 	{
 		return m_vertexIndices.data();

@@ -853,7 +853,20 @@ namespace Capstone
 					m_fovy, m_nearClip, (float)m_pMyWindow->GetWidth(), (float)m_pMyWindow->GetHeight(), m_farClip);
 
 				Frustum mouseFrustum = Frustum::GetSubFrustum(cameraFrustum, lowXPerc, lowYPerc, highXPerc, highYPerc);
-				m_mesh.SelectVerticesInFrustum(mouseFrustum);
+				
+				if (Keyboard::IsKeyDown(VK_SHIFT))
+				{
+					m_mesh.AddVerticesInFrustum(mouseFrustum);
+				}
+				else if (Keyboard::IsKeyDown(VK_CONTROL))
+				{
+					m_mesh.RemoveVerticesInFrustum(mouseFrustum);
+				}
+				else
+				{
+					m_mesh.SelectVerticesInFrustum(mouseFrustum);
+				}
+
 				//FrustumVertsFromFrustum(mouseFrustum);
 			}
 		}
