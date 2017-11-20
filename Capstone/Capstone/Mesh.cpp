@@ -555,6 +555,7 @@ namespace Capstone
 	bool Mesh::Vary()
 	{
 		m_objectLevelVariation.Vary();
+		CalcMatrix();
 		for (size_t i = 0; i < m_testGroups.size(); ++i)
 		{
 			m_testGroups[i].GetVariationPointer()->Vary();
