@@ -97,6 +97,17 @@ enum VariationType
 
 class VariationController
 {
+    public VariationController(Vector3 ls, Vector3 lr, Vector3 lt, Vector3 hs, Vector3 hr, Vector3 ht, SetSRT callback)
+    {
+        m_lowScale = ls;
+        m_lowRotation = lr;
+        m_lowTranslation = lt;
+        m_highScale = hs;
+        m_highRotation = hr;
+        m_highTranslation = ht;
+        m_setCallback = callback;
+    }
+
     private Vector3 m_lowScale;
     private Vector3 m_lowTranslation;
     private Vector3 m_lowRotation;
@@ -165,7 +176,7 @@ class VertexGroup
     private Vector3 m_translation;
     private List<int> m_indices;
 
-    private void SetScaleRotationTranslation(Vector3 scale, Vector3 rotation, Vector3 translation)
+    public void SetScaleRotationTranslation(Vector3 scale, Vector3 rotation, Vector3 translation)
     {
         m_scale = scale;
         m_rotation = rotation;
@@ -174,6 +185,30 @@ class VertexGroup
 }
 
 #endregion
+
+#region GameObjectSRT
+
+public class GameObjectSRT
+{
+    private GameObject m_object;
+
+    public void SetObject(GameObject obj)
+    {
+        m_object = obj;
+    }
+
+    public void SetSRT(Vector3 scale, Vector3 rotation, Vector3 translation)
+    {
+        m_object.transform.localScale = scale;
+        m_object.transform.localRotation = Quaternion.Euler(rotation);
+        m_object.transform.position = translation;
+    }
+}
+
+
+#endregion
+
+#region Script
 
 public class CapstoneGenerator : MonoBehaviour {
     
@@ -187,3 +222,5 @@ public class CapstoneGenerator : MonoBehaviour {
 
  //   }
 }
+
+#endregion
