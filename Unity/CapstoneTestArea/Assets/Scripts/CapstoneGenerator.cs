@@ -93,9 +93,10 @@ enum VariationType
 
 #endregion
 
+#region VariationController
+
 class VariationController
 {
-
     private Vector3 m_lowScale;
     private Vector3 m_lowTranslation;
     private Vector3 m_lowRotation;
@@ -104,49 +105,57 @@ class VariationController
     private Vector3 m_highRotation;
     private SetSRT m_setCallback;
 
-    //public void VaryVectorUniform()
-    //{
-    //    *m_pRotation = Variations::VectorUniform(m_lowRotation, m_highRotation);
-    //    *m_pTranslation = Variations::VectorUniform(m_lowTranslation, m_highTranslation);
-    //    *m_pScale = Variations::VectorUniform(m_lowScale, m_highScale);
-    //}
+    public void VaryVectorUniform()
+    {
+        m_setCallback(Variations.VectorUniform(m_lowScale, m_highScale),
+                      Variations.VectorUniform(m_lowRotation, m_highRotation),
+                      Variations.VectorUniform(m_lowTranslation, m_highTranslation));
+    }
 
-    //public void VaryVectorBellApproximation()
-    //{
-    //    *m_pRotation = Variations::VectorBellApproximation(m_lowRotation, m_highRotation, 10);
-    //    *m_pTranslation = Variations::VectorBellApproximation(m_lowTranslation, m_highTranslation, 10);
-    //    *m_pScale = Variations::VectorBellApproximation(m_lowScale, m_highScale, 10);
-    //}
+    public void VaryVectorBellApproximation()
+    {
+        m_setCallback(Variations.VectorBellApproximation(m_lowScale, m_highScale, 10),
+                      Variations.VectorBellApproximation(m_lowRotation, m_highRotation, 10),
+                      Variations.VectorBellApproximation(m_lowTranslation, m_highTranslation, 10));
+    }
 
-    //public void VaryComponentUniform()
-    //{
-    //    *m_pRotation = Variations::VectorComponentUniform(m_lowRotation, m_highRotation);
-    //    *m_pTranslation = Variations::VectorComponentUniform(m_lowTranslation, m_highTranslation);
-    //    *m_pScale = Variations::VectorComponentUniform(m_lowScale, m_highScale);
-    //}
+    public void VaryComponentUniform()
+    {
+        m_setCallback(Variations.VectorComponentUniform(m_lowScale, m_highScale),
+                      Variations.VectorComponentUniform(m_lowRotation, m_highRotation),
+                      Variations.VectorComponentUniform(m_lowTranslation, m_highTranslation));
+    }
 
-    //public void VaryComponentBellApproximation()
-    //{
-    //    *m_pRotation = Variations::VectorComponentBellApproximation(m_lowRotation, m_highRotation, 10);
-    //    *m_pTranslation = Variations::VectorComponentBellApproximation(m_lowTranslation, m_highTranslation, 10);
-    //    *m_pScale = Variations::VectorComponentBellApproximation(m_lowScale, m_highScale, 10);
-    //}
+    public void VaryComponentBellApproximation()
+    {
+        m_setCallback(Variations.VectorComponentBellApproximation(m_lowScale, m_highScale, 10),
+                      Variations.VectorComponentBellApproximation(m_lowRotation, m_highRotation, 10),
+                      Variations.VectorComponentBellApproximation(m_lowTranslation, m_highTranslation, 10));
+    }
 
-    //public void VarySmoothBellApproximation()
-    //{
-    //    Variations::TripleVectorBellApproximation(m_lowRotation, m_highRotation, m_pRotation,
-    //                                              m_lowScale, m_highScale, m_pScale,
-    //                                              m_lowTranslation, m_highTranslation, m_pTranslation,
-    //                                              10);
-    //}
+    public void VarySmoothBellApproximation()
+    {
+        Vector3 s, r, t;
+        Variations.TripleVectorBellApproximation(m_lowRotation, m_highRotation, out r,
+                                                  m_lowScale, m_highScale, out s,
+                                                  m_lowTranslation, m_highTranslation, out t,
+                                                  10);
+        m_setCallback(s, r, t);
+    }
 
-    //public void VarySmoothUniform()
-    //{
-    //    Variations::TripleVectorUniform(m_lowRotation, m_highRotation, m_pRotation,
-    //                                    m_lowScale, m_highScale, m_pScale,
-    //                                    m_lowTranslation, m_highTranslation, m_pTranslation);
-    //}
+    public void VarySmoothUniform()
+    {
+        Vector3 s, r, t;
+        Variations.TripleVectorUniform(m_lowRotation, m_highRotation, out r,
+                                        m_lowScale, m_highScale, out s,
+                                        m_lowTranslation, m_highTranslation, out t);
+        m_setCallback(s, r, t);
+    }
 }
+
+#endregion
+
+#region VertexGroup
 
 class VertexGroup
 {
@@ -163,6 +172,8 @@ class VertexGroup
         m_translation = translation;
     }
 }
+
+#endregion
 
 public class CapstoneGenerator : MonoBehaviour {
     
