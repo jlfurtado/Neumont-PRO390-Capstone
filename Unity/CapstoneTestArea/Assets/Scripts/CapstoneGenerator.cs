@@ -249,6 +249,26 @@ class VertexGroup
         m_variation = variation;
     }
 
+    public Matrix4x4 CalcMTW()
+    {
+        return Matrix4x4.TRS(m_translation, Quaternion.Euler(m_rotation), m_scale);
+    }
+
+    public void Vary()
+    {
+        m_variation.Vary();
+    }
+
+    public int NumIndices()
+    {
+        return m_indices.Count;
+    }
+
+    public int IndexAt(int index)
+    {
+        return m_indices[index];
+    }
+
 }
 
 #endregion
@@ -503,28 +523,24 @@ static class CustomIO
 
 static class HookerUpper
 {
-    public static void PCNToMesh(Mesh mesh, float[] pcnVerts)
+    private static int[] s_indices;
+
+    public static void InitIndices(Mesh mesh, int vertexCount)
+    {
+        s_indices = new int[vertexCount];
+
+        for (int i = 0; i < vertexCount; ++i)
+        {
+            s_indices[i] = i;
+        }
+    }
+    public static void SetMeshValues(Mesh mesh, Vector3[] positions, Vector3[] normals)
     {
         mesh.Clear();
 
-        int fpv = 10, vertPos= 0, colorPos = 3, normalPos = 7, verts = pcnVerts.Length / 10;
-        Vector3[] positions = new Vector3[verts];
-        Vector3[] normals = new Vector3[verts];
-        int[] indices = new int[verts];
-
-        for (int i = 0; i < verts; ++i)
-        {
-            int floatIdx = fpv * i;
-            int posIdx = floatIdx + vertPos;
-            int normalIdx = floatIdx + normalPos;
-            indices[i] = i;
-            positions[i] = new Vector3(pcnVerts[posIdx], pcnVerts[posIdx + 1], pcnVerts[posIdx + 2]);
-            normals[i] = new Vector3(pcnVerts[normalIdx], pcnVerts[normalIdx + 1], pcnVerts[normalIdx + 2]);
-        }
-
         mesh.vertices = positions;
         mesh.normals = normals;
-        mesh.triangles = indices;
+        mesh.triangles = s_indices;
     }
 }
 
@@ -534,26 +550,21 @@ static class HookerUpper
 
 static class VariationMath
 {
-    public static void OffsetTransformVertsIntoArray(Vector3 offset, Matrix4x4 transform, float[] array, int vertexCount, int floatsPerVertex, int normalIdx, float[] vertices)
+    public static void OffsetTransformVertsIntoArrays(Vector3 offset, Matrix4x4 transform, out Vector3[] positions, out Vector3[] normals, int vertexCount, int floatsPerVertex, int normalOffset, float[] vertices)
 	{
-		for (int i = 0; i< vertexCount; ++i)
-		{
-			int floatIdx = floatsPerVertex * i;
-            Vector3 v = offset + transform.MultiplyPoint3x4(new Vector3(vertices[floatIdx + 0], vertices[floatIdx + 1], vertices[floatIdx + 2]));
-            array[floatIdx + 0] = v.x;
-            array[floatIdx + 1] = v.y;
-            array[floatIdx + 2] = v.z;
-		}
-
         Matrix4x4 inverseTranspose = transform.transpose.inverse;
-		for (int i = 0; i < vertexCount; ++i)
+
+        positions = new Vector3[vertexCount];
+        normals = new Vector3[vertexCount];
+
+        for (int i = 0; i < vertexCount; ++i)
 		{
-			int floatIdx = floatsPerVertex * i + normalIdx;
-            Vector3 v = inverseTranspose.MultiplyVector(new Vector3(vertices[floatIdx + 0], vertices[floatIdx + 1], vertices[floatIdx + 2]));
-            array[floatIdx + 0] = v.x;
-            array[floatIdx + 1] = v.y;
-            array[floatIdx + 2] = v.z;
-		}
+			int posIdx = floatsPerVertex * i;
+            int normIdx = posIdx + normalOffset;
+
+            positions[i] = offset + transform.MultiplyPoint3x4(new Vector3(vertices[posIdx + 0], vertices[posIdx + 1], vertices[posIdx + 2]));
+            normals[i] = inverseTranspose.MultiplyVector(new Vector3(vertices[normIdx + 0], vertices[normIdx + 1], vertices[normIdx + 2]));
+        }
 	}
 }
 
@@ -571,9 +582,9 @@ public class CapstoneGenerator : MonoBehaviour {
     private Renderer m_renderer;
     private Mesh m_mesh;
     private float[] m_baseVerts;
-    private float[] m_verts;
     private List<VertexGroup> m_vertexGroups;
     private VariationController m_objectVariations;
+    private int m_numVertices = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -591,9 +602,13 @@ public class CapstoneGenerator : MonoBehaviour {
         m_filePath = Application.dataPath + "/Capstone/" + m_fileName;
         int fpv;
         CustomIO.LoadBaseMesh(m_filePath, m_objToVary, out m_baseVerts, out fpv, out m_vertexGroups, out m_objectVariations);
-        HookerUpper.PCNToMesh(m_mesh, m_baseVerts);
 
-        m_verts = new float[m_baseVerts.Length];
+        m_numVertices = m_baseVerts.Length / fpv;
+
+        HookerUpper.InitIndices(m_mesh, m_numVertices);
+        Vector3[] positions, normals;
+        VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, m_numVertices, fpv, 7, m_baseVerts);
+        HookerUpper.SetMeshValues(m_mesh, positions, normals);
     }
 
     private void Update()
@@ -607,10 +622,34 @@ public class CapstoneGenerator : MonoBehaviour {
     private void VaryModel()
     {
         const int fpv = 10;
-        const int normalIdx = 7;
+        const int normalOffset = 7;
+
+        Vector3[] positions = new Vector3[m_numVertices];
+        Vector3[] normals = new Vector3[m_numVertices];
+
+        VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, m_numVertices, fpv, 7, m_baseVerts);
+
         m_objectVariations.Vary();
-        //VariationMath.OffsetTransformVertsIntoArray(Vector3.zero, Matrix4x4.identity, m_verts, m_verts.Length / fpv, fpv, normalIdx, m_baseVerts);
-        //HookerUpper.PCNToMesh(m_mesh, m_verts);
+        for (int i = 0; i < m_vertexGroups.Count; ++i)
+        {
+            m_vertexGroups[i].Vary();
+
+            Matrix4x4 mtw = m_vertexGroups[i].CalcMTW();
+            Matrix4x4 inverseTranspose = mtw.transpose.inverse;
+            Vector3 pivot = m_vertexGroups[i].GetPivot();
+
+            int indicesInVerteXGroup = m_vertexGroups[i].NumIndices();
+            for (int j = 0; j < indicesInVerteXGroup; ++j)
+            {
+                int vertIdx = m_vertexGroups[i].IndexAt(j);
+                int posIdx = vertIdx * fpv;
+                int normIdx = posIdx + normalOffset;
+                positions[vertIdx] = mtw.MultiplyPoint3x4(new Vector3(m_baseVerts[posIdx + 0], m_baseVerts[posIdx + 1], m_baseVerts[posIdx + 2]) - pivot) + pivot;
+                normals[vertIdx] = inverseTranspose.MultiplyVector(new Vector3(m_baseVerts[normIdx + 0], m_baseVerts[normIdx + 1], m_baseVerts[normIdx + 2]));
+            }
+        }
+
+        HookerUpper.SetMeshValues(m_mesh, positions, normals);
     }
 
 }

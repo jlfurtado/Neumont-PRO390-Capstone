@@ -294,10 +294,8 @@ namespace Capstone
 
 		// same matrix per group
 		DirectX::XMMATRIX objMTW = pM->m_modelToWorld;
-		//DirectX::XMMATRIX invObjMTW = XMMatrixInverse(nullptr, pM->m_modelToWorld);
 		DirectX::XMMATRIX MTW = vertexGroup.CalcMTW();
 		DirectX::XMVECTOR pivot = vertexGroup.GetPivot();
-		//DirectX::XMVECTOR modelSpacePivot = XMVector4Transform(pivot, invObjMTW);
 		int floatOffset = instanceIndex * pM->m_floatsPerVertex * pM->m_vertexCount;
 		int numIndices = vertexGroup.Count();
 		for (int i = 0; i < numIndices; ++i)
