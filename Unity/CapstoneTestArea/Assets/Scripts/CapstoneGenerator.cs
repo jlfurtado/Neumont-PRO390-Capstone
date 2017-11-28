@@ -299,7 +299,8 @@ static class CustomIO
     private static bool CheckFormatData()
     {
         char[] readData = s_reader.ReadChars(FORMAT_CHECK_DATA_SIZE);
-        return readData != null && readData.ToString().Equals(FORMAT_CHECK_DATA);
+        string readDataStr = new string(readData);
+        return string.Compare(readDataStr, FORMAT_CHECK_DATA) == 0;
     }
 
     private static bool CheckVersionData()
@@ -362,7 +363,7 @@ static class CustomIO
         {
             VertexGroup vg;
             if (!ReadVertexGroup(out vg)) { Debug.Log("Failed to ReadVertexGroupData! Failed to ReadVertexGroup(" + i + ")!"); return false; }
-            vertexGroups[i] = vg;
+            vertexGroups.Add(vg);
         }
 
         return true;
@@ -425,7 +426,7 @@ static class CustomIO
 
         for (int i = 0; i < indexCount; ++i)
         {
-            indices[i] = s_reader.ReadInt32();
+            indices.Add(s_reader.ReadInt32());
         }
 
         return true;
@@ -449,7 +450,7 @@ static class CustomIO
 
     private static BinaryReader s_reader = null;
     const int FORMAT_CHECK_DATA_SIZE = 37;
-    const string FORMAT_CHECK_DATA = "JUSTINS_FANCY_CUSTOM_CAPSTONE_FORMAT";
+    const string FORMAT_CHECK_DATA = "JUSTINS_FANCY_CUSTOM_CAPSTONE_FORMAT\0";
     const int FORMAT_VERSION = 2;
 }
 
@@ -459,9 +460,28 @@ static class CustomIO
 
 static class HookerUpper
 {
-    public static void HookUp(GameObjectSRT obj)
+    public static void PCNToMesh(Mesh mesh, float[] pcnVerts)
     {
+        mesh.Clear();
 
+        int fpv = 10, vertPos= 0, colorPos = 3, normalPos = 7, verts = pcnVerts.Length / 10;
+        Vector3[] positions = new Vector3[verts];
+        Vector3[] normals = new Vector3[verts];
+        int[] indices = new int[verts];
+
+        for (int i = 0; i < verts; ++i)
+        {
+            int floatIdx = fpv * i;
+            int posIdx = floatIdx + vertPos;
+            int normalIdx = floatIdx + normalPos;
+            indices[i] = i;
+            positions[i] = new Vector3(pcnVerts[posIdx], pcnVerts[posIdx + 1], pcnVerts[posIdx + 2]);
+            normals[i] = new Vector3(pcnVerts[normalIdx], pcnVerts[normalIdx + 1], pcnVerts[normalIdx + 2]);
+        }
+
+        mesh.vertices = positions;
+        mesh.normals = normals;
+        mesh.triangles = indices;
     }
 }
 
@@ -470,9 +490,17 @@ static class HookerUpper
 #region Script
 
 public class CapstoneGenerator : MonoBehaviour {
+    [SerializeField] private string m_fileName = "1.txt";
+    [SerializeField] private Material m_meshMat;
 
-    GameObjectSRT m_objToVary;
-    GameObject m_objToDisplay;
+    private string m_filePath;
+    private GameObjectSRT m_objToVary;
+    private GameObject m_objToDisplay;
+    private Renderer m_renderer;
+    private Mesh m_mesh;
+    private float[] m_baseVerts;
+    private List<VertexGroup> m_vertexGroups;
+    private VariationController m_objectVariations;
 
 	// Use this for initialization
 	void Start () {
@@ -483,14 +511,27 @@ public class CapstoneGenerator : MonoBehaviour {
 
         m_objToDisplay.AddComponent<MeshFilter>();
         m_objToDisplay.AddComponent<MeshRenderer>();
-        Mesh mesh = m_objToDisplay.GetComponent<MeshFilter>().mesh;
+        m_renderer = m_objToDisplay.GetComponent<MeshRenderer>();
+        m_renderer.material = m_meshMat;
+        m_mesh = m_objToDisplay.GetComponent<MeshFilter>().mesh;
+       
+        m_filePath = Application.dataPath + "/Capstone/" + m_fileName;
+        int fpv;
+        CustomIO.LoadBaseMesh(m_filePath, m_objToVary, out m_baseVerts, out fpv, out m_vertexGroups, out m_objectVariations);
+        HookerUpper.PCNToMesh(m_mesh, m_baseVerts);
+    }
 
-        mesh.Clear();
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            VaryModel();
+        }
+    }
 
-        // make changes to the Mesh by creating arrays which contain the new values
-        mesh.vertices = new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0) };
-        //mesh.uv = new Vector2[] { new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1) };
-        mesh.triangles = new int[] { 0, 1, 2 };
+    private void VaryModel()
+    {
+        
     }
 
 }

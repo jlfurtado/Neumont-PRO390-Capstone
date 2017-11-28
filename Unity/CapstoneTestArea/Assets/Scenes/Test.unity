@@ -148,6 +148,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3caf569a4c1270e4081eecd314fbdb14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_fileName: 1.txt
+  m_meshMat: {fileID: 2100000, guid: 805599db3037af6449a6614be3437f8d, type: 2}
 --- !u!1 &1014281706
 GameObject:
   m_ObjectHideFlags: 0
