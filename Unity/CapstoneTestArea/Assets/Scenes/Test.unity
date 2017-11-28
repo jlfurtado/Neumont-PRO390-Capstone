@@ -148,8 +148,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3caf569a4c1270e4081eecd314fbdb14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_fileName: 1.txt
-  m_meshMat: {fileID: 2100000, guid: 805599db3037af6449a6614be3437f8d, type: 2}
+  m_fileName: Tree.txt
+  m_meshMat: {fileID: 2100000, guid: 9218dad2e8faf1a45a23be5fce374bfa, type: 2}
 --- !u!1 &1014281706
 GameObject:
   m_ObjectHideFlags: 0
@@ -297,13 +297,13 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1224255695}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.27216431, y: -0, z: -0, w: 0.9622509}
+  m_LocalPosition: {x: 0, y: 13.41, z: -25.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 31.586002, y: 0, z: 0}
 --- !u!1 &1252470290
 GameObject:
   m_ObjectHideFlags: 0
@@ -335,7 +335,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: e9311b2d918fbcc41af8d1703c74bcc1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -129,6 +129,11 @@ class VariationController
     private SetSRT m_setCallback;
     private VaryFunc[] m_varyFuncs;
 
+    public void SetCallback(SetSRT callback)
+    {
+        m_setCallback = callback;
+    }
+
     public void Vary()
     {
         m_varyFuncs[(int)(m_variationType)]();
@@ -304,7 +309,7 @@ public class GameObjectSRT
 
 static class CustomIO
 {
-    public static bool LoadBaseMesh(string filePath, GameObjectSRT obj, out float[] verts, out int floatsPerVertex, out List<VertexGroup> vertexGroups, out VariationController objectVariations)
+    public static bool LoadBaseMesh(string filePath, SetSRT objectVariationCallback, out float[] verts, out int floatsPerVertex, out List<VertexGroup> vertexGroups, out VariationController objectVariations)
     {
         verts = null;
         floatsPerVertex = 0;
@@ -331,7 +336,7 @@ static class CustomIO
             return false;
         }
 
-        if (!ReadMeshInfo(obj, out verts, out floatsPerVertex, out vertexGroups, out objectVariations))
+        if (!ReadMeshInfo(objectVariationCallback, out verts, out floatsPerVertex, out vertexGroups, out objectVariations))
         {
             Debug.Log("ERROR: Failed to ReadMeshFromFile! Failed to ReadMeshInfo!\n");
             CloseInputFile();
@@ -372,7 +377,7 @@ static class CustomIO
         return (readVersion >= 0) && (readVersion == FORMAT_VERSION);
     }
 
-    private static bool ReadMeshInfo(GameObjectSRT obj, out float[] outVerts, out int floatsPerVertex, out List<VertexGroup> vertexGroups, out VariationController objectVariations)
+    private static bool ReadMeshInfo(SetSRT objectVariationCallback, out float[] outVerts, out int floatsPerVertex, out List<VertexGroup> vertexGroups, out VariationController objectVariations)
     {
         outVerts = null;
         floatsPerVertex = 0;
@@ -383,7 +388,7 @@ static class CustomIO
         uint numGroups = 0;
         if (!ReadMeshHeader(out numVerts, out floatsPerVertex)) { Debug.Log("ERROR: Failed to ReadMeshInfo! Failed to ReadMeshHeader!\n"); return false; }
         if (!ReadMeshVerts(out outVerts, numVerts * floatsPerVertex)) { Debug.Log("ERROR: Failed to ReadMeshInfo! Failed to ReadMeshVerts!\n"); ClearVertexData(out outVerts); return false; }
-        if (!ReadObjectLevelVariations(out objectVariations, obj.SetSRT)) { Debug.Log("ERROR: Failed to ReadMeshInfo! Failed to ReadObjectLevelVariations!\n"); ClearVertexData(out outVerts); return false; }
+        if (!ReadObjectLevelVariations(out objectVariations, objectVariationCallback)) { Debug.Log("ERROR: Failed to ReadMeshInfo! Failed to ReadObjectLevelVariations!\n"); ClearVertexData(out outVerts); return false; }
         if (!ReadVertexGroupHeader(out numGroups)) { Debug.Log("ERROR: Failed to ReadMeshInfo! Failed to ReadVertexGroupHeader!\n"); ClearVertexData(out outVerts); return false; }
         if (!ReadVertexGroupData(out vertexGroups, numGroups)) { Debug.Log("ERROR: Failed to ReadMeshInfo! Failed to ReadVertexGroupData!\n"); ClearVertexData(out outVerts); ClearVertexGroups(vertexGroups); return false; }
         return true;
@@ -525,7 +530,7 @@ static class HookerUpper
 {
     private static int[] s_indices;
 
-    public static void InitIndices(Mesh mesh, int vertexCount)
+    public static void InitIndices(int vertexCount)
     {
         s_indices = new int[vertexCount];
 
@@ -541,6 +546,39 @@ static class HookerUpper
         mesh.vertices = positions;
         mesh.normals = normals;
         mesh.triangles = s_indices;
+    }
+
+    public static void VaryModel(Mesh mesh, int numVertices, float[] baseVerts, VariationController objectVariations, List<VertexGroup> vertexGroups)
+    {
+        const int fpv = 10;
+        const int normalOffset = 7;
+
+        Vector3[] positions = new Vector3[numVertices];
+        Vector3[] normals = new Vector3[numVertices];
+
+        VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, numVertices, fpv, 7, baseVerts);
+
+        objectVariations.Vary();
+        for (int i = 0; i < vertexGroups.Count; ++i)
+        {
+            vertexGroups[i].Vary();
+
+            Matrix4x4 mtw = vertexGroups[i].CalcMTW();
+            Matrix4x4 inverseTranspose = mtw.transpose.inverse;
+            Vector3 pivot = vertexGroups[i].GetPivot();
+
+            int indicesInVerteXGroup = vertexGroups[i].NumIndices();
+            for (int j = 0; j < indicesInVerteXGroup; ++j)
+            {
+                int vertIdx = vertexGroups[i].IndexAt(j);
+                int posIdx = vertIdx * fpv;
+                int normIdx = posIdx + normalOffset;
+                positions[vertIdx] = mtw.MultiplyPoint3x4(new Vector3(baseVerts[posIdx + 0], baseVerts[posIdx + 1], baseVerts[posIdx + 2]) - pivot) + pivot;
+                normals[vertIdx] = inverseTranspose.MultiplyVector(new Vector3(baseVerts[normIdx + 0], baseVerts[normIdx + 1], baseVerts[normIdx + 2]));
+            }
+        }
+
+        HookerUpper.SetMeshValues(mesh, positions, normals);
     }
 }
 
@@ -577,80 +615,59 @@ public class CapstoneGenerator : MonoBehaviour {
     [SerializeField] private Material m_meshMat;
 
     private string m_filePath;
-    private GameObjectSRT m_objToVary;
-    private GameObject m_objToDisplay;
     private Renderer m_renderer;
-    private Mesh m_mesh;
     private float[] m_baseVerts;
     private List<VertexGroup> m_vertexGroups;
     private VariationController m_objectVariations;
     private int m_numVertices = 0;
+    private int m_floatsPerVertex = 0;
+    private int m_normalOffset = 7;
 
-	// Use this for initialization
-	void Start () {
-        m_objToDisplay = new GameObject();
-        m_objToDisplay.transform.parent = transform;
-        m_objToVary = new GameObjectSRT();
-        m_objToVary.SetObject(m_objToDisplay);
-
-        m_objToDisplay.AddComponent<MeshFilter>();
-        m_objToDisplay.AddComponent<MeshRenderer>();
-        m_renderer = m_objToDisplay.GetComponent<MeshRenderer>();
-        m_renderer.material = m_meshMat;
-        m_mesh = m_objToDisplay.GetComponent<MeshFilter>().mesh;
-       
-        m_filePath = Application.dataPath + "/Capstone/" + m_fileName;
-        int fpv;
-        CustomIO.LoadBaseMesh(m_filePath, m_objToVary, out m_baseVerts, out fpv, out m_vertexGroups, out m_objectVariations);
-
-        m_numVertices = m_baseVerts.Length / fpv;
-
-        HookerUpper.InitIndices(m_mesh, m_numVertices);
-        Vector3[] positions, normals;
-        VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, m_numVertices, fpv, 7, m_baseVerts);
-        HookerUpper.SetMeshValues(m_mesh, positions, normals);
+    private void NullSetSRT(Vector3 s, Vector3 r, Vector3 t)
+    {
+        Debug.Log("SET SRT CALLBACK NOT SET!\n");
     }
 
+    private void Awake()
+    {
+        m_filePath = Application.dataPath + "/Capstone/" + m_fileName;
+        CustomIO.LoadBaseMesh(m_filePath, NullSetSRT, out m_baseVerts, out m_floatsPerVertex, out m_vertexGroups, out m_objectVariations);
+        m_numVertices = m_baseVerts.Length / m_floatsPerVertex;
+
+        HookerUpper.InitIndices(m_numVertices);
+    }
+    public GameObject MakeInstance()
+    {
+        GameObject display = new GameObject();
+        GameObjectSRT toVary = new GameObjectSRT();
+        toVary.SetObject(display);
+
+        display.AddComponent<MeshFilter>();
+        display.AddComponent<MeshRenderer>();
+        m_renderer = display.GetComponent<MeshRenderer>();
+        m_renderer.material = m_meshMat;
+        Mesh mesh = display.GetComponent<MeshFilter>().mesh;
+
+        //Vector3[] positions, normals;
+        //VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, m_numVertices, m_floatsPerVertex, m_normalOffset, m_baseVerts);
+        //HookerUpper.SetMeshValues(mesh, positions, normals);
+
+        HookerUpper.VaryModel(mesh, m_numVertices, m_baseVerts, m_objectVariations, m_vertexGroups);
+        return display;
+    }
+
+    int m_idx;
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            VaryModel();
+            GameObject made = MakeInstance();
+            made.transform.parent = transform;
+            made.transform.position += m_idx * Vector3.right * 15.0f;
+            m_idx++;
         }
     }
 
-    private void VaryModel()
-    {
-        const int fpv = 10;
-        const int normalOffset = 7;
-
-        Vector3[] positions = new Vector3[m_numVertices];
-        Vector3[] normals = new Vector3[m_numVertices];
-
-        VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, m_numVertices, fpv, 7, m_baseVerts);
-
-        m_objectVariations.Vary();
-        for (int i = 0; i < m_vertexGroups.Count; ++i)
-        {
-            m_vertexGroups[i].Vary();
-
-            Matrix4x4 mtw = m_vertexGroups[i].CalcMTW();
-            Matrix4x4 inverseTranspose = mtw.transpose.inverse;
-            Vector3 pivot = m_vertexGroups[i].GetPivot();
-
-            int indicesInVerteXGroup = m_vertexGroups[i].NumIndices();
-            for (int j = 0; j < indicesInVerteXGroup; ++j)
-            {
-                int vertIdx = m_vertexGroups[i].IndexAt(j);
-                int posIdx = vertIdx * fpv;
-                int normIdx = posIdx + normalOffset;
-                positions[vertIdx] = mtw.MultiplyPoint3x4(new Vector3(m_baseVerts[posIdx + 0], m_baseVerts[posIdx + 1], m_baseVerts[posIdx + 2]) - pivot) + pivot;
-                normals[vertIdx] = inverseTranspose.MultiplyVector(new Vector3(m_baseVerts[normIdx + 0], m_baseVerts[normIdx + 1], m_baseVerts[normIdx + 2]));
-            }
-        }
-
-        HookerUpper.SetMeshValues(m_mesh, positions, normals);
-    }
 
 }
 
