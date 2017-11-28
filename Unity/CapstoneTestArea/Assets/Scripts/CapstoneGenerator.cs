@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 
 delegate void SetSRT(Vector3 s, Vector3 r, Vector3 t);
+delegate void VaryFunc();
 
 #region Variations
 
@@ -108,6 +109,13 @@ class VariationController
         m_highTranslation = ht;
         m_variationType = vt;
         m_setCallback = callback;
+        m_varyFuncs = new VaryFunc[] { VaryComponentUniform,
+                                       VaryVectorUniform,
+                                       VarySmoothUniform,
+                                       VaryComponentBellApproximation,
+                                       VaryVectorBellApproximation,
+                                       VarySmoothBellApproximation };
+
     }
 
     private Vector3 m_lowScale;
@@ -116,8 +124,15 @@ class VariationController
     private Vector3 m_highScale;
     private Vector3 m_highTranslation;
     private Vector3 m_highRotation;
+    private Matrix4x4 m_mtw;
     private VariationType m_variationType;
     private SetSRT m_setCallback;
+    private VaryFunc[] m_varyFuncs;
+
+    public void Vary()
+    {
+        m_varyFuncs[(int)(m_variationType)]();
+    }
 
     public void VaryVectorUniform()
     {
@@ -169,9 +184,6 @@ class VariationController
     public void ClearVariations()
     {
         m_setCallback(Vector3.one, Vector3.zero, Vector3.zero);
-        //SaveLow();
-        //SaveHigh();
-        //CallChanged(ASSUME_SINGLE_INSTANCE);
     }
 }
 
@@ -187,6 +199,32 @@ class VertexGroup
     private Vector3 m_translation;
     private VariationController m_variation;
     private List<int> m_indices;
+
+    public VertexGroup()
+    {
+        m_scale = Vector3.one;
+        m_rotation = Vector3.zero;
+        m_translation = Vector3.zero;
+        m_pivot = Vector3.zero;
+    }
+
+    public VertexGroup(Vector3 scale, Vector3 rotation, Vector3 translation, Vector3 pivot)
+    {
+        m_scale = scale;
+        m_rotation = rotation;
+        m_translation = translation;
+        m_pivot = pivot;
+    }
+
+    public Vector3 GetPivot()
+    {
+        return m_pivot;
+    }
+
+    public void SetPivot(Vector3 pivot)
+    {
+        m_pivot = pivot;
+    }
 
     public void SetScaleRotationTranslation(Vector3 scale, Vector3 rotation, Vector3 translation)
     {
@@ -204,6 +242,11 @@ class VertexGroup
     public void SetIndices(List<int> indices)
     {
         m_indices = indices;
+    }
+
+    public void SetVariation(VariationController variation)
+    {
+        m_variation = variation;
     }
 
 }
@@ -407,11 +450,11 @@ static class CustomIO
         Vector3 p = new Vector3(s_reader.ReadSingle(), s_reader.ReadSingle(), s_reader.ReadSingle());
         valuesImportantInEditorButNotHere = s_reader.ReadSingle();
 
-        vertexGroup = new VertexGroup();
-        vertexGroup.SetScaleRotationTranslation(s, r, t);
+        vertexGroup = new VertexGroup(s, r, t, p);
 
         VariationController vc;
         if (!ReadVariationData(out vc, vertexGroup.SetScaleRotationTranslation)) { return false; }
+        vertexGroup.SetVariation(vc);
 
         List<int> indices;
         if (!ReadVertexGroupIndices(out indices)) { return false; }
@@ -487,6 +530,35 @@ static class HookerUpper
 
 #endregion
 
+#region VariationMath
+
+static class VariationMath
+{
+    public static void OffsetTransformVertsIntoArray(Vector3 offset, Matrix4x4 transform, float[] array, int vertexCount, int floatsPerVertex, int normalIdx, float[] vertices)
+	{
+		for (int i = 0; i< vertexCount; ++i)
+		{
+			int floatIdx = floatsPerVertex * i;
+            Vector3 v = offset + transform.MultiplyPoint3x4(new Vector3(vertices[floatIdx + 0], vertices[floatIdx + 1], vertices[floatIdx + 2]));
+            array[floatIdx + 0] = v.x;
+            array[floatIdx + 1] = v.y;
+            array[floatIdx + 2] = v.z;
+		}
+
+        Matrix4x4 inverseTranspose = transform.transpose.inverse;
+		for (int i = 0; i < vertexCount; ++i)
+		{
+			int floatIdx = floatsPerVertex * i + normalIdx;
+            Vector3 v = inverseTranspose.MultiplyVector(new Vector3(vertices[floatIdx + 0], vertices[floatIdx + 1], vertices[floatIdx + 2]));
+            array[floatIdx + 0] = v.x;
+            array[floatIdx + 1] = v.y;
+            array[floatIdx + 2] = v.z;
+		}
+	}
+}
+
+#endregion
+
 #region Script
 
 public class CapstoneGenerator : MonoBehaviour {
@@ -499,6 +571,7 @@ public class CapstoneGenerator : MonoBehaviour {
     private Renderer m_renderer;
     private Mesh m_mesh;
     private float[] m_baseVerts;
+    private float[] m_verts;
     private List<VertexGroup> m_vertexGroups;
     private VariationController m_objectVariations;
 
@@ -519,6 +592,8 @@ public class CapstoneGenerator : MonoBehaviour {
         int fpv;
         CustomIO.LoadBaseMesh(m_filePath, m_objToVary, out m_baseVerts, out fpv, out m_vertexGroups, out m_objectVariations);
         HookerUpper.PCNToMesh(m_mesh, m_baseVerts);
+
+        m_verts = new float[m_baseVerts.Length];
     }
 
     private void Update()
@@ -531,7 +606,11 @@ public class CapstoneGenerator : MonoBehaviour {
 
     private void VaryModel()
     {
-        
+        const int fpv = 10;
+        const int normalIdx = 7;
+        m_objectVariations.Vary();
+        //VariationMath.OffsetTransformVertsIntoArray(Vector3.zero, Matrix4x4.identity, m_verts, m_verts.Length / fpv, fpv, normalIdx, m_baseVerts);
+        //HookerUpper.PCNToMesh(m_mesh, m_verts);
     }
 
 }
