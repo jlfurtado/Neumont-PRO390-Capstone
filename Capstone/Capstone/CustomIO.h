@@ -60,18 +60,30 @@ namespace Capstone
 		template<typename T>
 		static bool Write(const T *pData);
 
+		template<>
+		static bool Write(const DirectX::XMVECTOR *pData);
+
 		template<typename T>
 		static bool Read(T *pData);
+
+		template<>
+		static bool Read(DirectX::XMVECTOR *pData);
 
 		template<typename T>
 		static bool WriteArray(const T *pArray, unsigned count);
 
+		template<>
+		static bool WriteArray(const DirectX::XMVECTOR *pData, unsigned count);
+
 		template<typename T>
 		static bool ReadArray(T *pArray, unsigned count);
 
+		template<>
+		static bool ReadArray(DirectX::XMVECTOR *pData, unsigned count);
+
 		static const int FORMAT_CHECK_DATA_SIZE = 37;
 		static const char FORMAT_CHECK_DATA[FORMAT_CHECK_DATA_SIZE];
-		static const int FORMAT_VERSION = 1;
+		static const int FORMAT_VERSION = 2;
 		static std::ifstream s_inputFile;
 		static std::ofstream s_outputFile;
 	};
@@ -82,10 +94,35 @@ namespace Capstone
 		return WriteArray(pData, 1);
 	}
 
+	template<>
+	inline bool CustomIO::Write(const DirectX::XMVECTOR * pData)
+	{
+		static const int NUM_FLOATS = 4;
+		float vec[NUM_FLOATS]{ 0.0f };
+
+		vec[0] = DirectX::XMVectorGetX(*pData);
+		vec[1] = DirectX::XMVectorGetY(*pData);
+		vec[2] = DirectX::XMVectorGetZ(*pData);
+		vec[3] = DirectX::XMVectorGetW(*pData);
+
+		return WriteArray(&vec[0], NUM_FLOATS);
+	}
+
 	template<typename T>
 	inline bool CustomIO::Read(T * pData)
 	{
 		return ReadArray(pData, 1);
+	}
+
+	template<>
+	inline bool CustomIO::Read(DirectX::XMVECTOR * pData)
+	{
+		static const int NUM_FLOATS = 4;
+		float vec[NUM_FLOATS]{ 0.0f };
+		if (!ReadArray(&vec[0], NUM_FLOATS)) { return false; }
+
+		*pData = DirectX::XMVectorSet(vec[0], vec[1], vec[2], vec[3]);
+		return true;
 	}
 
 	template<typename T>
@@ -95,11 +132,33 @@ namespace Capstone
 		return !s_outputFile.fail();
 	}
 
+	template<>
+	inline bool CustomIO::WriteArray(const DirectX::XMVECTOR * pData, unsigned count)
+	{
+		for (unsigned i = 0; i < count; ++i)
+		{
+			if (!Write(pData + i)) { return false; }
+		}
+
+		return true;
+	}
+
 	template<typename T>
 	inline bool CustomIO::ReadArray(T * pArray, unsigned count)
 	{
 		s_inputFile.read(reinterpret_cast<char *>(pArray), sizeof(T) * count);
 		return !s_inputFile.fail();
+	}
+
+	template<>
+	inline bool CustomIO::ReadArray(DirectX::XMVECTOR * pData, unsigned count)
+	{
+		for (unsigned i = 0; i < count; ++i)
+		{
+			if (!Read(pData + i)) { return false; }
+		}
+
+		return true;
 	}
 }
 
