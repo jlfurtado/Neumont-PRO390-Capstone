@@ -671,23 +671,7 @@ public class CapstoneGenerator : MonoBehaviour {
         HookerUpper.VaryModel(reference.m_mesh, m_numVertices, m_baseVerts, m_objectVariations, m_vertexGroups);
     }
 
-    private void Update()
-    {
-        //if (Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    GameObject made = MakeInstance();
-        //    made.transform.parent = transform;
-        //    made.transform.position += (m_componentRefs.Count - 1) * Vector3.right * 15.0f;
-        //}
-
-        if (Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            Regen();
-        }
-
-    }
-
-    private void Regen()
+    public void Regen()
     {
         if (!m_regening) { StartCoroutine(ReMakeObjects()); }
     }
