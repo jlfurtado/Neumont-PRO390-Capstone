@@ -613,15 +613,25 @@ static class VariationMath
 public class CapstoneGenerator : MonoBehaviour {
     [SerializeField] private string m_fileName = "1.txt";
     [SerializeField] private Material m_meshMat;
+    [SerializeField] [Range(0, 10000)] private int m_listPresize;
 
     private string m_filePath;
-    private Renderer m_renderer;
     private float[] m_baseVerts;
     private List<VertexGroup> m_vertexGroups;
     private VariationController m_objectVariations;
     private int m_numVertices = 0;
     private int m_floatsPerVertex = 0;
     private int m_normalOffset = 7;
+    private bool m_regening = false;
+
+    struct ComponentRef
+    {
+        public GameObjectSRT m_gameObjectSRT;
+        public Renderer m_renderer;
+        public Mesh m_mesh;
+    }
+
+    private List<ComponentRef> m_componentRefs;
 
     private void NullSetSRT(Vector3 s, Vector3 r, Vector3 t)
     {
@@ -635,40 +645,67 @@ public class CapstoneGenerator : MonoBehaviour {
         m_numVertices = m_baseVerts.Length / m_floatsPerVertex;
 
         HookerUpper.InitIndices(m_numVertices);
+        m_componentRefs = new List<ComponentRef>(m_listPresize);
     }
+
     public GameObject MakeInstance()
     {
+        ComponentRef compRef = new ComponentRef();
         GameObject display = new GameObject();
         GameObjectSRT toVary = new GameObjectSRT();
         toVary.SetObject(display);
 
-        display.AddComponent<MeshFilter>();
-        display.AddComponent<MeshRenderer>();
-        m_renderer = display.GetComponent<MeshRenderer>();
-        m_renderer.material = m_meshMat;
-        Mesh mesh = display.GetComponent<MeshFilter>().mesh;
-
-        //Vector3[] positions, normals;
-        //VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, m_numVertices, m_floatsPerVertex, m_normalOffset, m_baseVerts);
-        //HookerUpper.SetMeshValues(mesh, positions, normals);
-
-        HookerUpper.VaryModel(mesh, m_numVertices, m_baseVerts, m_objectVariations, m_vertexGroups);
+        compRef.m_mesh = display.AddComponent<MeshFilter>().mesh;
+        compRef.m_renderer = display.AddComponent<MeshRenderer>();
+        compRef.m_gameObjectSRT = toVary;
+        
+        MakeMesh(compRef);
+        m_componentRefs.Add(compRef);
         return display;
     }
 
-    int m_idx;
-    private void Update()
+    private void MakeMesh(ComponentRef reference)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GameObject made = MakeInstance();
-            made.transform.parent = transform;
-            made.transform.position += m_idx * Vector3.right * 15.0f;
-            m_idx++;
-        }
+        reference.m_renderer.material = m_meshMat;
+        m_objectVariations.SetCallback(reference.m_gameObjectSRT.SetSRT);
+        HookerUpper.VaryModel(reference.m_mesh, m_numVertices, m_baseVerts, m_objectVariations, m_vertexGroups);
     }
 
+    private void Update()
+    {
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    GameObject made = MakeInstance();
+        //    made.transform.parent = transform;
+        //    made.transform.position += (m_componentRefs.Count - 1) * Vector3.right * 15.0f;
+        //}
 
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            Regen();
+        }
+
+    }
+
+    private void Regen()
+    {
+        if (!m_regening) { StartCoroutine(ReMakeObjects()); }
+    }
+
+    private IEnumerator ReMakeObjects()
+    {
+        m_regening = true;
+
+        for (int i = 0; i < m_componentRefs.Count; ++i)
+        {
+            Vector3 loc = m_componentRefs[i].m_gameObjectSRT.GetObject().transform.position;
+            MakeMesh(m_componentRefs[i]);
+            m_componentRefs[i].m_gameObjectSRT.GetObject().transform.position = loc;
+            yield return null;
+        }
+
+        m_regening = false;
+    }
 }
 
 #endregion
