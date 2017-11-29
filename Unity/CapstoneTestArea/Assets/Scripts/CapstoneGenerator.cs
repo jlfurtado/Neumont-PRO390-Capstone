@@ -459,6 +459,9 @@ static class CustomIO
         valuesImportantInEditorButNotHere = s_reader.ReadUInt32();
         valuesImportantInEditorButNotHere = s_reader.ReadUInt32();
 
+        lr *= Mathf.Rad2Deg;
+        hr *= Mathf.Rad2Deg;
+
         variation = new VariationController(ls, lr, lt, hs, hr, ht, vt, callback);
         return true;
     }
@@ -526,29 +529,30 @@ static class CustomIO
 
 #region HookerUpper
 
-static class HookerUpper
+class HookerUpper
 {
-    private static int[] s_indices;
+    private int[] m_indices;
 
-    public static void InitIndices(int vertexCount)
+    public void InitIndices(int vertexCount)
     {
-        s_indices = new int[vertexCount];
+        m_indices = new int[vertexCount];
 
         for (int i = 0; i < vertexCount; ++i)
         {
-            s_indices[i] = i;
+            m_indices[i] = i;
         }
     }
-    public static void SetMeshValues(Mesh mesh, Vector3[] positions, Vector3[] normals)
+
+    public void SetMeshValues(Mesh mesh, Vector3[] positions, Vector3[] normals)
     {
         mesh.Clear();
 
         mesh.vertices = positions;
         mesh.normals = normals;
-        mesh.triangles = s_indices;
+        mesh.triangles = m_indices;
     }
 
-    public static void VaryModel(Mesh mesh, int numVertices, float[] baseVerts, VariationController objectVariations, List<VertexGroup> vertexGroups)
+    public void VaryModel(Mesh mesh, int numVertices, float[] baseVerts, VariationController objectVariations, List<VertexGroup> vertexGroups)
     {
         const int fpv = 10;
         const int normalOffset = 7;
@@ -578,7 +582,7 @@ static class HookerUpper
             }
         }
 
-        HookerUpper.SetMeshValues(mesh, positions, normals);
+        SetMeshValues(mesh, positions, normals);
     }
 }
 
@@ -623,6 +627,7 @@ public class CapstoneGenerator : MonoBehaviour {
     private int m_floatsPerVertex = 0;
     private int m_normalOffset = 7;
     private bool m_regening = false;
+    private HookerUpper m_hookerUpper;
 
     struct ComponentRef
     {
@@ -640,11 +645,13 @@ public class CapstoneGenerator : MonoBehaviour {
 
     private void Awake()
     {
+        m_hookerUpper = new HookerUpper();
         m_filePath = Application.dataPath + "/Capstone/" + m_fileName;
         CustomIO.LoadBaseMesh(m_filePath, NullSetSRT, out m_baseVerts, out m_floatsPerVertex, out m_vertexGroups, out m_objectVariations);
         m_numVertices = m_baseVerts.Length / m_floatsPerVertex;
 
-        HookerUpper.InitIndices(m_numVertices);
+
+        m_hookerUpper.InitIndices(m_numVertices);
         m_componentRefs = new List<ComponentRef>(m_listPresize);
     }
 
@@ -668,7 +675,7 @@ public class CapstoneGenerator : MonoBehaviour {
     {
         reference.m_renderer.material = m_meshMat;
         m_objectVariations.SetCallback(reference.m_gameObjectSRT.SetSRT);
-        HookerUpper.VaryModel(reference.m_mesh, m_numVertices, m_baseVerts, m_objectVariations, m_vertexGroups);
+        m_hookerUpper.VaryModel(reference.m_mesh, m_numVertices, m_baseVerts, m_objectVariations, m_vertexGroups);
     }
 
     public void Regen()

@@ -9,125 +9,125 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1612755214766468}
+  m_RootGameObject: {fileID: 1477811910839934}
   m_IsPrefabParent: 1
---- !u!1 &1176440195860348
+--- !u!1 &1421486384879954
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4584810332926212}
-  - component: {fileID: 114694676025584230}
+  - component: {fileID: 4265418734810350}
+  - component: {fileID: 114081912110581956}
   m_Layer: 0
-  m_Name: TreeGenerator
+  m_Name: StarGenerator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1 &1612755214766468
+--- !u!1 &1477811910839934
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4999330113895244}
+  - component: {fileID: 4953183065190688}
   m_Layer: 0
-  m_Name: Trees
+  m_Name: Stars
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1 &1846916673261480
+--- !u!1 &1912909707268026
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4810382832692248}
-  - component: {fileID: 114976396759713180}
+  - component: {fileID: 4528255078076782}
+  - component: {fileID: 114809911110927534}
   m_Layer: 0
-  m_Name: TreePlacer
+  m_Name: StarPlacer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4584810332926212
+--- !u!4 &4265418734810350
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1176440195860348}
+  m_GameObject: {fileID: 1421486384879954}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 4999330113895244}
+  m_Father: {fileID: 4953183065190688}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &4810382832692248
+--- !u!4 &4528255078076782
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1846916673261480}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_GameObject: {fileID: 1912909707268026}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 4999330113895244}
+  m_Father: {fileID: 4953183065190688}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &4999330113895244
+--- !u!4 &4953183065190688
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1612755214766468}
+  m_GameObject: {fileID: 1477811910839934}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 4810382832692248}
-  - {fileID: 4584810332926212}
+  - {fileID: 4528255078076782}
+  - {fileID: 4265418734810350}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114694676025584230
+--- !u!114 &114081912110581956
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1176440195860348}
+  m_GameObject: {fileID: 1421486384879954}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3caf569a4c1270e4081eecd314fbdb14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_fileName: Tree.var
-  m_meshMat: {fileID: 2100000, guid: 9218dad2e8faf1a45a23be5fce374bfa, type: 2}
+  m_fileName: Star.var
+  m_meshMat: {fileID: 2100000, guid: 2d964939baa5680468c976b59e07bbff, type: 2}
   m_listPresize: 1000
---- !u!114 &114976396759713180
+--- !u!114 &114809911110927534
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1846916673261480}
+  m_GameObject: {fileID: 1912909707268026}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 51fe66c4201dd6b4dbd1a17282519cfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_generator: {fileID: 114694676025584230}
-  m_minSpawn: {x: -500, y: 0, z: -500}
-  m_maxSpawn: {x: 500, y: 0, z: 500}
-  m_boxesPerX: 25
-  m_boxesPerY: 1
-  m_boxesPerZ: 25
-  m_shrinkBox: 0.75
+  m_generator: {fileID: 114081912110581956}
+  m_minSpawn: {x: -500, y: 100, z: -500}
+  m_maxSpawn: {x: 500, y: 600, z: 500}
+  m_boxesPerX: 10
+  m_boxesPerY: 5
+  m_boxesPerZ: 10
+  m_shrinkBox: 0.8

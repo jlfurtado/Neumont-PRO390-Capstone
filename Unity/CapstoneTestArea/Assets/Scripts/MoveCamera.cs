@@ -21,8 +21,9 @@ public class MoveCamera : MonoBehaviour {
         {
             m_rot.y += Input.GetAxis("Mouse X") * Time.deltaTime * m_rotSpeed;
             m_rot.x -= Input.GetAxis("Mouse Y") * Time.deltaTime * m_rotSpeed;
-
-            transform.rotation = Quaternion.Euler(m_rot);
         }
+
+        transform.rotation = Quaternion.Euler(m_rot);
+
     }
 }
