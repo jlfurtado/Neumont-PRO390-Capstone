@@ -227,7 +227,7 @@ namespace Capstone
 		RenderMesh();
 		RenderPivot();
 		if (m_clicked) { RenderUtils(); }
-		//RenderFrustum();
+		if (m_displayFrustum) { RenderFrustum(); }
 
 		m_swapChain->Present(0, 0);
 	}
@@ -867,8 +867,13 @@ namespace Capstone
 					m_mesh.SelectVerticesInFrustum(mouseFrustum);
 				}
 
-				//FrustumVertsFromFrustum(mouseFrustum);
+				if (m_displayFrustum) { FrustumVertsFromFrustum(mouseFrustum); }
 			}
 		}
+	}
+
+	void Editor::ToggleDebugFrustum()
+	{
+		m_displayFrustum = !m_displayFrustum;
 	}
 }

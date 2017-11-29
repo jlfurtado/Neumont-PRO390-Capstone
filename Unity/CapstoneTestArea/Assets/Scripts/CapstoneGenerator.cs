@@ -309,16 +309,16 @@ public class GameObjectSRT
 
 static class CustomIO
 {
-    public static bool LoadBaseMesh(string filePath, SetSRT objectVariationCallback, out float[] verts, out int floatsPerVertex, out List<VertexGroup> vertexGroups, out VariationController objectVariations)
+    public static bool LoadBaseMesh(string resourceName, SetSRT objectVariationCallback, out float[] verts, out int floatsPerVertex, out List<VertexGroup> vertexGroups, out VariationController objectVariations)
     {
         verts = null;
         floatsPerVertex = 0;
         vertexGroups = null;
         objectVariations = null;
 
-        if (!OpenInputFile(filePath))
+        if (!OpenInputFile(resourceName))
         {
-            Debug.Log("ERROR: Failed to ReadMeshFromFile! Could not open input file [" + filePath + "]!");
+            Debug.Log("ERROR: Failed to ReadMeshFromFile! Could not open resource file [" + resourceName + "]!");
             return false;
         }
 
@@ -351,11 +351,15 @@ static class CustomIO
         return true;
     }
 
-    private static bool OpenInputFile(string filePath)
+    private static bool OpenInputFile(string resourceName)
     {
-        if (!File.Exists(filePath)) { return false; }
-        s_reader = new BinaryReader(File.Open(filePath, FileMode.Open));
+        TextAsset asset = Resources.Load(resourceName) as TextAsset;
+        Stream s = new MemoryStream(asset.bytes);
+        s_reader = new BinaryReader(s);
         return true;
+        //if (!File.Exists(filePath)) { return false; }
+        //s_reader = new BinaryReader(File.Open(filePath, FileMode.Open));
+        //return true;
     }
 
     private static bool CloseInputFile()
@@ -621,7 +625,6 @@ public class CapstoneGenerator : MonoBehaviour {
     [SerializeField] private Color m_minColor;
     [SerializeField] private Color m_maxColor;
 
-    private string m_filePath;
     private float[] m_baseVerts;
     private List<VertexGroup> m_vertexGroups;
     private VariationController m_objectVariations;
@@ -648,8 +651,7 @@ public class CapstoneGenerator : MonoBehaviour {
     private void Awake()
     {
         m_hookerUpper = new HookerUpper();
-        m_filePath = Application.dataPath + "/Capstone/" + m_fileName;
-        CustomIO.LoadBaseMesh(m_filePath, NullSetSRT, out m_baseVerts, out m_floatsPerVertex, out m_vertexGroups, out m_objectVariations);
+        CustomIO.LoadBaseMesh(m_fileName, NullSetSRT, out m_baseVerts, out m_floatsPerVertex, out m_vertexGroups, out m_objectVariations);
         m_numVertices = m_baseVerts.Length / m_floatsPerVertex;
 
 

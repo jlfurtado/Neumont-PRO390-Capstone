@@ -46,6 +46,7 @@ namespace Capstone
 			bool ClearVertexGroups();
 			bool ExportCurrentMeshObj(const char *const filePath);
 			bool ExportVariedMeshesObj(int count, const char *const filePath);
+			void ToggleDebugFrustum();
 
 	private:
 		void ReSendUtilVerticesSameBuffer();
@@ -114,6 +115,7 @@ namespace Capstone
 		int m_lastMouseY;
 		bool m_clicked{ false };
 		bool m_displayMode{ false };
+		bool m_displayFrustum{ false };
 
 		static const int UTIL_VERTS = 6;
 		static const int UTIL_FLOATS_PER_VERTEX = 10;

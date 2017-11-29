@@ -29,7 +29,8 @@ namespace Capstone
 		{"display2DVariants", "(numVariants1) (numVariants2) offset1:(x y z) offset2:(x y z)", CommandProcessor::ProcessDisplayVariants2DCommand, "sets the number of variants of the model to display and displays them in a 2 dimmensional manner." },
 		{"resumeEdit", nullptr, CommandProcessor::ProcessResumeEditCommand, "resumes editing of the model variations, exits display only mode."},
 		{"exportCurrentMeshObj", "(filePath)", CommandProcessor::ProcessExportCurrentMeshObjCommand, "exports the current mesh vertices as-is to a .obj file."},
-		{"exportVariedMeshesObj", "(count) (filePath)", CommandProcessor::ProcessExportVariedMeshesObjCommand, "exports the specified number of varied instances of the mesh."}
+		{"exportVariedMeshesObj", "(count) (filePath)", CommandProcessor::ProcessExportVariedMeshesObjCommand, "exports the specified number of varied instances of the mesh."},
+		{"toggleDebugFrustum", nullptr, CommandProcessor::ProcessToggleDebugFrustumCommand, "Toggles the debug frustum." }
 	};
 
 	bool CommandProcessor::Initialize(EditorWindow * pWindow, Editor *pEditor)
@@ -313,5 +314,11 @@ namespace Capstone
 		const char *const arg2 = args + StringFuncs::FindSubString(args, " ") + 1;
 
 		return s_pEditor->ExportVariedMeshesObj(numInstances, arg2);
+	}
+
+	bool CommandProcessor::ProcessToggleDebugFrustumCommand(const char * const /*command*/)
+	{
+		s_pEditor->ToggleDebugFrustum();
+		return true;
 	}
 }

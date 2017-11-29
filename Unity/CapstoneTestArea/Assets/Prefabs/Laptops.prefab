@@ -111,11 +111,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_generator: {fileID: 114969983875239442}
-  m_minSpawn: {x: -500, y: 0, z: -500}
-  m_maxSpawn: {x: 500, y: 0, z: 500}
-  m_boxesPerX: 40
+  m_minSpawn: {x: -400, y: 0, z: -400}
+  m_maxSpawn: {x: 400, y: 0, z: 400}
+  m_boxesPerX: 30
   m_boxesPerY: 1
-  m_boxesPerZ: 40
+  m_boxesPerZ: 30
   m_shrinkBox: 0
 --- !u!114 &114969983875239442
 MonoBehaviour:
@@ -128,7 +128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3caf569a4c1270e4081eecd314fbdb14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_fileName: Laptop.var
+  m_fileName: Laptop
   m_meshMat: {fileID: 2100000, guid: 37f46c397af41284a8c75a42c156e034, type: 2}
   m_listPresize: 1000
   m_minColor: {r: 1, g: 1, b: 1, a: 0}
