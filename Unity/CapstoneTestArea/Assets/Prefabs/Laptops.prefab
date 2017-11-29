@@ -131,3 +131,5 @@ MonoBehaviour:
   m_fileName: Laptop.var
   m_meshMat: {fileID: 2100000, guid: 37f46c397af41284a8c75a42c156e034, type: 2}
   m_listPresize: 1000
+  m_minColor: {r: 1, g: 1, b: 1, a: 0}
+  m_maxColor: {r: 0, g: 0, b: 0, a: 0}

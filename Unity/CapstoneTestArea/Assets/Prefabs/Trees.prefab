@@ -113,6 +113,8 @@ MonoBehaviour:
   m_fileName: Tree.var
   m_meshMat: {fileID: 2100000, guid: 9218dad2e8faf1a45a23be5fce374bfa, type: 2}
   m_listPresize: 1000
+  m_minColor: {r: 0, g: 1, b: 0, a: 1}
+  m_maxColor: {r: 1, g: 0.5019608, b: 0, a: 1}
 --- !u!114 &114976396759713180
 MonoBehaviour:
   m_ObjectHideFlags: 1

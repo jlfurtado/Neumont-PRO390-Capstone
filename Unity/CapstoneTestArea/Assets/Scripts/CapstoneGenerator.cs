@@ -618,6 +618,8 @@ public class CapstoneGenerator : MonoBehaviour {
     [SerializeField] private string m_fileName = "1.txt";
     [SerializeField] private Material m_meshMat;
     [SerializeField] [Range(0, 10000)] private int m_listPresize;
+    [SerializeField] private Color m_minColor;
+    [SerializeField] private Color m_maxColor;
 
     private string m_filePath;
     private float[] m_baseVerts;
@@ -674,6 +676,7 @@ public class CapstoneGenerator : MonoBehaviour {
     private void MakeMesh(ComponentRef reference)
     {
         reference.m_renderer.material = m_meshMat;
+        reference.m_renderer.material.color = Color.Lerp(m_minColor, m_maxColor, Random.Range(0.0f, 1.0f));
         m_objectVariations.SetCallback(reference.m_gameObjectSRT.SetSRT);
         m_hookerUpper.VaryModel(reference.m_mesh, m_numVertices, m_baseVerts, m_objectVariations, m_vertexGroups);
     }
@@ -681,6 +684,7 @@ public class CapstoneGenerator : MonoBehaviour {
     private void MakeBaseMesh(ComponentRef reference)
     {
         reference.m_renderer.material = m_meshMat;
+        reference.m_renderer.material.color = Color.Lerp(m_minColor, m_maxColor, 0.5f);
         m_objectVariations.SetCallback(reference.m_gameObjectSRT.SetSRT);
         Vector3[] positions, normals;
         VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, m_numVertices, m_floatsPerVertex, m_normalOffset, m_baseVerts);

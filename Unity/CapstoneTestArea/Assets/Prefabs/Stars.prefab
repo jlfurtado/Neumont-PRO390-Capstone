@@ -113,6 +113,8 @@ MonoBehaviour:
   m_fileName: Star.var
   m_meshMat: {fileID: 2100000, guid: 2d964939baa5680468c976b59e07bbff, type: 2}
   m_listPresize: 1000
+  m_minColor: {r: 1, g: 1, b: 0, a: 0}
+  m_maxColor: {r: 1, g: 0.5019608, b: 0, a: 0}
 --- !u!114 &114809911110927534
 MonoBehaviour:
   m_ObjectHideFlags: 1
