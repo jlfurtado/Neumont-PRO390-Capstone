@@ -414,6 +414,12 @@ namespace Capstone
 			// if it is a number store the number
 			if (parse.peek() >= '0' && parse.peek() <= '9')
 			{
+				if (index >= 3)
+				{
+					DebugConsole::Log("ObjLoader: Failed to AddFaceIndices for object! Currently no support for non-triangulated meshes!\n");
+					return false;
+				}
+
 				// grab and store number at proper location
 				parse >> indices[index * 3 + type];
 			}
