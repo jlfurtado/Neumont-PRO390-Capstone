@@ -240,6 +240,11 @@ Prefab:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1953463400}
+    - target: {fileID: 114602550077698426, guid: b7afa79e9a400924485c346d1d64361e,
+        type: 2}
+      propertyPath: m_Text
+      value: Boringify (100)
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b7afa79e9a400924485c346d1d64361e, type: 2}
   m_IsPrefabParent: 0
@@ -286,6 +291,11 @@ Prefab:
     - target: {fileID: 4357076833000502, guid: 721c43a49857ae147b2c85c9f4dec867, type: 2}
       propertyPath: m_RootOrder
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114969983875239442, guid: 721c43a49857ae147b2c85c9f4dec867,
+        type: 2}
+      propertyPath: m_genStep
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 721c43a49857ae147b2c85c9f4dec867, type: 2}
@@ -458,6 +468,11 @@ Prefab:
         type: 2}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: Regen
+      objectReference: {fileID: 0}
+    - target: {fileID: 114133479096245272, guid: 7db28cd4b778bf142b16fbe6cac6ba74,
+        type: 2}
+      propertyPath: m_Text
+      value: Regenerate (100)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 7db28cd4b778bf142b16fbe6cac6ba74, type: 2}
@@ -762,7 +777,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 9218dad2e8faf1a45a23be5fce374bfa, type: 2}
+  - {fileID: 2100000, guid: ed6de81673d818d41ad70212541d8391, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

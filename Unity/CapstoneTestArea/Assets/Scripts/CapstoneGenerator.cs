@@ -624,6 +624,7 @@ public class CapstoneGenerator : MonoBehaviour {
     [SerializeField] [Range(0, 10000)] private int m_listPresize;
     [SerializeField] private Color m_minColor;
     [SerializeField] private Color m_maxColor;
+    [SerializeField] private int m_genStep = 1;
 
     private float[] m_baseVerts;
     private List<VertexGroup> m_vertexGroups;
@@ -696,15 +697,15 @@ public class CapstoneGenerator : MonoBehaviour {
 
     public void Regen()
     {
-        if (!m_regening) { StartCoroutine(ReMakeObjects()); }
+        if (!m_regening) { StartCoroutine(ReMakeObjects(m_genStep)); }
     }
 
     public void BoringIfy()
     {
-        if (!m_regening) { StartCoroutine(BoringifyObjects()); }
+        if (!m_regening) { StartCoroutine(BoringifyObjects(m_genStep)); }
     }
 
-    private IEnumerator BoringifyObjects()
+    private IEnumerator BoringifyObjects(int step)
     {
         m_regening = true;
 
@@ -714,13 +715,13 @@ public class CapstoneGenerator : MonoBehaviour {
             Vector3 loc = storeTransform.position;
             MakeBaseMesh(m_componentRefs[i]);
             storeTransform.position = loc;
-            yield return null;
+            if (i % step == 0) { yield return null; }
         }
 
         m_regening = false;
     }
 
-    private IEnumerator ReMakeObjects()
+    private IEnumerator ReMakeObjects(int step)
     {
         m_regening = true;
 
@@ -730,7 +731,7 @@ public class CapstoneGenerator : MonoBehaviour {
             Vector3 loc = storeTransform.position;
             MakeMesh(m_componentRefs[i]);
             storeTransform.position = loc;
-            yield return null;
+            if (i % step == 0) { yield return null; }
         }
 
         m_regening = false;

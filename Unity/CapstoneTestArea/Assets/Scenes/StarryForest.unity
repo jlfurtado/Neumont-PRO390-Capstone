@@ -147,6 +147,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 114694676025584230, guid: 8509582949f068e46886200264c7cac5,
+        type: 2}
+      propertyPath: m_genStep
+      value: 100
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8509582949f068e46886200264c7cac5, type: 2}
   m_IsPrefabParent: 0
@@ -292,6 +297,11 @@ Prefab:
         type: 2}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 114133479096245272, guid: 7db28cd4b778bf142b16fbe6cac6ba74,
+        type: 2}
+      propertyPath: m_Text
+      value: Regenerate (100)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 7db28cd4b778bf142b16fbe6cac6ba74, type: 2}
@@ -744,6 +754,13 @@ Prefab:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
       value: BoringIfy
       objectReference: {fileID: 0}
+    - target: {fileID: 114602550077698426, guid: b7afa79e9a400924485c346d1d64361e,
+        type: 2}
+      propertyPath: m_Text
+      value: 'Boringify (100)
+
+'
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b7afa79e9a400924485c346d1d64361e, type: 2}
   m_IsPrefabParent: 0
@@ -979,6 +996,11 @@ Prefab:
     - target: {fileID: 4953183065190688, guid: 70e934919b0b3694b8809e0db55909ef, type: 2}
       propertyPath: m_RootOrder
       value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 114081912110581956, guid: 70e934919b0b3694b8809e0db55909ef,
+        type: 2}
+      propertyPath: m_genStep
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 70e934919b0b3694b8809e0db55909ef, type: 2}

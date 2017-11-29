@@ -402,6 +402,13 @@ Prefab:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1953463400}
+    - target: {fileID: 114602550077698426, guid: b7afa79e9a400924485c346d1d64361e,
+        type: 2}
+      propertyPath: m_Text
+      value: 'Boringify (10)
+
+'
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b7afa79e9a400924485c346d1d64361e, type: 2}
   m_IsPrefabParent: 0
@@ -513,6 +520,11 @@ Prefab:
     - target: {fileID: 4368674321496690, guid: 4cbf71eb212549b4583834d064cb76c7, type: 2}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114314508781680810, guid: 4cbf71eb212549b4583834d064cb76c7,
+        type: 2}
+      propertyPath: m_genStep
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4cbf71eb212549b4583834d064cb76c7, type: 2}
@@ -833,6 +845,11 @@ Prefab:
         type: 2}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: Regen
+      objectReference: {fileID: 0}
+    - target: {fileID: 114133479096245272, guid: 7db28cd4b778bf142b16fbe6cac6ba74,
+        type: 2}
+      propertyPath: m_Text
+      value: Regenerate (10)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 7db28cd4b778bf142b16fbe6cac6ba74, type: 2}

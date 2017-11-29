@@ -147,6 +147,93 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 1769099309930410, guid: f744aa2d3bb54cb4ab0da0df0c9912fb, type: 2}
+      propertyPath: m_Name
+      value: Objs
+      objectReference: {fileID: 0}
+    - target: {fileID: 1606783735308956, guid: f744aa2d3bb54cb4ab0da0df0c9912fb, type: 2}
+      propertyPath: m_Name
+      value: ObjPlacer
+      objectReference: {fileID: 0}
+    - target: {fileID: 1702389316299490, guid: f744aa2d3bb54cb4ab0da0df0c9912fb, type: 2}
+      propertyPath: m_Name
+      value: ObjGenerator
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_fileName
+      value: Sword
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_minColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_minColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_minColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_maxColor.r
+      value: 0.5019608
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_maxColor.g
+      value: 0.5019608
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_maxColor.b
+      value: 0.5019608
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_maxColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114584975966134046, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_minColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114859523268188006, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_boxesPerX
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 114859523268188006, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_boxesPerZ
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 114859523268188006, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_minSpawn.x
+      value: -100
+      objectReference: {fileID: 0}
+    - target: {fileID: 114859523268188006, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_minSpawn.z
+      value: -100
+      objectReference: {fileID: 0}
+    - target: {fileID: 114859523268188006, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_maxSpawn.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 114859523268188006, guid: f744aa2d3bb54cb4ab0da0df0c9912fb,
+        type: 2}
+      propertyPath: m_maxSpawn.z
+      value: 100
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: f744aa2d3bb54cb4ab0da0df0c9912fb, type: 2}
   m_IsPrefabParent: 0
