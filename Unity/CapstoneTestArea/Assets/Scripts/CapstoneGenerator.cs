@@ -678,9 +678,40 @@ public class CapstoneGenerator : MonoBehaviour {
         m_hookerUpper.VaryModel(reference.m_mesh, m_numVertices, m_baseVerts, m_objectVariations, m_vertexGroups);
     }
 
+    private void MakeBaseMesh(ComponentRef reference)
+    {
+        reference.m_renderer.material = m_meshMat;
+        m_objectVariations.SetCallback(reference.m_gameObjectSRT.SetSRT);
+        Vector3[] positions, normals;
+        VariationMath.OffsetTransformVertsIntoArrays(Vector3.zero, Matrix4x4.identity, out positions, out normals, m_numVertices, m_floatsPerVertex, m_normalOffset, m_baseVerts);
+        m_hookerUpper.SetMeshValues(reference.m_mesh, positions, normals);
+        m_objectVariations.ClearVariations();
+    }
+
     public void Regen()
     {
         if (!m_regening) { StartCoroutine(ReMakeObjects()); }
+    }
+
+    public void BoringIfy()
+    {
+        if (!m_regening) { StartCoroutine(BoringifyObjects()); }
+    }
+
+    private IEnumerator BoringifyObjects()
+    {
+        m_regening = true;
+
+        for (int i = 0; i < m_componentRefs.Count; ++i)
+        {
+            Transform storeTransform = m_componentRefs[i].m_gameObjectSRT.GetObject().transform;
+            Vector3 loc = storeTransform.position;
+            MakeBaseMesh(m_componentRefs[i]);
+            storeTransform.position = loc;
+            yield return null;
+        }
+
+        m_regening = false;
     }
 
     private IEnumerator ReMakeObjects()
@@ -689,9 +720,10 @@ public class CapstoneGenerator : MonoBehaviour {
 
         for (int i = 0; i < m_componentRefs.Count; ++i)
         {
-            Vector3 loc = m_componentRefs[i].m_gameObjectSRT.GetObject().transform.position;
+            Transform storeTransform = m_componentRefs[i].m_gameObjectSRT.GetObject().transform;
+            Vector3 loc = storeTransform.position;
             MakeMesh(m_componentRefs[i]);
-            m_componentRefs[i].m_gameObjectSRT.GetObject().transform.position = loc;
+            storeTransform.position = loc;
             yield return null;
         }
 
