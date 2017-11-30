@@ -30,6 +30,11 @@ public class SceneMover : MonoBehaviour {
         SceneManager.LoadScene(Scenes.TEAPOT);
     }
 
+    public void Exit()
+    {
+        Application.Quit();
+    }
+
     private void KeepTagged(string tag)
     {
         GameObject tagged = GameObject.FindGameObjectWithTag(tag);

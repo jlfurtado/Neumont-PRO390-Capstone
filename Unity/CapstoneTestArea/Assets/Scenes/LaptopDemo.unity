@@ -935,6 +935,48 @@ RectTransform:
   m_PrefabParentObject: {fileID: 224453682411569884, guid: 47a685ea3556b2142bb6a6ea846ed9d0,
     type: 2}
   m_PrefabInternal: {fileID: 1293461054}
+--- !u!1001 &1623182109
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4619313619793590, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4619313619793590, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4619313619793590, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4619313619793590, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4619313619793590, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4619313619793590, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4619313619793590, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4619313619793590, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+      propertyPath: m_RootOrder
+      value: 6
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: a0898a884e01f07449c2aefae1779ee6, type: 2}
+  m_IsPrefabParent: 0
 --- !u!114 &1953463400 stripped
 MonoBehaviour:
   m_PrefabParentObject: {fileID: 114969983875239442, guid: 721c43a49857ae147b2c85c9f4dec867,
