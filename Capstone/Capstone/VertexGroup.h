@@ -39,9 +39,8 @@ namespace Capstone
 		VariationController m_variation;
 		std::vector<int> m_vertexIndices;
 
-
 		static void LogNotSet(void *);
-
 		friend class CustomIO;
 	};
+
 }

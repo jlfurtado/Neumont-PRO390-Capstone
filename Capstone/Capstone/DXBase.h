@@ -24,6 +24,9 @@ namespace Capstone
 		void EnableBlend();
 		void DisableBlend();
 
+		void EnableCulling();
+		void DisableCulling();
+
 		template<typename T>
 		static void SafeRelease(T *&pUnknown)
 		{
@@ -53,5 +56,8 @@ namespace Capstone
 
 		ID3D11BlendState* m_alphaEnableBlendingState = 0;
 		ID3D11BlendState* m_alphaDisableBlendingState = 0;
+
+		ID3D11RasterizerState* m_cullOnState = 0;
+		ID3D11RasterizerState* m_cullOffState = 0;
 	};
 }

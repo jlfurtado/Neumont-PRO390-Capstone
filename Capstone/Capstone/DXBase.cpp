@@ -180,6 +180,37 @@ namespace Capstone
 			return false;
 		}
 
+		// rasterizer state
+		D3D11_RASTERIZER_DESC rasterizerStateDescription;
+		MyUtils::MyClearFunc(&rasterizerStateDescription);
+
+		rasterizerStateDescription.FillMode = D3D11_FILL_SOLID;
+		rasterizerStateDescription.CullMode = D3D11_CULL_FRONT;
+		rasterizerStateDescription.FrontCounterClockwise = true;
+		rasterizerStateDescription.DepthBias = false;
+		rasterizerStateDescription.DepthBiasClamp = 0;
+		rasterizerStateDescription.SlopeScaledDepthBias = 0;
+		rasterizerStateDescription.DepthClipEnable = true;
+		rasterizerStateDescription.ScissorEnable = true;
+		rasterizerStateDescription.MultisampleEnable = false;
+		rasterizerStateDescription.AntialiasedLineEnable = false;
+		result = m_device->CreateRasterizerState(&rasterizerStateDescription, &m_cullOnState);
+		if (FAILED(result))
+		{
+			DebugConsole::Log("Failed to create the cull on rasterizer state!");
+			return false;
+		}
+
+		rasterizerStateDescription.CullMode = D3D11_CULL_NONE;
+		result = m_device->CreateRasterizerState(&rasterizerStateDescription, &m_cullOffState);
+		if (FAILED(result))
+		{
+			DebugConsole::Log("Failed to create the cull off rasterizerstate!");
+			return false;
+		}
+
+		m_context->RSSetState(m_cullOffState); // on
+
 		D3D11_VIEWPORT viewport;
 		viewport.Width = static_cast<float>(width);
 		viewport.Height = static_cast<float>(height);
@@ -211,12 +242,24 @@ namespace Capstone
 		m_context->OMSetBlendState(m_alphaDisableBlendingState, blendFactor, 0xffffffff);
 	}
 
+	void DXBase::EnableCulling()
+	{
+		m_context->RSSetState(m_cullOnState);
+	}
+
+	void DXBase::DisableCulling()
+	{
+		m_context->RSSetState(m_cullOffState);
+	}
+
 	void DXBase::Shutdown()
 	{
 		if (m_swapChain) { m_swapChain->SetFullscreenState(FALSE, NULL); }
 
 		UnloadContent();
 
+		SafeRelease(m_cullOffState);
+		SafeRelease(m_cullOnState);
 		SafeRelease(m_alphaDisableBlendingState);
 		SafeRelease(m_alphaEnableBlendingState);
 		SafeRelease(m_depthTexture);
