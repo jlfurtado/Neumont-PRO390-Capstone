@@ -18,11 +18,11 @@ namespace Capstone
 	const int TEXTURE_FLOATS = 2;
 
 	Mesh::Mesh(Editor * pEditor)
-		: m_format("PCN"), m_pEditor(pEditor), m_testGroups(1 << 4)
+		: m_format("PCTN"), m_pEditor(pEditor), m_testGroups(1 << 4)
 	{
 		InitObjectLevelVariaitions(); // must come before 
 		m_objectLevelVariation.ClearVariations();
-		LoadMeshOBJ("..\\Data\\OBJS\\Sphere.obj");
+		LoadMeshOBJ("..\\Data\\OBJS\\SkySphere.obj");
 	}
 
 	Mesh::~Mesh()
@@ -69,14 +69,8 @@ namespace Capstone
 	{
 		if (m_currentVertexGroup < 0) { m_objectLevelVariation.Update(dt); CalcMatrix(); }
 		else { m_testGroups[m_currentVertexGroup].Update(dt); }
-
-		if (Keyboard::IsKeyDown(VK_SHIFT))
-		{
-			if (Keyboard::IsKeyPressed('V'))
-			{ 
-				Vary();
-			}
-		}
+		
+		if (Keyboard::IsKeyDown(VK_SHIFT) && Keyboard::IsKeyPressed('V')) {	Vary();	}
 	}
 
 	const int TOO_BIG = 128 * 1024 * 1024;
@@ -103,7 +97,7 @@ namespace Capstone
 		{
 			int instanceOffset = m_floatsPerVertex * m_vertexCount * instanceIndex;
 
-			// do the varying -- this no work?
+			// do the varying
 			m_objectLevelVariation.Vary();
 			CalcMatrix();
 			for (size_t i = 0; i < m_testGroups.size(); ++i)
@@ -382,6 +376,7 @@ namespace Capstone
 		}
 
 		ColorMesh();
+
 		m_pEditor->ReSendMeshVerticesSameBuffer();
 	}
 
@@ -604,6 +599,31 @@ namespace Capstone
 				pArray[idx + 2] = XMVectorGetZ(v);
 			}
 		}
+
+		return CopyUVsIntoArray(pArray, instanceIndex);
+	}
+
+	bool Mesh::CopyUVsIntoArray(float * pArray, int instanceIndex) const
+	{
+		if (instanceIndex >= m_numMeshes) { DebugConsole::Log("Failed to CopyUVsIntoArray! Invalid InstanceIndex!\n"); return false; }
+
+		int instanceOffset = m_floatsPerVertex * m_vertexCount * instanceIndex;
+
+		int uvPos = StringFuncs::FindSubString(m_format, "T");
+		for (int i = 0; i < m_vertexCount; ++i)
+		{
+			int uvIdx = uvPos == 1 ? POSITION_FLOATS : (POSITION_FLOATS + COLOR_FLOATS);
+			int floatIdx = m_floatsPerVertex * i;
+			int idx = instanceOffset + floatIdx + uvIdx;
+			pArray[idx + 0] = m_pVerts[idx + 0];
+			pArray[idx + 1] = m_pVerts[idx + 1];
+		}
+
+		//for (int i = 0; i < m_vertexCount; ++i)
+		//{
+		//	float *pVert = m_pVerts + i * m_floatsPerVertex;
+		//	DebugConsole::Log("UV: (%.3f, %.3f)\n", pVert[7], pVert[8]);
+		//}
 
 		return true;
 	}

@@ -27,6 +27,7 @@ namespace Capstone
 		if (!MakePivotVertexBuffer()) { return false; }
 		if (!MakeFrustumVertexBuffer()) { return false; }
 
+		// pcnphong | pctnphongnotex
 		// load and compile the two shaders
 		ID3DBlob* VS1 = nullptr;
 		ID3DBlob* PS1 = nullptr;
@@ -54,13 +55,30 @@ namespace Capstone
 			return false;
 		}
 
-		// encapsulate both shaders into shader objects
-		m_device->CreateVertexShader(VS1->GetBufferPointer(), VS1->GetBufferSize(), NULL, &pPCNVertShader);
-		m_device->CreatePixelShader(PS1->GetBufferPointer(), PS1->GetBufferSize(), NULL, &pPCNPixelShader);
+		ID3DBlob* VS3 = nullptr;
+		ID3DBlob* PS3 = nullptr;
+		if (!CompileD3DShader(L"..//data//shaders//pctnphongnotex.shader", "VertexShaderFunction", VERTEX_SHADER_STR, &VS3))
+		{
+			DebugConsole::Log("ERROR: FAILED TO COMPILE VERTEX SHADER!!!\n");
+			return false;
+		}
+		if (!CompileD3DShader(L"..//data//shaders//pctnphongnotex.shader", "PixelShaderFunction", PIXEL_SHADER_STR, &PS3))
+		{
+			DebugConsole::Log("ERROR: FAILED TO COMPILE PIXEL SHADER!!!\n");
+			return false;
+		}
 
 		// encapsulate both shaders into shader objects
-		m_device->CreateVertexShader(VS2->GetBufferPointer(), VS2->GetBufferSize(), NULL, &pPCVertShader);
-		m_device->CreatePixelShader(PS2->GetBufferPointer(), PS2->GetBufferSize(), NULL, &pPCPixelShader);
+		HRESULT r = m_device->CreateVertexShader(VS1->GetBufferPointer(), VS1->GetBufferSize(), NULL, &pPCNVertShader);
+		r = m_device->CreatePixelShader(PS1->GetBufferPointer(), PS1->GetBufferSize(), NULL, &pPCNPixelShader);
+
+		// encapsulate both shaders into shader objects
+		r = m_device->CreateVertexShader(VS2->GetBufferPointer(), VS2->GetBufferSize(), NULL, &pPCVertShader);
+		r = m_device->CreatePixelShader(PS2->GetBufferPointer(), PS2->GetBufferSize(), NULL, &pPCPixelShader);
+
+		// encapsulate both shaders into shader objects
+		r = m_device->CreateVertexShader(VS3->GetBufferPointer(), VS3->GetBufferSize(), NULL, &pPCTNVertShader);
+		r = m_device->CreatePixelShader(PS3->GetBufferPointer(), PS3->GetBufferSize(), NULL, &pPCTNPixelShader);
 
 		// create the input layout object
 		D3D11_INPUT_ELEMENT_DESC iedpcn[] =
@@ -70,7 +88,19 @@ namespace Capstone
 			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
-		m_device->CreateInputLayout(iedpcn, 3, VS1->GetBufferPointer(), VS1->GetBufferSize(), &pPCNLayout);
+		r = m_device->CreateInputLayout(iedpcn, 3, VS1->GetBufferPointer(), VS1->GetBufferSize(), &pPCNLayout);
+
+
+		// create the input layout object
+		D3D11_INPUT_ELEMENT_DESC iedpctn[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		r = m_device->CreateInputLayout(iedpctn, 4, VS3->GetBufferPointer(), VS3->GetBufferSize(), &pPCTNLayout);
 
 		// create the input layout object
 		D3D11_INPUT_ELEMENT_DESC iedpc[] =
@@ -79,8 +109,7 @@ namespace Capstone
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 
-		m_device->CreateInputLayout(iedpc, 2, VS2->GetBufferPointer(), VS2->GetBufferSize(), &pPCLayout);
-
+		r = m_device->CreateInputLayout(iedpc, 2, VS2->GetBufferPointer(), VS2->GetBufferSize(), &pPCLayout);
 
 		float t = 0.75f;
 		m_interp = XMVectorSet(t, t, t, t);
@@ -102,7 +131,7 @@ namespace Capstone
 		if (!m_meshUniformManager.AddUniform("ITMTW", sizeof(DirectX::XMFLOAT4X4), &m_inverseTransposeModelToWorldMatrix, false)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 		if (!m_meshUniformManager.AddUniform("Interp", sizeof(DirectX::XMVECTOR), &m_interp, true)) { DebugConsole::Log("Failed to AddUniform!\n"); return false; }
 
-		if (!m_meshUniformManager.Initialize(m_device, VS1, PS1)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
+		if (!m_meshUniformManager.Initialize(m_device, VS3, PS3)) { DebugConsole::Log("Failed to initialize uniform manager!\n"); return false; }
 
 		m_identity = XMMatrixIdentity();
 
@@ -174,11 +203,14 @@ namespace Capstone
 		SafeRelease(pPCNPixelShader);
 		SafeRelease(pPCVertShader);
 		SafeRelease(pPCPixelShader);
+		SafeRelease(pPCTNVertShader);
+		SafeRelease(pPCTNPixelShader);
 		SafeRelease(pFrustumVertexBuffer);
 		SafeRelease(pMeshVertexBuffer);
 		SafeRelease(pUtilityVertexBuffer);
 		SafeRelease(pPivotVertexBuffer);
 		SafeRelease(pPCNLayout);
+		SafeRelease(pPCTNLayout);
 		SafeRelease(pPCLayout);
 
 		m_initialized = false;
@@ -432,10 +464,10 @@ namespace Capstone
 	void Editor::RenderMesh()
 	{
 		// set the shader objects
-		m_context->VSSetShader(pPCNVertShader, 0, 0);
-		m_context->PSSetShader(pPCNPixelShader, 0, 0);
+		m_context->VSSetShader(pPCTNVertShader, 0, 0);
+		m_context->PSSetShader(pPCTNPixelShader, 0, 0);
 
-		m_context->IASetInputLayout(pPCNLayout);
+		m_context->IASetInputLayout(pPCTNLayout);
 
 		// select which vertex buffer to display
 		UINT stride = m_mesh.GetStride();

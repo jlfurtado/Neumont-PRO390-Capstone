@@ -75,12 +75,15 @@ namespace Capstone
 		ID3D11PixelShader *pPCNPixelShader = 0;     // the pixel shader
 		ID3D11VertexShader *pPCVertShader = 0;    // the vertex shader
 		ID3D11PixelShader *pPCPixelShader = 0;     // the pixel shader
+		ID3D11VertexShader *pPCTNVertShader = 0;    // the vertex shader
+		ID3D11PixelShader *pPCTNPixelShader = 0;     // the pixel shader
 		ID3D11Buffer *pMeshVertexBuffer = 0;    // mesh vertex buffer
 		ID3D11Buffer *pUtilityVertexBuffer = 0;    // utility vertex buffer
 		ID3D11Buffer *pPivotVertexBuffer = 0;    // pivot vertex buffer
 		ID3D11Buffer *pFrustumVertexBuffer = 0;
 
 		ID3D11InputLayout *pPCNLayout = 0;
+		ID3D11InputLayout *pPCTNLayout = 0;
 		ID3D11InputLayout *pPCLayout = 0; 
 
 		const char *const VERTEX_SHADER_STR = "vs_5_0";

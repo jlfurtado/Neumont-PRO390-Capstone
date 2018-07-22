@@ -154,11 +154,16 @@ namespace Capstone
 		*outAllocatedVerts = new float[numFloats] { 0.0f };
 
 		// make plenty of space for data to be filled in
-		s_pMeshVertexPositions = new float[numFloats] {0.0f};
-		s_pMeshVertexColors = new float[numFloats] {0.0f};
-		s_pMeshVertexTextureCoords = new float[numFloats] {0.0f};
-		s_pMeshVertexNormals = new float[numFloats] {0.0f};
-		s_pTempIndices = new int[s_numVertices * 9]{ 0 };
+		s_pMeshVertexPositions = new float[numFloats]; 
+		s_pMeshVertexColors = new float[numFloats];
+		s_pMeshVertexTextureCoords = new float[numFloats];
+		s_pMeshVertexNormals = new float[numFloats];
+		s_pTempIndices = new int[s_numVertices * 9];
+		memset(s_pMeshVertexPositions, 0, numFloats * sizeof(float));
+		memset(s_pMeshVertexColors, 0, numFloats * sizeof(float));
+		memset(s_pMeshVertexTextureCoords, 0, numFloats * sizeof(float));
+		memset(s_pMeshVertexNormals, 0, numFloats * sizeof(float));
+		memset(s_pTempIndices, 0, s_numVertices * 9 * sizeof(int));
 
 		// create a buffer to hold the line and an integer to store the line number in
 		char line[MAX_LINE_SIZE]{ 0 };
@@ -404,7 +409,7 @@ namespace Capstone
 		parse.get();
 
 		// array to hold indices for x/x/x x/x/x x/x/x and ints for locations
-		int indices[9]; // 1-based
+		int indices[9]{ 0 }; // 1-based
 		int type = 0;
 		int index = 0;
 
@@ -471,18 +476,22 @@ namespace Capstone
 		int offsets[4]{ 0 };
 		int ioffsets[4]{ 0 };
 		int bytes[4]{ 0 };
+		int numFloats[4]{ 0 };
 		float *pArray[4]{ nullptr };
 		int idx = 1;
 		offsets[0] = 0;
 		ioffsets[0] = 0;
 		bytes[0] = POSITION_BYTES;
+		numFloats[0] = FLOATS_PER_POSITION;
 		pArray[0] = s_pMeshVertexPositions;
 
 		if (s_hasColor)
 		{ 
 			offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1];
 			ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1];
-			bytes[idx] = COLOR_BYTES; pArray[idx] = s_pMeshVertexColors;
+			bytes[idx] = COLOR_BYTES;
+			numFloats[idx] = FLOATS_PER_COLOR;
+			pArray[idx] = s_pMeshVertexColors;
 			++idx;
 		}
 
@@ -490,7 +499,9 @@ namespace Capstone
 		{
 			offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1];
 			ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1];
-			bytes[idx] = TEXTURE_BYTES; pArray[idx] = s_pMeshVertexTextureCoords;
+			bytes[idx] = TEXTURE_BYTES;
+			numFloats[idx] = FLOATS_PER_TEXTURE;
+			pArray[idx] = s_pMeshVertexTextureCoords;
 			++idx;
 		}
 
@@ -498,7 +509,9 @@ namespace Capstone
 		{ 
 			offsets[idx] = offsets[idx - 1] + offsetDeltas[idx - 1];
 			ioffsets[idx] = ioffsets[idx - 1] + ioffsetDeltas[idx - 1];
-			bytes[idx] = NORMAL_BYTES; pArray[idx] = s_pMeshVertexNormals;
+			bytes[idx] = NORMAL_BYTES;
+			numFloats[idx] = FLOATS_PER_NORMAL;
+			pArray[idx] = s_pMeshVertexNormals;
 			++idx; 
 		}
 
@@ -509,7 +522,10 @@ namespace Capstone
 
 			for (int j = 0; j < idx; ++j)
 			{
-				std::memcpy(pVert + offsets[j], pArray[j] + 3 * (*(pIndices + ioffsets[j])), bytes[j]);
+				float *to = pVert + offsets[j];
+				int* index = pIndices + ioffsets[j];
+				float *from = pArray[j] + numFloats[j] * (*(index));
+				std::memcpy(to, from, bytes[j]);
 			}
 		}
 

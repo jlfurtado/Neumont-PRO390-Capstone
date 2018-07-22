@@ -55,6 +55,7 @@ namespace Capstone
 		bool Vary();
 		bool CopyVerticesTo(float *pArray);
 		bool OffsetTransformVertsIntoArray(const DirectX::XMVECTOR& offset, const DirectX::XMMATRIX& transform, float *pArray, int instanceIndex) const;
+		bool CopyUVsIntoArray(float *pArray, int instanceIndex) const;
 
 	private:
 		void ColorCurrentGroup();

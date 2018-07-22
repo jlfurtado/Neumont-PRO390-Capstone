@@ -568,6 +568,21 @@ Prefab:
       propertyPath: m_genStep
       value: 10
       objectReference: {fileID: 0}
+    - target: {fileID: 114839841633695252, guid: 4cbf71eb212549b4583834d064cb76c7,
+        type: 2}
+      propertyPath: m_boxesPerX
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 114839841633695252, guid: 4cbf71eb212549b4583834d064cb76c7,
+        type: 2}
+      propertyPath: m_boxesPerY
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 114839841633695252, guid: 4cbf71eb212549b4583834d064cb76c7,
+        type: 2}
+      propertyPath: m_boxesPerZ
+      value: 5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4cbf71eb212549b4583834d064cb76c7, type: 2}
   m_IsPrefabParent: 0
